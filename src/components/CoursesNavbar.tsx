@@ -6,7 +6,6 @@ import {
   Building2,
   Phone,
   Info,
-  Globe,
   Sun,
   Moon,
   BookOpen,
@@ -64,7 +63,7 @@ const CoursesNavbar = () => {
     <>
       {/* Floating Glassmorphism Navbar Container (Permanently Pinned on Scroll) */}
       <header className="fixed top-0 left-0 right-0 z-[100] w-full px-3 sm:px-6 pt-2 sm:pt-3 pointer-events-none transition-all duration-300">
-        <div className={`pointer-events-auto mx-auto max-w-7xl h-16 sm:h-18 px-4 sm:px-6 flex items-center justify-between rounded-2xl md:rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 ${isScrolled ? "shadow-xl shadow-black/10 border-emerald-500/20" : ""}`}>
+        <div className={`pointer-events-auto mx-auto max-w-6xl h-14 sm:h-16 px-4 sm:px-6 flex items-center justify-between rounded-2xl md:rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 ${isScrolled ? "shadow-xl shadow-black/10 border-emerald-500/20" : ""}`}>
           
           {/* Brand Logo */}
           <div className="flex items-center gap-3">
@@ -201,16 +200,6 @@ const CoursesNavbar = () => {
 
           {/* Right Controls */}
           <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* Language Switcher */}
-            <button
-              onClick={() => setLanguage(isBn ? "en" : "bn")}
-              className="hidden sm:flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border border-border/60 text-foreground/80 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-              title={isBn ? "Switch to English" : "বাংলায় পরিবর্তন করুন"}
-            >
-              <Globe className="h-3 w-3 text-brand-500" />
-              <span>{isBn ? "EN" : "বাং"}</span>
-            </button>
-
             {/* Theme Toggle */}
             {mounted && (
               <button

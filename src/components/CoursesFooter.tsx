@@ -55,7 +55,7 @@ const CoursesFooter = () => {
         <rect width="100%" height="100%" fill="url(#footer-doodles)" />
       </svg>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* App Promo Banner Card */}
         <div className="mb-12 rounded-2xl bg-white/5 border border-white/10 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 backdrop-blur-sm">

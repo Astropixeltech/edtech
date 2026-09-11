@@ -42,6 +42,9 @@ See [`FolderStructure.md`](./FolderStructure.md).
 ## Locked layouts
 - Course Viewer: video fixed top, only sidebar scrolls.
 - Chat: single room per teacher-student pair; teacher sees student profile names.
+- Floating Navbar: fixed top-0, `max-w-6xl mx-auto`, search & language toggle removed, permanently pinned on scroll.
+- Hero Section: framed 2-column layout strictly contained in `max-w-6xl mx-auto`, zero bleed behind floating navbar background.
+- Landing Page Containers: all sections aligned to `max-w-6xl mx-auto px-4 sm:px-6 lg:px-8` matching navbar width.
 
 ## Known Issues / Tech Debt
 - Legacy `pass_codes`, `pass_code_courses`, `gallery_videos` tables retained but unused.
