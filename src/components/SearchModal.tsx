@@ -1,11 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, ArrowRight, Layout, Users, Briefcase, Phone, BookOpen, Info, Sparkles, Loader2, GraduationCap, User } from "lucide-react";
+import { Search, X, ArrowRight, Layout, Users, Phone, BookOpen, Info, Sparkles, Loader2, GraduationCap, User, Clock, Calculator, Download, Compass } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { db } from "@/integrations/firebase/config";
-import { collection, getDocs, query as fsQuery, where } from 'firebase/firestore';
-import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "@/lib/env";
+import { supabase } from "@/integrations/supabase/client";
+
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -61,106 +60,106 @@ const teamMembers = [
   },
 ];
 
-// Static pages data
+// Static pages data with updated routes
 const staticPages: SearchItem[] = [
   {
     title: "Home",
     titleBn: "হোম",
-    description: "Welcome to Astropixel - Creative Design Agency",
-    descriptionBn: "Astropixel-এ স্বাগতম - ক্রিয়েটিভ ডিজাইন এজেন্সি",
+    description: "Welcome to Astropixel Learn - Premier Online Learning",
+    descriptionBn: "Astropixel Learn-এ স্বাগতম - আধুনিক অনলাইন লার্নিং প্ল্যাটফর্ম",
     path: "/",
     icon: Layout,
-    keywords: ["home", "main", "landing", "welcome", "alphazero", "alpha", "zero", "agency", "এজেন্সি", "হোম", "প্রধান", "স্বাগতম", "আলফাজিরো", "আলফা"],
+    keywords: ["home", "main", "landing", "welcome", "astropixel", "learn", "হোম", "প্রধান", "স্বাগতম"],
     category: "page"
+  },
+  {
+    title: "All Courses Catalog",
+    titleBn: "সকল কোর্স ক্যাটালগ",
+    description: "Browse all engineering, university and HSC admission preparation courses",
+    descriptionBn: "ইঞ্জিনিয়ারিং, বিশ্ববিদ্যালয় এবং এইচএসসি প্রস্তুতিমূলক সকল কোর্স ব্রাউজ করুন",
+    path: "/catalog",
+    icon: BookOpen,
+    keywords: ["courses", "course", "catalog", "engineering", "buet", "admission", "medical", "hsc", "academic", "কোর্স", "ক্যাটালগ", "ভর্তি"],
+    category: "course"
+  },
+  {
+    title: "Free Resources & Study Guides",
+    titleBn: "বিনামূল্যে রিসোর্স ও স্টাডি গাইড",
+    description: "Download free formula sheets, mock tests, and admission question banks",
+    descriptionBn: "বিনামূল্যে সূত্র তালিকা, মক টেস্ট এবং ভর্তি প্রশ্নব্যাংক ডাউনলোড করুন",
+    path: "/free-resources",
+    icon: Download,
+    keywords: ["free", "resources", "download", "pdf", "sheet", "formula", "bank", "questions", "ফ্রি", "রিসোর্স", "ডাউনলোড", "পিডিএফ", "প্রশ্নব্যাংক"],
+    category: "page"
+  },
+  {
+    title: "Syllabus Progress Tracker",
+    titleBn: "সিলেবাস অগ্রগতি ট্র্যাকার",
+    description: "Track your admission and academic chapter completion progress live",
+    descriptionBn: "আপনার ভর্তি ও একাডেমিক অধ্যায় সম্পন্ন করার লাইভ অগ্রগতি ট্র্যাক করুন",
+    path: "/syllabus-calculator",
+    icon: Compass,
+    keywords: ["syllabus", "tracker", "calculator", "progress", "chapters", "hsc", "admission", "সিলেবাস", "ট্র্যাকার", "অগ্রগতি", "অধ্যায়"],
+    category: "tool"
+  },
+  {
+    title: "Admission Eligibility Calculator",
+    titleBn: "ভর্তি যোগ্যতা ক্যালকুলেটর",
+    description: "Check BUET, Medical, DU and Engineering eligibility based on your GPA",
+    descriptionBn: "আপনার জিপিএ দিয়ে বুয়েট, মেডিকেল, ঢাবি ও ইঞ্জিনিয়ারিং ভর্তি যোগ্যতা যাচাই করুন",
+    path: "/eligibility-calculator",
+    icon: Calculator,
+    keywords: ["eligibility", "calculator", "buet", "du", "gpa", "ssc", "hsc", "মেডিকেল", "বুয়েট", "যোগ্যতা", "ক্যালকুলেটর"],
+    category: "tool"
   },
   {
     title: "About Us",
     titleBn: "আমাদের সম্পর্কে",
-    description: "Learn about Astropixel's journey, mission, vision and values",
-    descriptionBn: "Astropixel-এর যাত্রা, মিশন, ভিশন এবং মূল্যবোধ সম্পর্কে জানুন",
+    description: "Learn about Astropixel Learn's mission, instructors and vision",
+    descriptionBn: "Astropixel Learn-এর মিশন, শিক্ষকবৃন্দ এবং ভিশন সম্পর্কে জানুন",
     path: "/about",
     icon: Info,
-    keywords: ["about", "story", "values", "mission", "vision", "history", "company", "who", "we", "are", "journey", "আমাদের", "সম্পর্কে", "গল্প", "মিশন", "ভিশন", "কোম্পানি", "যাত্রা", "ইতিহাস"],
+    keywords: ["about", "story", "values", "mission", "vision", "instructors", "আমাদের", "সম্পর্কে", "মিশন"],
     category: "page"
   },
   {
-    title: "Our Services",
-    titleBn: "আমাদের সেবাসমূহ",
-    description: "Graphic Design, Web Development, Video Editing, Digital Marketing, Logo, Branding",
-    descriptionBn: "গ্রাফিক ডিজাইন, ওয়েব ডেভেলপমেন্ট, ভিডিও এডিটিং, ডিজিটাল মার্কেটিং, লোগো, ব্র্যান্ডিং",
-    path: "/services",
-    icon: Briefcase,
-    keywords: ["services", "service", "design", "web", "website", "seo", "marketing", "digital", "graphic", "video", "editing", "development", "developer", "logo", "branding", "brand", "poster", "banner", "flyer", "social", "media", "thumbnail", "youtube", "facebook", "instagram", "সেবা", "ডিজাইন", "ওয়েব", "ওয়েবসাইট", "মার্কেটিং", "লোগো", "ব্র্যান্ডিং", "গ্রাফিক", "ভিডিও", "এডিটিং", "ডেভেলপমেন্ট", "পোস্টার", "ব্যানার", "থাম্বনেইল", "ফেসবুক", "ইউটিউব", "motion", "animation", "ui", "ux", "app", "mobile", "responsive"],
-    category: "page"
-  },
-  {
-    title: "Our Work",
-    titleBn: "আমাদের কাজ",
-    description: "View our portfolio, completed projects and case studies",
-    descriptionBn: "আমাদের পোর্টফোলিও, সম্পন্ন প্রজেক্ট এবং কেস স্টাডি দেখুন",
-    path: "/work",
-    icon: Layout,
-    keywords: ["work", "portfolio", "projects", "project", "case", "study", "gallery", "showcase", "examples", "sample", "কাজ", "পোর্টফোলিও", "প্রজেক্ট", "গ্যালারি", "নমুনা", "উদাহরণ"],
-    category: "page"
-  },
-  {
-    title: "Our Team",
-    titleBn: "আমাদের টিম",
-    description: "Meet the creative minds behind Astropixel - Designers, Developers",
-    descriptionBn: "Astropixel-এর পেছনের ক্রিয়েটিভ মানুষদের সাথে পরিচিত হন",
+    title: "Our Instructors & Mentors",
+    titleBn: "আমাদের প্রশিক্ষক ও মেন্টর",
+    description: "Meet our top engineering and university instructors",
+    descriptionBn: "শীর্ষ ইঞ্জিনিয়ারিং ও বিশ্ববিদ্যালয়ের অভিজ্ঞ শিক্ষকদের সাথে পরিচিত হন",
     path: "/about#team",
     icon: Users,
-    keywords: ["team", "members", "people", "staff", "founder", "ceo", "designer", "developer", "employee", "crew", "join", "career", "টিম", "সদস্য", "মানুষ", "ফাউন্ডার", "ডিজাইনার", "ডেভেলপার", "কর্মী", "trainer", "instructor", "ট্রেইনার"],
+    keywords: ["team", "mentors", "teachers", "instructors", "faculty", "শিক্ষক", "মেন্টর"],
     category: "page"
   },
   {
-    title: "Courses",
-    titleBn: "কোর্সসমূহ",
-    description: "Learn design and development skills - Graphic Design, Web Development courses",
-    descriptionBn: "ডিজাইন এবং ডেভেলপমেন্ট শিখুন - গ্রাফিক ডিজাইন, ওয়েব ডেভেলপমেন্ট কোর্স",
-    path: "/courses",
-    icon: BookOpen,
-    keywords: ["courses", "course", "training", "learn", "learning", "class", "tutorial", "education", "skill", "study", "enroll", "admission", "certificate", "কোর্স", "ট্রেনিং", "শিখুন", "শেখা", "ক্লাস", "টিউটোরিয়াল", "শিক্ষা", "ভর্তি", "সার্টিফিকেট", "photoshop", "illustrator", "figma", "canva"],
-    category: "page"
-  },
-  {
-    title: "Contact Us",
-    titleBn: "যোগাযোগ করুন",
-    description: "Get in touch - Email: contact@astropixel.tech, Phone: +880 1779-277603",
-    descriptionBn: "যোগাযোগ করুন - ইমেইল, ফোন: +৮৮০ ১৭৭৯-২৭৭৬০৩, হোয়াটসঅ্যাপ",
-    path: "/contact",
-    icon: Phone,
-    keywords: ["contact", "email", "phone", "whatsapp", "message", "call", "reach", "location", "address", "help", "support", "inquiry", "quote", "price", "যোগাযোগ", "ইমেইল", "ফোন", "হোয়াটসঅ্যাপ", "মেসেজ", "কল", "ঠিকানা", "লোকেশন", "সাহায্য", "দাম", "01779277603", "1779277603", "০১৭৭৯২৭৭৬০৩"],
-    category: "page"
-  },
-  {
-    title: "Join Our Team",
-    titleBn: "টিমে যোগ দিন",
-    description: "Career opportunities at Astropixel - Apply now",
-    descriptionBn: "Astropixel-তে ক্যারিয়ারের সুযোগ - এখনই আবেদন করুন",
-    path: "/join-team",
-    icon: Users,
-    keywords: ["join", "career", "job", "jobs", "apply", "hiring", "work", "opportunity", "vacancy", "recruitment", "যোগ", "চাকরি", "আবেদন", "নিয়োগ", "ক্যারিয়ার", "সুযোগ"],
-    category: "page"
-  },
-  {
-    title: "Student Login",
-    titleBn: "স্টুডেন্ট লগইন",
-    description: "Login to access your courses and dashboard",
-    descriptionBn: "আপনার কোর্স এবং ড্যাশবোর্ড অ্যাক্সেস করতে লগইন করুন",
-    path: "/student-login",
-    icon: BookOpen,
-    keywords: ["student", "login", "signin", "sign", "account", "dashboard", "my", "courses", "স্টুডেন্ট", "লগইন", "একাউন্ট", "ড্যাশবোর্ড", "আমার"],
+    title: "Student Portal Login",
+    titleBn: "শিক্ষার্থী পোর্টাল লগইন",
+    description: "Login to access your enrolled courses, classes and progress",
+    descriptionBn: "আপনার ভর্তি হওয়া কোর্স ও ক্লাস দেখার জন্য শিক্ষার্থী পোর্টালে লগইন করুন",
+    path: "/student/login",
+    icon: GraduationCap,
+    keywords: ["student", "login", "portal", "dashboard", "enrolled", "my courses", "লগইন", "শিক্ষার্থী", "পোর্টাল"],
     category: "page"
   },
   {
     title: "Verify Certificate",
     titleBn: "সার্টিফিকেট যাচাই",
-    description: "Verify your Astropixel certificate authenticity",
-    descriptionBn: "আপনার Astropixel সার্টিফিকেটের সত্যতা যাচাই করুন",
+    description: "Verify your Astropixel course completion certificate authenticity",
+    descriptionBn: "আপনার Astropixel কোর্স সমাপ্তি সার্টিফিকেটের সত্যতা যাচাই করুন",
     path: "/verify-certificate",
     icon: BookOpen,
-    keywords: ["verify", "certificate", "check", "validate", "authenticity", "সার্টিফিকেট", "যাচাই", "চেক", "ভেরিফাই"],
+    keywords: ["verify", "certificate", "check", "authenticity", "সার্টিফিকেট", "যাচাই", "ভেরিফাই"],
+    category: "page"
+  },
+  {
+    title: "Contact & Student Support",
+    titleBn: "যোগাযোগ ও শিক্ষার্থী সহায়তা",
+    description: "24/7 student support, hotline and live query desk",
+    descriptionBn: "২৪/৭ শিক্ষার্থী সহায়তা ডেস্ক, হটলাইন ও সাপোর্ট টিকিট",
+    path: "/contact",
+    icon: Phone,
+    keywords: ["contact", "support", "help", "hotline", "ticket", "যোগাযোগ", "সাহায্য", "সাপোর্ট"],
     category: "page"
   },
 ];
@@ -186,11 +185,23 @@ const highlightMatch = (text: string, query: string): React.ReactNode => {
   }
 };
 
+const RECENT_SEARCHES_KEY = "ap_recent_searches";
+
 const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
   const [query, setQuery] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [dynamicData, setDynamicData] = useState<SearchItem[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(RECENT_SEARCHES_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const navigate = useNavigate();
   const { language } = useLanguage();
 
@@ -198,26 +209,24 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
   useEffect(() => {
     const loadDynamicData = async () => {
       try {
-        const searchQ = fsQuery(
-          collection(db, 'courses'),
-          where('is_published', '==', true)
-        );
-        const snapshot = await getDocs(searchQ);
-        const courses = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
+        const { data: courses } = await supabase
+          .from('courses')
+          .select('id, title, description')
+          .eq('is_published', true);
 
         const dynamicItems: SearchItem[] = [];
 
         // Add courses
-        if (courses && courses.length > 0) {
+        if (courses) {
           courses.forEach(course => {
             dynamicItems.push({
               title: course.title,
               titleBn: course.title,
-              description: course.description || "Learn with Astropixel",
-              descriptionBn: course.description || "Astropixel-এর সাথে শিখুন",
-              path: "/courses",
+              description: course.description || "Comprehensive course by Astropixel Learn",
+              descriptionBn: course.description || "Astropixel Learn-এর সাথে পূর্ণাঙ্গ প্রস্তুতি",
+              path: `/courses/${course.id}`,
               icon: GraduationCap,
-              keywords: [course.title.toLowerCase(), "course", "কোর্স", "training", "ট্রেনিং"],
+              keywords: [course.title.toLowerCase(), "course", "কোর্স", "training", "প্রস্তুতি"],
               category: "course"
             });
           });
@@ -232,7 +241,7 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
             descriptionBn: member.roleBn,
             path: "/about#team",
             icon: User,
-            keywords: [...member.keywords, "team", "member", "trainer", "টিম", "ট্রেইনার", "মেম্বার"],
+            keywords: [...member.keywords, "team", "member", "trainer", "টিম", "শিক্ষক", "মেন্টর"],
             category: "team"
           });
         });
@@ -252,7 +261,7 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
   const allSearchData = useMemo(() => [...staticPages, ...dynamicData], [dynamicData]);
 
   const filteredResults = useMemo(() => {
-    if (!query.trim()) return staticPages.slice(0, 7); // Show first 7 pages when empty
+    if (!query.trim()) return staticPages.slice(0, 6);
     
     const searchTerm = query.toLowerCase().trim();
     const terms = searchTerm.split(/\s+/);
@@ -266,16 +275,65 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
         ...item.keywords.map(k => k.toLowerCase())
       ].join(' ');
       
-      // Check if all terms are found
       return terms.every(term => searchableText.includes(term));
-    }).slice(0, 10); // Limit to 10 results
+    }).slice(0, 10);
   }, [query, allSearchData]);
 
-  const handleSelect = (path: string) => {
+  // Reset selected index when results change
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [query, filteredResults.length]);
+
+  const saveRecentSearch = (term: string) => {
+    const trimmed = term.trim();
+    if (!trimmed) return;
+    setRecentSearches(prev => {
+      const updated = [trimmed, ...prev.filter(item => item.toLowerCase() !== trimmed.toLowerCase())].slice(0, 6);
+      try {
+        localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+      } catch (e) {
+        console.error("Failed to save recent searches", e);
+      }
+      return updated;
+    });
+  };
+
+  const clearRecentSearches = () => {
+    setRecentSearches([]);
+    try {
+      localStorage.removeItem(RECENT_SEARCHES_KEY);
+    } catch {}
+  };
+
+  const handleSelect = (path: string, searchTitle?: string) => {
+    if (searchTitle) {
+      saveRecentSearch(searchTitle);
+    } else if (query.trim()) {
+      saveRecentSearch(query.trim());
+    }
     navigate(path);
     onClose();
     setQuery("");
     setAiSuggestion(null);
+  };
+
+  // Keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (filteredResults.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex(prev => (prev + 1) % filteredResults.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex(prev => (prev - 1 + filteredResults.length) % filteredResults.length);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const selectedItem = filteredResults[selectedIndex];
+      if (selectedItem) {
+        handleSelect(selectedItem.path, language === "bn" ? selectedItem.titleBn : selectedItem.title);
+      }
+    }
   };
 
   // AI-powered search suggestion
@@ -287,23 +345,15 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
 
     setIsAiLoading(true);
     try {
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/ai-assistant`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
-          message: `User is searching for "${searchQuery}" on Astropixel website. Astropixel is a creative design agency offering: Graphic Design, Web Development, Video Editing, Digital Marketing, Logo Design, Branding, and also provides courses. Contact: +880 1779-277603.
-          
-Based on their search, suggest which page they should visit in 1 short sentence. Available pages: Home, About Us, Services, Our Work/Portfolio, Team, Courses, Contact, Join Team, Student Login, Verify Certificate.
-
-Reply in ${language === 'bn' ? 'Bengali' : 'English'} only. Keep it very short (under 15 words).`
-        })
+      const { data, error } = await supabase.functions.invoke('ai-assistant', {
+        body: {
+          message: `User is searching for "${searchQuery}" on Astropixel Learn. We offer university admission prep, HSC prep, syllabus calculators, eligibility tools, and certificates.
+Suggest which page they should visit in 1 short sentence. Available: All Courses (/catalog), Free Resources (/free-resources), Syllabus Tracker (/syllabus-calculator), Eligibility Calculator (/eligibility-calculator), Student Portal (/student/login), About (/about), Contact (/contact).
+Reply in ${language === 'bn' ? 'Bengali' : 'English'} only under 15 words.`
+        }
       });
 
-      if (!response.ok) throw new Error('AI request failed');
-      const data = await response.json();
+      if (error) throw error;
       setAiSuggestion(data?.response || null);
     } catch (error) {
       console.error('AI suggestion error:', error);
@@ -326,22 +376,19 @@ Reply in ${language === 'bn' ? 'Bengali' : 'English'} only. Keep it very short (
     return () => clearTimeout(timer);
   }, [query, filteredResults.length, getAiSuggestion]);
 
+  // Modal lifecycle & Escape / Ctrl+K listener
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        if (isOpen) onClose();
-      }
     };
 
     if (isOpen) {
-      document.addEventListener("keydown", handleKeyDown);
+      document.addEventListener("keydown", handleGlobalKeyDown);
       document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keydown", handleGlobalKeyDown);
       document.body.style.overflow = "";
     };
   }, [isOpen, onClose]);
@@ -351,6 +398,7 @@ Reply in ${language === 'bn' ? 'Bengali' : 'English'} only. Keep it very short (
     if (!isOpen) {
       setQuery("");
       setAiSuggestion(null);
+      setSelectedIndex(0);
     }
   }, [isOpen]);
 
@@ -358,26 +406,26 @@ Reply in ${language === 'bn' ? 'Bengali' : 'English'} only. Keep it very short (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop - Pure blur */}
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-[100] backdrop-blur-xl bg-background/40"
+            className="fixed inset-0 z-[100] backdrop-blur-xl bg-background/60"
           />
 
-          {/* Modal - Centered */}
+          {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.96, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: -10 }}
             transition={{ type: "spring", damping: 25, stiffness: 350 }}
-            className="fixed inset-x-4 top-[12%] md:top-[10%] md:left-1/2 md:-translate-x-1/2 md:inset-x-auto z-[101] w-auto md:w-full md:max-w-lg"
+            className="fixed inset-x-4 top-[10%] md:left-1/2 md:-translate-x-1/2 md:inset-x-auto z-[101] w-auto md:w-full md:max-w-xl"
           >
-            <div className="bg-background border border-border rounded-2xl shadow-2xl overflow-hidden">
-              {/* Search Input with AI Badge */}
-              <div className="flex items-center gap-3 p-4 border-b border-border bg-secondary/30">
+            <div className="bg-background border border-border/80 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-2xl">
+              {/* Search Input Bar */}
+              <div className="flex items-center gap-3 p-4 border-b border-border/60 bg-secondary/20">
                 <div className="relative">
                   <Search size={20} className="text-primary" />
                   <Sparkles size={10} className="absolute -top-1 -right-1 text-primary animate-pulse" />
@@ -386,21 +434,28 @@ Reply in ${language === 'bn' ? 'Bengali' : 'English'} only. Keep it very short (
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder={language === "bn" ? "পেজ, কোর্স, টিম মেম্বার খুঁজুন..." : "Search pages, courses, team..."}
+                  onKeyDown={handleKeyDown}
+                  placeholder={language === "bn" ? "কোর্স, পেইজ, শিক্ষক বা টুল খুঁজুন... (↑↓ দিয়ে ব্রাউজ করুন)" : "Search courses, pages, tools... (Use ↑↓ to navigate)"}
                   className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground outline-none text-base"
                   autoFocus
+                  aria-label="Search"
                 />
                 {query && (
                   <button
                     onClick={() => setQuery("")}
+                    aria-label="Clear search text"
                     className="w-6 h-6 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
                   >
                     <X size={12} />
                   </button>
                 )}
+                <kbd className="hidden sm:inline-flex items-center px-2 py-0.5 text-[11px] font-mono text-muted-foreground bg-secondary border border-border rounded">
+                  Esc
+                </kbd>
                 <button
                   onClick={onClose}
-                  className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors"
+                  aria-label="Close search"
+                  className="w-8 h-8 rounded-lg bg-secondary/80 flex items-center justify-center hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
                 >
                   <X size={16} />
                 </button>
@@ -415,7 +470,7 @@ Reply in ${language === 'bn' ? 'Bengali' : 'English'} only. Keep it very short (
                     exit={{ height: 0, opacity: 0 }}
                     className="bg-primary/10 border-b border-primary/20 overflow-hidden"
                   >
-                    <div className="flex items-center gap-2 px-4 py-3">
+                    <div className="flex items-center gap-2 px-4 py-2.5">
                       {isAiLoading ? (
                         <>
                           <Loader2 size={16} className="text-primary animate-spin" />
@@ -434,70 +489,119 @@ Reply in ${language === 'bn' ? 'Bengali' : 'English'} only. Keep it very short (
                 )}
               </AnimatePresence>
 
-              {/* Results */}
-              <div className="max-h-[350px] overflow-y-auto p-2">
+              {/* Recent Searches Pills (When Query is Empty) */}
+              {!query.trim() && recentSearches.length > 0 && (
+                <div className="px-4 pt-3 pb-2 border-b border-border/40 bg-secondary/10">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+                      <Clock size={12} />
+                      <span>{language === "bn" ? "সাম্প্রতিক অনুসন্ধান" : "Recent Searches"}</span>
+                    </div>
+                    <button
+                      onClick={clearRecentSearches}
+                      className="text-[11px] text-muted-foreground hover:text-red-400 transition-colors"
+                    >
+                      {language === "bn" ? "মুছে ফেলুন" : "Clear"}
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {recentSearches.map((term, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setQuery(term)}
+                        className="px-2.5 py-1 rounded-md text-xs bg-secondary/80 hover:bg-primary/20 hover:text-primary transition-colors border border-border/60 text-foreground flex items-center gap-1"
+                      >
+                        <span>{term}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Results / Navigation List */}
+              <div className="max-h-[360px] overflow-y-auto p-2 space-y-1">
                 {query.trim() && (
-                  <div className="px-3 py-1.5 text-xs text-muted-foreground">
-                    {language === "bn" 
-                      ? `"${query}" এর জন্য ${filteredResults.length}টি ফলাফল` 
-                      : `${filteredResults.length} results for "${query}"`}
+                  <div className="px-3 py-1 text-xs text-muted-foreground flex items-center justify-between">
+                    <span>
+                      {language === "bn" 
+                        ? `"${query}" এর জন্য ${filteredResults.length}টি ফলাফল` 
+                        : `${filteredResults.length} results for "${query}"`}
+                    </span>
+                    <span className="text-[11px] font-mono text-muted-foreground">Press Enter ↵ to open</span>
                   </div>
                 )}
                 
                 {filteredResults.length > 0 ? (
-                  filteredResults.map((item, index) => (
-                    <motion.button
-                      key={`${item.path}-${index}`}
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.03 }}
-                      onClick={() => handleSelect(item.path)}
-                      className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-secondary/70 transition-colors text-left group"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                        <item.icon size={20} className="text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-medium text-foreground truncate">
-                            {highlightMatch(language === "bn" ? item.titleBn : item.title, query)}
-                          </h4>
-                          {item.category === "course" && (
-                            <span className="text-[10px] px-1.5 py-0.5 bg-primary/20 text-primary rounded-full shrink-0">
-                              {language === "bn" ? "কোর্স" : "Course"}
-                            </span>
-                          )}
-                          {item.category === "team" && (
-                            <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-600 dark:text-green-400 rounded-full shrink-0">
-                              {language === "bn" ? "টিম মেম্বার" : "Team"}
-                            </span>
-                          )}
+                  filteredResults.map((item, index) => {
+                    const isSelected = index === selectedIndex;
+                    return (
+                      <button
+                        key={`${item.path}-${index}`}
+                        onClick={() => handleSelect(item.path, language === "bn" ? item.titleBn : item.title)}
+                        onMouseEnter={() => setSelectedIndex(index)}
+                        className={`w-full flex items-center gap-3.5 p-3 rounded-xl transition-all text-left group ${
+                          isSelected 
+                            ? "bg-primary/15 ring-1 ring-primary/40 text-foreground" 
+                            : "hover:bg-secondary/60 text-foreground"
+                        }`}
+                      >
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                          isSelected ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+                        }`}>
+                          <item.icon size={18} />
                         </div>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {highlightMatch(language === "bn" ? item.descriptionBn : item.description, query)}
-                        </p>
-                      </div>
-                      <ArrowRight size={16} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                    </motion.button>
-                  ))
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="font-medium text-sm text-foreground truncate">
+                              {highlightMatch(language === "bn" ? item.titleBn : item.title, query)}
+                            </h4>
+                            {item.category === "course" && (
+                              <span className="text-[10px] px-1.5 py-0.5 bg-primary/20 text-primary rounded-full shrink-0 font-medium">
+                                {language === "bn" ? "কোর্স" : "Course"}
+                              </span>
+                            )}
+                            {item.category === "tool" && (
+                              <span className="text-[10px] px-1.5 py-0.5 bg-amber-500/20 text-amber-500 rounded-full shrink-0 font-medium">
+                                {language === "bn" ? "টুল" : "Tool"}
+                              </span>
+                            )}
+                            {item.category === "team" && (
+                              <span className="text-[10px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-500 rounded-full shrink-0 font-medium">
+                                {language === "bn" ? "টিম" : "Team"}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate mt-0.5">
+                            {highlightMatch(language === "bn" ? item.descriptionBn : item.description, query)}
+                          </p>
+                        </div>
+                        <ArrowRight size={15} className={`transition-all shrink-0 ${
+                          isSelected ? "opacity-100 translate-x-1 text-primary" : "opacity-0 text-muted-foreground"
+                        }`} />
+                      </button>
+                    );
+                  })
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    <Search size={40} className="mx-auto mb-3 opacity-30" />
-                    <p className="mb-2">{language === "bn" ? "কোনো ফলাফল পাওয়া যায়নি" : "No results found"}</p>
-                    <p className="text-xs opacity-70">
-                      {language === "bn" ? "AI আপনাকে সাহায্য করছে..." : "AI is helping you..."}
+                    <Search size={36} className="mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">{language === "bn" ? "কোনো ফলাফল পাওয়া যায়নি" : "No results found"}</p>
+                    <p className="text-xs opacity-70 mt-1">
+                      {language === "bn" ? "অন্য কোনো কীওয়ার্ড দিয়ে চেষ্টা করুন" : "Try searching for courses, tools, or syllabus"}
                     </p>
                   </div>
                 )}
               </div>
 
               {/* Footer hint */}
-              <div className="p-3 border-t border-border bg-secondary/30">
-                <div className="flex items-center justify-center gap-2">
+              <div className="p-3 border-t border-border/60 bg-secondary/20 flex items-center justify-between text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5">
                   <Sparkles size={12} className="text-primary" />
-                  <p className="text-xs text-muted-foreground">
-                    {language === "bn" ? "AI-পাওয়ার্ড সার্চ • Esc বন্ধ করতে" : "AI-Powered Search • Esc to close"}
-                  </p>
+                  <span>Astropixel Learn Search</span>
+                </div>
+                <div className="flex items-center gap-3 text-[11px]">
+                  <span><kbd className="font-mono bg-secondary px-1.5 py-0.5 rounded border border-border">↑↓</kbd> Navigate</span>
+                  <span><kbd className="font-mono bg-secondary px-1.5 py-0.5 rounded border border-border">↵</kbd> Select</span>
+                  <span><kbd className="font-mono bg-secondary px-1.5 py-0.5 rounded border border-border">Esc</kbd> Close</span>
                 </div>
               </div>
             </div>

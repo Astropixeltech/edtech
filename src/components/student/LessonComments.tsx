@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
-import { MessageCircle, Send, Reply, Loader2 } from 'lucide-react';
+import { MessageCircle, Send, Reply, Loader2, ThumbsUp, Trash2, CheckCircle2 } from 'lucide-react';
 
 interface Comment {
   id: string;
@@ -16,24 +16,59 @@ interface Comment {
   created_at: string;
   user_name?: string;
   user_avatar?: string;
+  is_instructor?: boolean;
   replies?: Comment[];
 }
 
 interface LessonCommentsProps {
   videoId: string;
-  courseId: string;
-  userId: string;
-  userName: string;
-  userAvatar: string;
+  courseId?: string;
+  userId?: string;
+  userName?: string;
+  userAvatar?: string;
 }
 
-export default function LessonComments({ videoId, courseId, userId, userName, userAvatar }: LessonCommentsProps) {
+export default function LessonComments({
+  videoId,
+  courseId = 'default-course',
+  userId = 'demo-student-001',
+  userName = 'Student',
+  userAvatar = ''
+}: LessonCommentsProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [likedMap, setLikedMap] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem(`ap_comment_likes_${videoId}`);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const toggleLike = (commentId: string) => {
+    setLikedMap((prev) => {
+      const updated = { ...prev, [commentId]: !prev[commentId] };
+      try {
+        localStorage.setItem(`ap_comment_likes_${videoId}`, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const deleteComment = async (commentId: string) => {
+    const { error } = await supabase.from('lesson_comments').delete().eq('id', commentId);
+    if (!error) {
+      toast.success('কমেন্ট মুছে ফেলা হয়েছে');
+      fetchComments();
+    } else {
+      toast.error('Failed to delete comment');
+    }
+  };
 
   const fetchComments = async () => {
     setLoading(true);
@@ -48,11 +83,14 @@ export default function LessonComments({ videoId, courseId, userId, userName, us
       const userIds = [...new Set(data.map((c: any) => c.user_id))];
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, full_name, avatar_url')
+        .select('user_id, full_name, avatar_url, role')
         .in('user_id', userIds);
 
-      const profileMap = new Map<string, { name: string; avatar: string }>(
-        (profiles || []).map((p: any) => [p.user_id, { name: p.full_name || 'User', avatar: p.avatar_url || '' }])
+      const profileMap = new Map<string, { name: string; avatar: string; role?: string }>(
+        (profiles || []).map((p: any) => [
+          p.user_id,
+          { name: p.full_name || 'User', avatar: p.avatar_url || '', role: p.role }
+        ])
       );
 
       // Build threaded comments
@@ -63,8 +101,9 @@ export default function LessonComments({ videoId, courseId, userId, userName, us
         const profile = profileMap.get(c.user_id);
         const comment: Comment = {
           ...c,
-          user_name: profile?.name || 'Unknown',
+          user_name: profile?.name || 'Student',
           user_avatar: profile?.avatar || '',
+          is_instructor: profile?.role === 'teacher' || profile?.role === 'admin',
           replies: [],
         };
         if (c.parent_id) {
@@ -129,50 +168,85 @@ export default function LessonComments({ videoId, courseId, userId, userName, us
     return `${Math.floor(hrs / 24)}d ago`;
   };
 
-  const CommentItem = ({ comment, isReply = false }: { comment: Comment; isReply?: boolean }) => (
-    <div className={`flex gap-3 ${isReply ? 'ml-10 mt-2' : ''}`}>
-      <Avatar className="w-7 h-7 shrink-0">
-        <AvatarImage src={comment.user_avatar} />
-        <AvatarFallback className="text-[10px] bg-white/10 text-white/60">
-          {comment.user_name?.charAt(0) || '?'}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold">{comment.user_name}</span>
-          <span className="text-[10px] text-white/30">{timeAgo(comment.created_at)}</span>
-        </div>
-        <p className="text-sm text-white/80 mt-0.5 whitespace-pre-wrap">{comment.message}</p>
-        {!isReply && (
-          <button
-            className="text-[10px] text-primary/70 hover:text-primary mt-1 flex items-center gap-1"
-            onClick={() => setReplyTo(replyTo === comment.id ? null : comment.id)}
-          >
-            <Reply className="w-3 h-3" /> Reply
-          </button>
-        )}
-        {/* Reply form */}
-        {replyTo === comment.id && (
-          <div className="flex gap-2 mt-2">
-            <Textarea
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              placeholder="Reply..."
-              className="bg-white/5 border-white/10 text-white text-xs min-h-[40px] resize-none"
-              rows={1}
-            />
-            <Button size="icon" className="shrink-0 h-10 w-10" disabled={sending || !replyText.trim()} onClick={() => postComment(comment.id, replyText)}>
-              <Send className="w-3.5 h-3.5" />
-            </Button>
+  const CommentItem = ({ comment, isReply = false }: { comment: Comment; isReply?: boolean }) => {
+    const isLiked = !!likedMap[comment.id];
+    const isMine = comment.user_id === userId;
+
+    return (
+      <div className={`flex gap-3 ${isReply ? 'ml-8 sm:ml-10 mt-2' : ''}`}>
+        <Avatar className="w-7 h-7 shrink-0 border border-white/10">
+          <AvatarImage src={comment.user_avatar} />
+          <AvatarFallback className="text-[10px] bg-white/10 text-white/60">
+            {comment.user_name?.charAt(0) || '?'}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-semibold text-white">{comment.user_name}</span>
+            {comment.is_instructor && (
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <CheckCircle2 className="w-2.5 h-2.5" /> Instructor
+              </span>
+            )}
+            <span className="text-[10px] text-white/40">{timeAgo(comment.created_at)}</span>
           </div>
-        )}
-        {/* Replies */}
-        {comment.replies?.map(reply => (
-          <CommentItem key={reply.id} comment={reply} isReply />
-        ))}
+          <p className="text-sm text-white/90 mt-1 whitespace-pre-wrap">{comment.message}</p>
+          
+          {/* Action Row */}
+          <div className="flex items-center gap-3 mt-1.5">
+            <button
+              onClick={() => toggleLike(comment.id)}
+              className={`text-[11px] flex items-center gap-1 transition-colors ${
+                isLiked ? 'text-emerald-400 font-bold' : 'text-white/50 hover:text-white'
+              }`}
+            >
+              <ThumbsUp className="w-3 h-3" />
+              <span>{isLiked ? 1 : ''}</span>
+            </button>
+
+            {!isReply && (
+              <button
+                className="text-[11px] text-primary/80 hover:text-primary flex items-center gap-1"
+                onClick={() => setReplyTo(replyTo === comment.id ? null : comment.id)}
+              >
+                <Reply className="w-3 h-3" /> Reply
+              </button>
+            )}
+
+            {isMine && (
+              <button
+                onClick={() => deleteComment(comment.id)}
+                className="text-[11px] text-white/40 hover:text-rose-400 flex items-center gap-1 transition-colors ml-auto"
+                title="Delete comment"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+
+          {/* Reply form */}
+          {replyTo === comment.id && (
+            <div className="flex gap-2 mt-2">
+              <Textarea
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="Reply..."
+                className="bg-white/5 border-white/10 text-white text-xs min-h-[40px] resize-none"
+                rows={1}
+              />
+              <Button size="icon" className="shrink-0 h-10 w-10" disabled={sending || !replyText.trim()} onClick={() => postComment(comment.id, replyText)}>
+                <Send className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          )}
+          {/* Replies */}
+          {comment.replies?.map(reply => (
+            <CommentItem key={reply.id} comment={reply} isReply />
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="border border-white/10 rounded-xl overflow-hidden">

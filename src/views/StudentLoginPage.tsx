@@ -1,10 +1,10 @@
-import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from 'next-themes';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,7 +12,7 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { GraduationCap, ArrowLeft, Mail, Lock, User, Sun, Moon, Globe, ShieldCheck, Loader2, RefreshCw, Phone, Users , Eye, EyeOff } from "lucide-react";
+import { GraduationCap, ArrowLeft, Mail, Lock, User, Sun, Moon, Globe, ShieldCheck, Loader2, RefreshCw, Phone, Users, Eye, EyeOff, Sparkles, ArrowRight, Shield, Play } from 'lucide-react';
 import { z } from 'zod';
 import learnLogoAssetJson from "@/assets/learn-with-alphazero-logo.png.asset.json";
 const learnLogo = learnLogoAssetJson.url;
@@ -21,12 +21,12 @@ export default function StudentLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
-  const [signupPhone, setSignupPhone] = useState('');
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [signupPhone, setSignupPhone] = useState('');
   
   // Teacher Signup States
   const [teacherName, setTeacherName] = useState('');
@@ -49,10 +49,36 @@ export default function StudentLoginPage() {
   const teamMembers = null;
   const teamMembersLoading = false;
   
-  const { user, role, session, isLoading: authLoading, signIn, signUp } = useAuth();
+  const { user, role, session, isLoading: authLoading, signIn, signUp, signInAsRole } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const isBn = language === 'bn';
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
+
+  const handleBypassLogin = async (targetRole: 'student' | 'teacher' | 'admin' = 'student') => {
+    try {
+      setIsLoading(true);
+      await signInAsRole(targetRole);
+      toast.success(
+        targetRole === 'admin' 
+          ? 'লগইন বাইপাস সফল! এডমিন প্যানেলে প্রবেশ করছেন...' 
+          : targetRole === 'teacher'
+          ? 'লগইন বাইপাস সফল! ইন্সট্রাক্টর প্যানেলে প্রবেশ করছেন...'
+          : 'লগইন বাইপাস সফল! স্টুডেন্ট ড্যাশবোর্ডে প্রবেশ করছেন...'
+      );
+      if (targetRole === 'admin') {
+        navigate('/admin');
+      } else if (targetRole === 'teacher') {
+        navigate('/teacher');
+      } else {
+        navigate('/student');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Bypass failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const loginSchema = z.object({
     email: z.string().email(t('login.invalidEmail')),
@@ -82,16 +108,17 @@ export default function StudentLoginPage() {
     }
   }, [otpTimer]);
 
-  // Redirect if already logged in — requires REAL session (not just cache)
+  // Only auto-redirect if there is an active real session and not on testing mode
   useEffect(() => {
     if (authLoading) return;
-    // Only auto-redirect if there is an active Supabase session AND confirmed role
-    if (user && role && session) {
-      if (role === 'admin') window.location.href = '/admin';
-      else if (role === 'teacher') window.location.href = '/teacher';
-      else window.location.href = '/student';
+    // Don't auto-trap or blank screen if user is already visiting the login page
+    // Only redirect if user has a real remote supabase session (not demo test)
+    if (user && role && session && !user.id?.startsWith('demo-')) {
+      if (role === 'admin') navigate('/admin');
+      else if (role === 'teacher') navigate('/teacher');
+      else navigate('/student');
     }
-  }, [user, role, session, authLoading]);
+  }, [user, role, session, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -268,7 +295,7 @@ export default function StudentLoginPage() {
           const { error: profileError } = await supabase
             .from('profiles')
             .insert({
-              user_id: authData.user.uid,
+              user_id: authData.user.id,
               full_name: teacherName,
               email: teacherEmail,
               phone_number: teacherPhone,
@@ -285,7 +312,7 @@ export default function StudentLoginPage() {
           const { error: roleError } = await supabase
             .from('user_roles')
             .insert({
-              user_id: authData.user.uid,
+              user_id: authData.user.id,
               role: 'student',
             });
 
@@ -364,48 +391,36 @@ export default function StudentLoginPage() {
   // No loading screen - login page loads directly
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden">
-      {/* Premium background */}
-      <div className="absolute inset-0 bg-background">
-        <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-sky-500/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-violet-500/5 rounded-full blur-[100px]" />
-        <div className="absolute top-0 right-1/3 w-[300px] h-[300px] bg-primary/5 rounded-full blur-[100px]" />
-      </div>
-
-      <div className="w-full max-w-md relative z-10">
-        {/* Top Bar with Navigation and Controls */}
-        <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4 w-full bg-cus-gray-50 dark:bg-background py-10 px-4">
+      <div className="w-full max-w-[440px]">
+        {/* Top Back Link */}
+        <div className="flex items-center justify-between mb-4">
           <Link 
             to="/" 
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
+            className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-brand-600 dark:hover:text-brand-400 transition-colors text-xs font-semibold"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="hidden xs:inline">{t('login.backHome')}</span>
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>{t('login.backHome')}</span>
           </Link>
-          
-          <div className="flex items-center gap-2" />
         </div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <div className="glass-card rounded-2xl border-border/30 overflow-hidden">
-          <div className="text-center space-y-3 p-6 pb-4">
-            <motion.img 
-              initial={{ scale: 0.85, opacity: 0 }} 
-              animate={{ scale: 1, opacity: 1 }} 
-              transition={{ delay: 0.2, type: "spring" }}
-              src={learnLogo} 
-              alt="Learn with AlphaZero Logo" 
-              className="h-12 sm:h-14 w-auto mx-auto mb-1 brightness-0 dark:invert"
-            />
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+        <div className="rounded-xl bg-white dark:bg-card border border-gray-100 dark:border-border/50 shadow-cus_round overflow-hidden p-6 sm:p-8">
+          <div className="text-center space-y-2 mb-4">
+            <Link to="/" className="inline-block">
+              <img 
+                src={learnLogo} 
+                alt="Astropixel Learn Logo" 
+                className="w-28 mx-auto mb-1 brightness-0 dark:invert object-contain"
+              />
+            </Link>
             <div>
-              <h1 className="text-3xl font-display font-bold gradient-text">
-                {showOtpVerification ? 'Email Verification' : 'Login'}
-              </h1>
-              <p className="text-muted-foreground mt-2 text-sm">
-                {showOtpVerification 
-                  ? `Enter the 6-digit code sent to ${signupEmail}`
-                  : 'Enter your email and password to access your account'}
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Welcome to <span className="font-semibold text-brand-500">Astropixel</span>
               </p>
+              <h1 className="text-xl font-bold text-foreground mt-1">
+                {showOtpVerification ? 'Email Verification' : 'Sign in'}
+              </h1>
             </div>
           </div>
 
@@ -491,13 +506,63 @@ export default function StudentLoginPage() {
               </div>
             ) : (
               /* Login/Signup/Teacher Tabs */
-              <Tabs defaultValue="login" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="login" className="text-sm">Login</TabsTrigger>
-                  <TabsTrigger value="signup" className="text-sm">Sign Up</TabsTrigger>
-                </TabsList>
+              <div className="w-full">
+                {/* 🚀 Skip Login / Testing Bypass Card */}
+                <div className="mb-5 p-3.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-brand-500/10 to-blue-500/10 border border-brand-500/30 dark:border-brand-500/20">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-brand-600 dark:text-brand-400">
+                      <Sparkles className="w-4 h-4 animate-spin text-amber-500" />
+                      <span>{isBn ? 'টেস্টিং বাইপাস (লগইন ছাড়াই দেখুন)' : 'Testing Mode (Skip Login)'}</span>
+                    </div>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-700 dark:text-brand-300">
+                      Dev Preview
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mb-3 leading-snug">
+                    {isBn 
+                      ? 'ড্যাশবোর্ড, লাইভ ক্লাস ও কোর্স প্লেয়ার পরীক্ষা করার জন্য নিচের যেকোনো বাটনে ক্লিক করে সরাসরি প্রবেশ করুন:' 
+                      : 'Bypass credentials to test Student Dashboard, Course Player, or Instructor Panel:'}
+                  </p>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => handleBypassLogin('student')}
+                      disabled={isLoading}
+                      className="h-8 text-xs font-semibold bg-brand-500 hover:bg-brand-600 text-white shadow-xs rounded-lg"
+                    >
+                      🎓 {isBn ? 'স্টুডেন্ট' : 'Student'}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleBypassLogin('teacher')}
+                      disabled={isLoading}
+                      className="h-8 text-xs font-semibold border-border hover:bg-muted text-foreground rounded-lg"
+                    >
+                      👨‍🏫 {isBn ? 'টিচার' : 'Teacher'}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleBypassLogin('admin')}
+                      disabled={isLoading}
+                      className="h-8 text-xs font-semibold border-border hover:bg-muted text-foreground rounded-lg"
+                    >
+                      ⚡ {isBn ? 'এডমিন' : 'Admin'}
+                    </Button>
+                  </div>
+                </div>
 
-                <TabsContent value="login">
+                <Tabs defaultValue="login" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 mb-6">
+                    <TabsTrigger value="login" className="text-sm">Login</TabsTrigger>
+                    <TabsTrigger value="signup" className="text-sm">Sign Up</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="login">
                   <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="login-email" className="text-sm">Email Address</Label>
@@ -521,14 +586,20 @@ export default function StudentLoginPage() {
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
                           id="login-password"
-                          type="{showLoginPassword ? 'text' : 'password'}"
+                          type={showLoginPassword ? "text" : "password"}
                           placeholder="••••••••"
                           value={loginPassword}
                           onChange={(e) => setLoginPassword(e.target.value)}
                           className="pl-10 pr-10 h-11"
                           required
                         />
-                        <button type="button" onClick={() => setShowLoginPassword(!showLoginPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none">{showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
+                        <button
+                          type="button"
+                          onClick={() => setShowLoginPassword(!showLoginPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                        >
+                          {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
                       </div>
                     </div>
 
@@ -541,8 +612,8 @@ export default function StudentLoginPage() {
                       </Link>
                     </div>
 
-                    <Button type="submit" className="w-full h-11 font-semibold" disabled={isLoading}>
-                      {isLoading ? 'Logging in...' : 'Log In'}
+                    <Button type="submit" className="w-full h-11 font-semibold bg-brand-500 hover:bg-brand-600 text-white rounded-md shadow-sm" disabled={isLoading}>
+                      {isLoading ? 'Logging in...' : 'Sign in'}
                     </Button>
 
                     <div className="relative my-4">
@@ -557,7 +628,7 @@ export default function StudentLoginPage() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full h-11 gap-2"
+                      className="w-full h-11 gap-2 rounded-lg border border-gray-300 dark:border-border text-foreground hover:bg-gray-50 dark:hover:bg-accent"
                       onClick={handleGoogleSignIn}
                       disabled={isLoading}
                     >
@@ -569,6 +640,26 @@ export default function StudentLoginPage() {
                       </svg>
                       Sign in with Google
                     </Button>
+
+                    {/* EdgeCourseBD Video Help Banner */}
+                    <div className="w-full p-[8px] bg-[#17181D] border border-white/10 rounded-[8px] grid grid-cols-[1fr,88px] gap-2 items-center box-border mt-3">
+                      <div className="flex items-center gap-2 text-white text-xs">
+                        <div className="w-6 h-6 rounded-full bg-red-600 flex items-center justify-center shrink-0">
+                          <Play className="w-3 h-3 fill-white text-white ml-0.5" />
+                        </div>
+                        <span className="font-medium text-[13px] leading-tight">
+                          {isBn ? "লগইন করতে সমস্যা হলে ভিডিওটি দেখো" : "Watch help video for signing in"}
+                        </span>
+                      </div>
+                      <a
+                        href="https://youtube.com/@astropixel_tech"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-[#DF6818] hover:bg-[#d46215] text-white text-[12px] font-semibold flex items-center justify-center py-[6px] px-[10px] rounded-[7px] transition-colors text-center"
+                      >
+                        Play Video
+                      </a>
+                    </div>
                   </form>
                 </TabsContent>
 
@@ -628,15 +719,58 @@ export default function StudentLoginPage() {
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
                           id="signup-password"
-                          type="{showLoginPassword ? 'text' : 'password'}"
+                          type={showSignupPassword ? "text" : "password"}
                           placeholder="••••••••"
                           value={signupPassword}
                           onChange={(e) => setSignupPassword(e.target.value)}
                           className="pl-10 pr-10 h-11"
                           required
                         />
-                        <button type="button" onClick={() => setShowSignupPassword(!showSignupPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none">{showSignupPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
+                        <button
+                          type="button"
+                          onClick={() => setShowSignupPassword(!showSignupPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                        >
+                          {showSignupPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
                       </div>
+
+                      {/* Password strength indicator */}
+                      {signupPassword.length > 0 && (() => {
+                        let strength = 0;
+                        if (signupPassword.length >= 6) strength += 1;
+                        if (signupPassword.length >= 8) strength += 1;
+                        if (/[A-Z]/.test(signupPassword) || /[a-z]/.test(signupPassword)) strength += 1;
+                        if (/[0-9]/.test(signupPassword) || /[^A-Za-z0-9]/.test(signupPassword)) strength += 1;
+
+                        const colors = ['bg-red-500', 'bg-amber-500', 'bg-blue-500', 'bg-emerald-500'];
+                        const labels = isBn ? ['দুর্বল', 'সাধারণ', 'ভালো', 'খুব শক্তিশালী'] : ['Weak', 'Fair', 'Good', 'Strong'];
+
+                        return (
+                          <div className="space-y-1.5 pt-1">
+                            <div className="flex gap-1 h-1.5">
+                              {[0, 1, 2, 3].map((idx) => (
+                                <div
+                                  key={idx}
+                                  className={`flex-1 rounded-full transition-all duration-300 ${
+                                    idx < strength ? colors[strength - 1] : 'bg-muted/40'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <div className="flex justify-between items-center text-[11px] text-muted-foreground">
+                              <span>{isBn ? 'পাসওয়ার্ড শক্তি:' : 'Password strength:'}</span>
+                              <span className={`font-medium ${
+                                strength === 1 ? 'text-red-400' :
+                                strength === 2 ? 'text-amber-400' :
+                                strength === 3 ? 'text-blue-400' : 'text-emerald-400'
+                              }`}>
+                                {labels[strength - 1] || (isBn ? 'দুর্বল' : 'Weak')}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
 
                     <Button 
@@ -687,6 +821,7 @@ export default function StudentLoginPage() {
 
                 {/* Teacher info removed - teachers use /teacher/login */}
               </Tabs>
+              </div>
             )}
           </div>
 

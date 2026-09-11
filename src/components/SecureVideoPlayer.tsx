@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { db } from '@/integrations/firebase/config';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
@@ -8,6 +7,7 @@ import {
   Play, Pause, Volume2, VolumeX, Maximize, Minimize,
   SkipBack, CheckCircle, Loader2, Settings
 } from 'lucide-react';
+import { getLocalVideoProgress, saveLocalVideoProgress } from '@/lib/localStorageData';
 
 // Declare global YT types
 declare global {
@@ -62,7 +62,7 @@ function YouTubeCustomPlayer({
   isLessonCompleted = false, posterUrl, autoPlay = false, onThresholdMet,
 }: YouTubeCustomPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const playerDivRef = useRef<HTMLDivElement>(null);
+  const iframeHolderRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const pollRef = useRef<ReturnType<typeof setInterval>>();
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -92,19 +92,31 @@ function YouTubeCustomPlayer({
     return () => document.removeEventListener('contextmenu', handler);
   }, []);
 
-  // Load progress from DB
+  // Load progress from local device first, then remote DB
   useEffect(() => {
-    const loadProgress = async () => {
-      const progressRef = doc(db, 'video_progress', `${userId}_${videoId}`);
-      const progressSnap = await getDoc(progressRef);
-      if (progressSnap.exists()) {
-        const data = progressSnap.data();
-        const maxW = Math.max(data.watched_seconds || 0, data.last_position || 0, maxWatchedSeconds);
-        setHighestWatched(maxW);
-        if (data.is_completed) setIsCompleted(true);
-      }
-    };
-    loadProgress();
+    const local = getLocalVideoProgress(userId, videoId);
+    if (local) {
+      const maxW = Math.max(local.watched_seconds || 0, local.last_position || 0, maxWatchedSeconds);
+      setHighestWatched(maxW);
+      if (local.is_completed) setIsCompleted(true);
+    }
+
+    if (userId && !userId.startsWith('demo-')) {
+      supabase
+        .from('video_progress')
+        .select('watched_seconds, last_position, is_completed')
+        .eq('user_id', userId)
+        .eq('video_id', videoId)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) {
+            const maxW = Math.max(data.watched_seconds || 0, data.last_position || 0, maxWatchedSeconds, local?.watched_seconds || 0);
+            setHighestWatched(maxW);
+            if (data.is_completed) setIsCompleted(true);
+          }
+        })
+        .catch(() => {});
+    }
   }, [videoId, userId, maxWatchedSeconds]);
 
   // Intro splash
@@ -116,50 +128,105 @@ function YouTubeCustomPlayer({
     return () => clearTimeout(timer);
   }, [showIntro]);
 
-  // Initialize YouTube player
+  // Initialize YouTube player imperatively
   useEffect(() => {
     if (showPoster || showIntro) return;
 
     let cancelled = false;
     loadYouTubeAPI().then(() => {
-      if (cancelled || !playerDivRef.current) return;
+      if (cancelled || !iframeHolderRef.current) return;
       const ytId = extractYouTubeId(videoUrl);
-      playerRef.current = new window.YT.Player(playerDivRef.current, {
+
+      // Clean up previous instance if any
+      try {
+        if (playerRef.current) {
+          playerRef.current.destroy?.();
+          playerRef.current = null;
+        }
+      } catch {}
+
+      // Clear the holder container
+      if (iframeHolderRef.current) {
+        iframeHolderRef.current.innerHTML = '';
+      }
+
+      // Create an imperative mount element inside iframeHolderRef
+      const mountNode = document.createElement('div');
+      mountNode.style.width = '100%';
+      mountNode.style.height = '100%';
+      iframeHolderRef.current.appendChild(mountNode);
+
+      playerRef.current = new window.YT.Player(mountNode, {
         videoId: ytId,
         playerVars: {
-          controls: 0, rel: 0, modestbranding: 1, iv_load_policy: 3,
-          disablekb: 1, fs: 0, playsinline: 1, showinfo: 0,
-          cc_load_policy: 0, origin: window.location.origin,
+          controls: 0,
+          rel: 0,
+          modestbranding: 1,
+          iv_load_policy: 3,
+          disablekb: 1,
+          fs: 0,
+          playsinline: 1,
+          showinfo: 0,
+          cc_load_policy: 0,
+          origin: window.location.origin,
         },
         events: {
           onReady: (e: any) => {
+            if (cancelled) return;
             setPlayerReady(true);
             setDuration(e.target.getDuration());
             setIsLoading(false);
             if (initialPosition > 0) e.target.seekTo(initialPosition, true);
-            if (autoPlay) { e.target.playVideo(); setIsPlaying(true); }
+            if (autoPlay) {
+              e.target.playVideo();
+              setIsPlaying(true);
+            }
           },
           onStateChange: (e: any) => {
-            if (e.data === window.YT.PlayerState.PLAYING) { setIsPlaying(true); setIsLoading(false); }
-            else if (e.data === window.YT.PlayerState.PAUSED) setIsPlaying(false);
-            else if (e.data === window.YT.PlayerState.BUFFERING) setIsLoading(true);
-            else if (e.data === window.YT.PlayerState.ENDED) {
+            if (cancelled) return;
+            if (e.data === window.YT.PlayerState.PLAYING) {
+              setIsPlaying(true);
+              setIsLoading(false);
+            } else if (e.data === window.YT.PlayerState.PAUSED) {
+              setIsPlaying(false);
+            } else if (e.data === window.YT.PlayerState.BUFFERING) {
+              setIsLoading(true);
+            } else if (e.data === window.YT.PlayerState.ENDED) {
               setIsPlaying(false);
               setIsCompleted(true);
               saveProgress(playerRef.current?.getDuration() || duration, true);
               onComplete();
             }
           },
+          onError: () => {
+            setIsLoading(false);
+          },
         },
       });
+    }).catch(() => {
+      setIsLoading(false);
     });
 
-    return () => { cancelled = true; playerRef.current?.destroy?.(); };
+    return () => {
+      cancelled = true;
+      try {
+        if (playerRef.current) {
+          playerRef.current.destroy?.();
+          playerRef.current = null;
+        }
+      } catch {}
+      if (iframeHolderRef.current) {
+        iframeHolderRef.current.innerHTML = '';
+      }
+    };
   }, [showPoster, showIntro, videoUrl]);
 
   // Poll time updates
   useEffect(() => {
-    if (!playerReady || !isPlaying) { if (pollRef.current) clearInterval(pollRef.current); return; }
+    if (!playerReady || !isPlaying) {
+      if (pollRef.current) clearInterval(pollRef.current);
+      return;
+    }
     pollRef.current = setInterval(() => {
       const p = playerRef.current;
       if (!p?.getCurrentTime) return;
@@ -178,20 +245,39 @@ function YouTubeCustomPlayer({
         saveProgress(Math.max(ct, highestWatched), isCompleted);
       }, YT_PROGRESS_SAVE_INTERVAL);
     }, 500);
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
   }, [playerReady, isPlaying, highestWatched, thresholdNotified, isCompleted]);
 
   const saveProgress = useCallback(async (seconds: number, completed: boolean) => {
     const dur = playerRef.current?.getDuration?.() || duration;
     const percent = dur > 0 ? Math.round((seconds / dur) * 100) : 0;
-    const progressRef = doc(db, 'video_progress', `${userId}_${videoId}`);
-    await setDoc(progressRef, {
-      user_id: userId, video_id: videoId,
-      progress_percent: Math.min(percent, 100), is_completed: completed,
-      last_watched_at: new Date().toISOString(),
+
+    // 1. Always save to local device
+    saveLocalVideoProgress(userId, videoId, {
       watched_seconds: Math.round(Math.max(seconds, highestWatched)),
       last_position: Math.round(seconds),
-    }, { merge: true });
+      progress_percent: Math.min(percent, 100),
+      is_completed: completed,
+    });
+
+    // 2. Sync to Supabase if real user
+    if (userId && !userId.startsWith('demo-')) {
+      try {
+        await supabase.from('video_progress').upsert({
+          user_id: userId,
+          video_id: videoId,
+          progress_percent: Math.min(percent, 100),
+          is_completed: completed,
+          last_watched_at: new Date().toISOString(),
+          watched_seconds: Math.round(Math.max(seconds, highestWatched)),
+          last_position: Math.round(seconds),
+        }, { onConflict: 'user_id,video_id' });
+      } catch (err) {
+        console.warn('Supabase save error (saved locally):', err);
+      }
+    }
   }, [userId, videoId, duration, highestWatched]);
 
   const togglePlay = () => {
@@ -255,6 +341,112 @@ function YouTubeCustomPlayer({
     }
   };
 
+  const [hudMessage, setHudMessage] = useState<string | null>(null);
+  const hudTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const stateRef = useRef({ isPlaying, isCompleted, highestWatched, volume, playbackRate });
+  useEffect(() => {
+    stateRef.current = { isPlaying, isCompleted, highestWatched, volume, playbackRate };
+  }, [isPlaying, isCompleted, highestWatched, volume, playbackRate]);
+
+  const showHud = useCallback((msg: string) => {
+    setHudMessage(msg);
+    if (hudTimerRef.current) clearTimeout(hudTimerRef.current);
+    hudTimerRef.current = setTimeout(() => setHudMessage(null), 1000);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target as HTMLElement).isContentEditable
+      ) {
+        return;
+      }
+
+      const p = playerRef.current;
+      if (!p) return;
+
+      const { isPlaying, isCompleted, highestWatched, volume, playbackRate } = stateRef.current;
+      const key = e.key.toLowerCase();
+
+      if (e.key === ' ' || key === 'k') {
+        e.preventDefault();
+        if (isPlaying) { p.pauseVideo(); showHud('Paused'); }
+        else { p.playVideo(); showHud('Playing'); }
+      }
+      else if (e.key === 'ArrowLeft' || key === 'j') {
+        e.preventDefault();
+        const ct = p.getCurrentTime() || 0;
+        p.seekTo(Math.max(0, ct - 10), true);
+        showHud('-10s');
+      }
+      else if (e.key === 'ArrowRight' || key === 'l') {
+        e.preventDefault();
+        const ct = p.getCurrentTime() || 0;
+        const target = ct + 10;
+        if (!isCompleted && target > highestWatched + 2) {
+          toast.error('আপনি এখনো এই অংশ পর্যন্ত দেখেননি');
+          p.seekTo(highestWatched, true);
+        } else {
+          p.seekTo(target, true);
+          showHud('+10s');
+        }
+      }
+      else if (key === 'm') {
+        e.preventDefault();
+        if (p.isMuted()) { p.unMute(); setIsMuted(false); showHud('Unmuted'); }
+        else { p.mute(); setIsMuted(true); showHud('Muted'); }
+      }
+      else if (key === 'f') {
+        e.preventDefault();
+        toggleFullscreen();
+      }
+      else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const v = Math.min(100, volume + 10);
+        p.setVolume(v);
+        setVolume(v);
+        setIsMuted(v === 0);
+        showHud(`Volume ${v}%`);
+      }
+      else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const v = Math.max(0, volume - 10);
+        p.setVolume(v);
+        setVolume(v);
+        setIsMuted(v === 0);
+        showHud(`Volume ${v}%`);
+      }
+      else if (e.key === '>' || (e.shiftKey && e.key === '.')) {
+        e.preventDefault();
+        const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+        const idx = rates.indexOf(playbackRate);
+        if (idx < rates.length - 1) {
+          const next = rates[idx + 1];
+          p.setPlaybackRate(next);
+          setPlaybackRate(next);
+          showHud(`Speed ${next}x`);
+        }
+      }
+      else if (e.key === '<' || (e.shiftKey && e.key === ',')) {
+        e.preventDefault();
+        const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+        const idx = rates.indexOf(playbackRate);
+        if (idx > 0) {
+          const next = rates[idx - 1];
+          p.setPlaybackRate(next);
+          setPlaybackRate(next);
+          showHud(`Speed ${next}x`);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showHud]);
+
   const handleMouseMove = () => {
     setShowControls(true);
     if (hideControlsTimer.current) clearTimeout(hideControlsTimer.current);
@@ -297,7 +489,7 @@ function YouTubeCustomPlayer({
       )}
 
       {/* YouTube Player (hidden controls) */}
-      <div ref={playerDivRef} className="w-full h-full absolute inset-0" />
+      <div ref={iframeHolderRef} className="w-full h-full absolute inset-0 pointer-events-none" />
 
       {/* Overlay to capture clicks (prevents YouTube controls) */}
       <div className="absolute inset-0 z-10" onClick={togglePlay} />
@@ -357,6 +549,13 @@ function YouTubeCustomPlayer({
           </Button>
         </div>
       </div>
+
+      {/* HUD Message */}
+      {hudMessage && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/70 text-white px-4 py-2 rounded-lg text-lg font-medium z-40 pointer-events-none animate-in fade-in zoom-in duration-200">
+          {hudMessage}
+        </div>
+      )}
 
       {/* Threshold Indicator */}
       {thresholdNotified && !isCompleted && (
@@ -430,21 +629,35 @@ export default function SecureVideoPlayer({
     return () => document.removeEventListener('contextmenu', handler);
   }, []);
 
-  // Load existing progress from DB
+  // Load existing progress from local storage first, then DB
   useEffect(() => {
-    const loadProgress = async () => {
-      const progressRef = doc(db, 'video_progress', `${userId}_${videoId}`);
-      const progressSnap = await getDoc(progressRef);
-      if (progressSnap.exists()) {
-        const data = progressSnap.data();
-        const maxW = Math.max(data.watched_seconds || 0, data.last_position || 0, maxWatchedSeconds);
-        setHighestWatched(maxW);
-        if (data.is_completed) {
-          setIsCompleted(true);
-        }
+    const local = getLocalVideoProgress(userId, videoId);
+    if (local) {
+      const maxW = Math.max(local.watched_seconds || 0, local.last_position || 0, maxWatchedSeconds);
+      setHighestWatched(maxW);
+      if (local.is_completed) {
+        setIsCompleted(true);
       }
-    };
-    loadProgress();
+    }
+
+    if (userId && !userId.startsWith('demo-')) {
+      supabase
+        .from('video_progress')
+        .select('watched_seconds, last_position, is_completed')
+        .eq('user_id', userId)
+        .eq('video_id', videoId)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) {
+            const maxW = Math.max(data.watched_seconds || 0, data.last_position || 0, maxWatchedSeconds, local?.watched_seconds || 0);
+            setHighestWatched(maxW);
+            if (data.is_completed) {
+              setIsCompleted(true);
+            }
+          }
+        })
+        .catch(() => {});
+    }
   }, [videoId, userId, maxWatchedSeconds]);
 
   // Intro splash (3s) then auto-play
@@ -466,19 +679,34 @@ export default function SecureVideoPlayer({
     }
   }, [initialPosition, showIntro, showPoster]);
 
-  // Save progress to DB
+  // Save progress to local storage and DB
   const saveProgress = useCallback(async (seconds: number, completed: boolean) => {
     const percent = duration > 0 ? Math.round((seconds / duration) * 100) : 0;
-    const progressRef = doc(db, 'video_progress', `${userId}_${videoId}`);
-    await setDoc(progressRef, {
-      user_id: userId,
-      video_id: videoId,
-      progress_percent: Math.min(percent, 100),
-      is_completed: completed,
-      last_watched_at: new Date().toISOString(),
+
+    // 1. Save locally
+    saveLocalVideoProgress(userId, videoId, {
       watched_seconds: Math.round(Math.max(seconds, highestWatched)),
       last_position: Math.round(seconds),
-    }, { merge: true });
+      progress_percent: Math.min(percent, 100),
+      is_completed: completed,
+    });
+
+    // 2. Sync to Supabase if real user
+    if (userId && !userId.startsWith('demo-')) {
+      try {
+        await supabase.from('video_progress').upsert({
+          user_id: userId,
+          video_id: videoId,
+          progress_percent: Math.min(percent, 100),
+          is_completed: completed,
+          last_watched_at: new Date().toISOString(),
+          watched_seconds: Math.round(Math.max(seconds, highestWatched)),
+          last_position: Math.round(seconds),
+        }, { onConflict: 'user_id,video_id' });
+      } catch (err) {
+        console.warn('Supabase save error (saved locally):', err);
+      }
+    }
   }, [userId, videoId, duration, highestWatched]);
 
   const handleTimeUpdate = () => {
@@ -593,6 +821,111 @@ export default function SecureVideoPlayer({
     if (!video) return;
     video.currentTime = Math.max(0, video.currentTime - 10);
   };
+
+  const [hudMessage, setHudMessage] = useState<string | null>(null);
+  const hudTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const stateRef = useRef({ isPlaying, isCompleted, highestWatched, volume, playbackRate });
+  useEffect(() => {
+    stateRef.current = { isPlaying, isCompleted, highestWatched, volume, playbackRate };
+  }, [isPlaying, isCompleted, highestWatched, volume, playbackRate]);
+
+  const showHud = useCallback((msg: string) => {
+    setHudMessage(msg);
+    if (hudTimerRef.current) clearTimeout(hudTimerRef.current);
+    hudTimerRef.current = setTimeout(() => setHudMessage(null), 1000);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target as HTMLElement).isContentEditable
+      ) {
+        return;
+      }
+
+      const video = videoRef.current;
+      if (!video) return;
+
+      const { isPlaying, isCompleted, highestWatched, volume, playbackRate } = stateRef.current;
+      const key = e.key.toLowerCase();
+
+      if (e.key === ' ' || key === 'k') {
+        e.preventDefault();
+        if (isPlaying) { video.pause(); setIsPlaying(false); showHud('Paused'); }
+        else { video.play(); setIsPlaying(true); showHud('Playing'); }
+      }
+      else if (e.key === 'ArrowLeft' || key === 'j') {
+        e.preventDefault();
+        video.currentTime = Math.max(0, video.currentTime - 10);
+        showHud('-10s');
+      }
+      else if (e.key === 'ArrowRight' || key === 'l') {
+        e.preventDefault();
+        const target = video.currentTime + 10;
+        if (!isCompleted && target > highestWatched + 2) {
+          toast.error('আপনি এখনো এই অংশ পর্যন্ত দেখেননি');
+          video.currentTime = highestWatched;
+        } else {
+          video.currentTime = target;
+          showHud('+10s');
+        }
+      }
+      else if (key === 'm') {
+        e.preventDefault();
+        video.muted = !video.muted;
+        setIsMuted(video.muted);
+        showHud(video.muted ? 'Muted' : 'Unmuted');
+      }
+      else if (key === 'f') {
+        e.preventDefault();
+        toggleFullscreen();
+      }
+      else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const v = Math.min(1, volume + 0.1);
+        video.volume = v;
+        setVolume(v);
+        setIsMuted(v === 0);
+        showHud(`Volume ${Math.round(v * 100)}%`);
+      }
+      else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const v = Math.max(0, volume - 0.1);
+        video.volume = v;
+        setVolume(v);
+        setIsMuted(v === 0);
+        showHud(`Volume ${Math.round(v * 100)}%`);
+      }
+      else if (e.key === '>' || (e.shiftKey && e.key === '.')) {
+        e.preventDefault();
+        const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+        const idx = rates.indexOf(playbackRate);
+        if (idx < rates.length - 1) {
+          const next = rates[idx + 1];
+          video.playbackRate = next;
+          setPlaybackRate(next);
+          showHud(`Speed ${next}x`);
+        }
+      }
+      else if (e.key === '<' || (e.shiftKey && e.key === ',')) {
+        e.preventDefault();
+        const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+        const idx = rates.indexOf(playbackRate);
+        if (idx > 0) {
+          const next = rates[idx - 1];
+          video.playbackRate = next;
+          setPlaybackRate(next);
+          showHud(`Speed ${next}x`);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showHud]);
 
   const handleMouseMove = () => {
     setShowControls(true);

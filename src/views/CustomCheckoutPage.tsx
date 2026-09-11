@@ -87,10 +87,24 @@ export default function CustomCheckoutPage() {
   if (err || !info) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white p-6">
-        <div className="max-w-md text-center space-y-3">
+        <div className="max-w-md text-center space-y-4">
           <XCircle className="w-12 h-12 text-red-400 mx-auto" />
           <h1 className="text-xl font-semibold">Checkout Error</h1>
-          <p className="text-sm text-slate-400">{err || 'Invoice not found'}</p>
+          <p className="text-sm text-slate-400">{err || 'ইনভয়েস পাওয়া যায়নি বা মেয়াদ উত্তীর্ণ হয়ে গেছে।'}</p>
+          <div className="flex flex-col sm:flex-row gap-2 pt-2 justify-center">
+            <a
+              href="/catalog"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+            >
+              সকল কোর্স দেখুন
+            </a>
+            <a
+              href="/"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 text-white transition-colors"
+            >
+              হোমপেজে ফিরুন
+            </a>
+          </div>
         </div>
       </div>
     );

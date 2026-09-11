@@ -9,9 +9,6 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/integrations/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -63,7 +60,7 @@ const translations = {
 };
 
 export default function TeacherProfileTab({ language }: TeacherProfileTabProps) {
-  const { user, profile, refreshProfile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const { toast } = useToast();
   const t = translations[language];
 
@@ -89,17 +86,25 @@ export default function TeacherProfileTab({ language }: TeacherProfileTabProps) 
     if (!profile) return;
 
     try {
-      const profileDoc = await getDoc(doc(db, 'profiles', user?.uid as string));
-      const data = profileDoc.exists() ? profileDoc.data() : null;
-      if (!data) return;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('full_name, phone_number, bio, skills, linked_team_member_id')
+        .eq('id', profile.id)
+        .single();
+
+      if (error) throw error;
 
       let roleTitle = '';
       if (data.linked_team_member_id) {
-        const tmDoc = await getDoc(doc(db, 'team_members', data.linked_team_member_id));
-        roleTitle = tmDoc.exists() ? (tmDoc.data().role || '') : '';
+        const { data: tm } = await supabase
+          .from('team_members')
+          .select('role')
+          .eq('id', data.linked_team_member_id)
+          .single();
+        roleTitle = tm?.role || '';
       }
 
-      setLinkedTeamMemberId(data.linked_team_member_id || null);
+      setLinkedTeamMemberId(data.linked_team_member_id);
       setFormData({
         full_name: data.full_name || '',
         phone_number: data.phone_number || '',
@@ -118,29 +123,37 @@ export default function TeacherProfileTab({ language }: TeacherProfileTabProps) 
     try {
       setIsSaving(true);
 
-      await setDoc(doc(db, 'profiles', user?.uid as string), {
-        full_name: formData.full_name,
-        phone_number: formData.phone_number,
-        bio: formData.bio,
-        skills: formData.skills,
-      }, { merge: true });
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: formData.full_name,
+          phone_number: formData.phone_number,
+          bio: formData.bio,
+          skills: formData.skills,
+        })
+        .eq('id', profile.id);
+
+      if (error) throw error;
 
       // If linked to team member, sync name/bio/role/image
       if (linkedTeamMemberId) {
-        await setDoc(doc(db, 'team_members', linkedTeamMemberId), {
-          name: formData.full_name,
-          bio: formData.bio,
-          role: formData.role_title,
-          image_url: profile.avatar_url || null,
-        }, { merge: true });
+        await supabase
+          .from('team_members')
+          .update({
+            name: formData.full_name,
+            bio: formData.bio,
+            role: formData.role_title,
+            image_url: profile.avatar_url || null,
+          })
+          .eq('id', linkedTeamMemberId);
       }
 
       toast({ title: t.profileUpdated });
       setIsEditing(false);
-      await refreshProfile();
+      refreshProfile();
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast({ title: t.updateError, description: error instanceof Error ? error.message : String(error), variant: 'destructive' });
+      toast({ title: t.updateError, variant: 'destructive' });
     } finally {
       setIsSaving(false);
     }
@@ -165,32 +178,43 @@ export default function TeacherProfileTab({ language }: TeacherProfileTabProps) 
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !profile || !user) return;
+    if (!file || !profile) return;
 
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `avatars/${user.uid}/${Date.now()}.${fileExt}`;
-      
-      const storageRef = ref(storage, fileName);
-      await uploadBytes(storageRef, file);
-      const publicUrl = await getDownloadURL(storageRef);
+      const fileName = `${profile.user_id}/${Date.now()}.${fileExt}`;
+      const filePath = fileName;
 
-      await setDoc(doc(db, 'profiles', user.uid), {
-        avatar_url: publicUrl
-      }, { merge: true });
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: urlData.publicUrl })
+        .eq('id', profile.id);
+
+      if (updateError) throw updateError;
 
       // Sync photo to linked team member card (Instructor profile)
       if (linkedTeamMemberId) {
-        await setDoc(doc(db, 'team_members', linkedTeamMemberId), {
-          image_url: publicUrl
-        }, { merge: true });
+        await supabase
+          .from('team_members')
+          .update({ image_url: urlData.publicUrl })
+          .eq('id', linkedTeamMemberId);
       }
 
-      await refreshProfile();
+      refreshProfile();
       toast({ title: language === 'bn' ? 'ছবি আপলোড হয়েছে' : 'Photo uploaded' });
     } catch (error) {
       console.error('Error uploading avatar:', error);
-      toast({ title: t.updateError, description: error instanceof Error ? error.message : String(error), variant: 'destructive' });
+      toast({ title: t.updateError, variant: 'destructive' });
     }
   };
 

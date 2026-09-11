@@ -1,11 +1,14 @@
 import { motion } from "framer-motion";
-import { GraduationCap, BookOpen, Users, Award, PlayCircle, Sparkles, Target, Rocket, Globe, CheckCircle, ArrowRight, MessageCircle } from "lucide-react";
+import { GraduationCap, BookOpen, Users, Award, PlayCircle, Sparkles, Target, Rocket, Globe, CheckCircle, ArrowRight, MessageCircle, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
+import { Helmet } from "react-helmet-async";
 import learnLogoAssetJson from "@/assets/learn-with-alphazero-logo.png.asset.json";
 const learnLogo = learnLogoAssetJson.url;
 import { useLanguage } from "@/contexts/LanguageContext";
 import { usePageContent } from "@/hooks/usePageContent";
+import StatCard from "@/components/StatCard";
+
 import instructorHH from "@/assets/instructors/hh.png.asset.json";
 import instructorNayeem from "@/assets/instructors/nayeem.png.asset.json";
 import instructorAtik from "@/assets/instructors/Atik.png.asset.json";
@@ -25,28 +28,25 @@ const STATIC_TRAINERS = [
 
 const LearnAboutPage = () => {
   const { language } = useLanguage();
-  const teamMembers = null;
   const isBn = language === "bn";
   const { getContent: getPageContent } = usePageContent("learn-about", "learn");
 
   const t = (bn: string, en: string) => (isBn ? bn : en);
-  const cms = (bnKey: string, enKey: string, bnFb: string, enFb: string) =>
-    isBn ? (getPageContent(bnKey) || bnFb) : (getPageContent(enKey) || enFb);
 
   const features = [
     {
       icon: PlayCircle,
       title: t("প্রিমিয়াম ভিডিও লেসন", "Premium Video Lessons"),
       desc: t(
-        "নিরাপদ ভিডিও প্লেয়ার, চ্যাপ্টার-ভিত্তিক পাঠ এবং প্রগ্রেস ট্র্যাকিং সহ প্রফেশনাল কোর্স।",
-        "Professional courses with a secure video player, chapter-based lessons, and progress tracking."
+        "চ্যাপ্টার-ভিত্তিক পাঠ, বাস্তব প্রজেক্ট ফাইল এবং প্রগ্রেস ট্র্যাকিং সহ প্রফেশনাল কোর্স।",
+        "Professional courses with chapter-based lessons, source files, and progress tracking."
       ),
     },
     {
       icon: BookOpen,
       title: t("প্র্যাকটিকাল কারিকুলাম", "Practical Curriculum"),
       desc: t(
-        "রিয়েল প্রজেক্ট, ডাউনলোডযোগ্য রিসোর্স এবং ইন্ডাস্ট্রি-স্ট্যান্ডার্ড ওয়ার্কফ্লো।",
+        "রিয়েল-ওয়ার্ল্ড প্রজেক্ট, ডাউনলোডযোগ্য রিসোর্স এবং ইন্ডাস্ট্রি-স্ট্যান্ডার্ড ওয়ার্কফ্লো।",
         "Real projects, downloadable resources, and industry-standard workflows."
       ),
     },
@@ -54,371 +54,216 @@ const LearnAboutPage = () => {
       icon: Users,
       title: t("এক্সপার্ট ইনস্ট্রাক্টর", "Expert Instructors"),
       desc: t(
-        "Learn with AlphaZero-র অভিজ্ঞ ক্রিয়েটর ও ডেভেলপারদের কাছ থেকে সরাসরি শিখুন।",
-        "Learn directly from Learn with AlphaZero's experienced creators and developers."
+        "ইন্ডাস্ট্রির অভিজ্ঞ ক্রিয়েটর ও ডেভেলপারদের কাছ থেকে সরাসরি হাতে-কলমে শিখুন।",
+        "Learn directly from experienced creators and developers."
       ),
     },
     {
       icon: Award,
       title: t("ভেরিফায়েড সার্টিফিকেট", "Verified Certificates"),
       desc: t(
-        "কোর্স শেষে যাচাইযোগ্য সার্টিফিকেট, যা আপনার প্রোফাইলে যোগ করা যায়।",
-        "Verifiable certificates upon completion that you can add to your profile."
+        "কোর্স শেষে যাচাইযোগ্য ডিজিটাল সার্টিফিকেট, যা সরাসরি লিংকডইন ও সিভি-তে যোগ করা যায়।",
+        "Verifiable certificates upon completion that you can showcase on your resume."
       ),
     },
     {
       icon: MessageCircle,
-      title: t("লাইভ Q&A ও কমেন্ট", "Live Q&A & Comments"),
+      title: t("লাইভ সাপোর্ট ও কমিউনিটি", "Live Support & Community"),
       desc: t(
-        "প্রতিটি লেসনে প্রশ্ন করুন, ইনস্ট্রাক্টর ও কমিউনিটি থেকে দ্রুত উত্তর পান।",
-        "Ask questions on every lesson and get quick replies from instructors and the community."
+        "যেকোনো সমস্যায় মেন্টর ও সহপাঠীদের সাথে সরাসরি প্রশ্নোত্তরের সুবিধা।",
+        "Dedicated community and mentor support to clear any doubts promptly."
       ),
     },
     {
       icon: Globe,
-      title: t("দ্বিভাষিক অভিজ্ঞতা", "Bilingual Experience"),
+      title: t("দ্বিভাষিক প্ল্যাটফর্ম", "Bilingual Experience"),
       desc: t(
-        "সম্পূর্ণ প্ল্যাটফর্ম বাংলা ও ইংরেজিতে — আপনার ভাষায় শিখুন।",
-        "The entire platform in Bangla and English — learn in your language."
+        "সম্পূর্ণ প্ল্যাটফর্ম বাংলা ও ইংরেজিতে — আপনার ভাষায় স্বাচ্ছন্দ্যে শিখুন।",
+        "The entire platform in Bangla and English — learn comfortably in your language."
       ),
     },
-  ];
-
-  const values = [
-    {
-      icon: Target,
-      title: t("ফলাফল-কেন্দ্রিক শিক্ষা", "Outcome-Focused Learning"),
-      desc: t(
-        "আমরা এমন স্কিল শেখাই যা সরাসরি ক্যারিয়ার বা ব্যবসায় প্রয়োগ করা যায়।",
-        "We teach skills that translate directly into a career or business."
-      ),
-    },
-    {
-      icon: Rocket,
-      title: t("জিরো থেকে প্রো", "Zero to Pro"),
-      desc: t(
-        "একদম বেসিক থেকে অ্যাডভান্স — প্রতিটি লেভেলের শিক্ষার্থীর জন্য কোর্স।",
-        "From absolute basics to advanced — courses for every level of learner."
-      ),
-    },
-    {
-      icon: Sparkles,
-      title: t("ক্রিয়েটিভ + টেকনিক্যাল", "Creative + Technical"),
-      desc: t(
-        "ডিজাইন, ফটোগ্রাফি, ওয়েব ডেভেলপমেন্ট ও AI — সব এক ছাদের নিচে।",
-        "Design, photography, web development and AI — all under one roof."
-      ),
-    },
-  ];
-
-  const whyChoose = [
-    t("এক্সপার্ট Astropixel ইনস্ট্রাক্টর", "Expert Astropixel instructors"),
-    t("লাইফটাইম কোর্স অ্যাক্সেস", "Lifetime course access"),
-    t("বাংলা ও ইংরেজি ভাষা সাপোর্ট", "Bangla & English language support"),
-    t("রিয়েল প্রজেক্ট ও অ্যাসাইনমেন্ট", "Real projects and assignments"),
-    t("ভেরিফায়েড ডিজিটাল সার্টিফিকেট", "Verified digital certificates"),
   ];
 
   return (
     <Layout>
-      <div className="overflow-x-hidden bg-background">
-        {/* Hero */}
-        <section className="pt-12 pb-16 lg:pt-16 lg:pb-20 relative overflow-hidden">
-          <div className="absolute inset-0 mesh-bg" />
-          <div className="container mx-auto px-6 relative z-10">
-            <div className="max-w-4xl mx-auto text-center">
+      <Helmet>
+        <title>{t("আমাদের সম্পর্কে — Astropixel Learn", "About Us — Astropixel Learn")}</title>
+      </Helmet>
 
-              <motion.img
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                src={learnLogo}
-                alt="Learn with Astropixel"
-                className="h-16 md:h-20 w-auto mx-auto mb-8 brightness-0 dark:invert"
-              />
+      <div className="min-h-screen bg-background pb-20">
+        
+        {/* 1. HERO HEADER */}
+        <section className="relative py-12 md:py-16 bg-gradient-to-b from-brand-50/50 via-transparent to-transparent dark:from-brand-950/20 border-b border-border/40">
+          <div className="container max-w-4xl mx-auto px-4 sm:px-6 text-center">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 text-xs font-bold mb-3">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>{t("আমাদের লক্ষ্য ও উদ্দেশ্য", "Our Story & Vision")}</span>
+            </span>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-foreground leading-tight">
+              {t("আগামীর ডিজিটাল স্কিল গড়ার সেরা প্ল্যাটফর্ম", "Building Future-Ready Digital Skills")}
+            </h1>
+            <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-3 max-w-2xl mx-auto leading-relaxed">
+              {t(
+                "Astropixel Learn হলো বাংলাদেশের তরুণদের বাস্তবমুখী ডিজিটাল স্কিল, প্রোগ্রামিং, ডিজাইন ও ভর্তি পরীক্ষায় বিজয়ী করার একটি আধুনিক অনলাইন লার্নিং প্ল্যাটফর্ম।",
+                "Astropixel Learn empowers learners with practical digital skills, programming, design, and admission prep."
+              )}
+            </p>
+          </div>
+        </section>
 
-              <motion.h1
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-                className="text-4xl lg:text-6xl font-display font-bold mb-6 leading-tight"
-              >
-                {cms("hero.title.bn", "hero.title.en", "শিখুন ", "Learn with ")}
-                <span className="gradient-text">Astropixel</span>
-              </motion.h1>
+        {/* 2. STATS ROW */}
+        <section className="bg-white dark:bg-background border-b border-gray-100 dark:border-border/40 py-8">
+          <div className="container max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 px-4 sm:px-6">
+            <StatCard
+              icon={Users}
+              value="১০,০০০+"
+              label={t("সক্রিয় শিক্ষার্থী", "Active Students")}
+              iconBgColor="bg-emerald-50 dark:bg-emerald-900/20"
+              iconColor="text-brand-600 dark:text-brand-400"
+            />
+            <StatCard
+              icon={BookOpen}
+              value="২৫+"
+              label={t("প্র্যাক্টিক্যাল কোর্স", "Hands-on Courses")}
+              iconBgColor="bg-blue-50 dark:bg-blue-900/20"
+              iconColor="text-blue-600 dark:text-blue-400"
+            />
+            <StatCard
+              icon={GraduationCap}
+              value="১৫+"
+              label={t("অভিজ্ঞ মেন্টর", "Expert Mentors")}
+              iconBgColor="bg-amber-50 dark:bg-amber-900/20"
+              iconColor="text-amber-600 dark:text-amber-400"
+            />
+            <StatCard
+              icon={Award}
+              value="৯৮%"
+              label={t("সফলতার হার", "Success Rate")}
+              iconBgColor="bg-purple-50 dark:bg-purple-900/20"
+              iconColor="text-purple-600 dark:text-purple-400"
+            />
+          </div>
+        </section>
 
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 }}
-                className="text-xl text-muted-foreground max-w-2xl mx-auto"
-              >
-                {cms("hero.description.bn", "hero.description.en",
-                  "Astropixel-এর নিজস্ব লার্নিং প্ল্যাটফর্ম — যেখানে ডিজাইন, ডেভেলপমেন্ট, ফটোগ্রাফি ও ডিজিটাল ক্রিয়েটিভ স্কিল শেখানো হয় প্র্যাকটিকাল ও প্রফেশনাল উপায়ে।",
-                  "Astropixel's very own learning platform — teaching design, development, photography, and digital creative skills the practical, professional way."
+        {/* 3. MISSION & VISION */}
+        <section className="container max-w-6xl mx-auto px-4 sm:px-6 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="rounded-2xl border border-gray-100 dark:border-border/50 bg-white dark:bg-card p-6 sm:p-8 shadow-sm space-y-3">
+              <div className="h-10 w-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold">
+                <Target className="h-5 w-5" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground">
+                {t("আমাদের মিশন", "Our Mission")}
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                {t(
+                  "শিক্ষার্থীদের তাত্ত্বিক পড়াশোনার গণ্ডি পেরিয়ে সরাসরি প্র্যাক্টিক্যাল প্রজেক্ট ভিত্তিক স্কিল ডেভেলপমেন্টের মাধ্যমে ক্যারিয়ারের জন্য প্রস্তুত করা। মানসম্মত শিক্ষা সবার জন্য সহজলভ্য করাই আমাদের প্রতিজ্ঞা।",
+                  "To bridge the gap between academic theory and industry reality through practical, project-based learning accessible to every student."
                 )}
-              </motion.p>
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-gray-100 dark:border-border/50 bg-white dark:bg-card p-6 sm:p-8 shadow-sm space-y-3">
+              <div className="h-10 w-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold">
+                <Rocket className="h-5 w-5" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground">
+                {t("আমাদের ভিশন", "Our Vision")}
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                {t(
+                  "বাংলাদেশের প্রতিটি ঘরে মানসম্মত ও প্রযুক্তিভিত্তিক শিক্ষার সুযোগ পৌঁছে দিয়ে একটি আত্মনির্ভরশীল, দক্ষ ও গ্লোবালি কম্পিটিটিভ তরুণ প্রজন্ম গড়ে তোলা।",
+                  "To cultivate a self-reliant and globally competitive generation by democratizing high-quality technical education across Bangladesh."
+                )}
+              </p>
             </div>
           </div>
         </section>
 
-        {/* What is Learn with Astropixel */}
-        <section className="py-12 lg:py-16 relative">
-          <div className="container mx-auto px-6">
-            <div className="max-w-5xl mx-auto grid lg:grid-cols-2 gap-10 items-center">
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="rounded-3xl glass-card p-10 text-center"
+        {/* 4. WHY ASTROPIXEL FEATURES */}
+        <section className="container max-w-6xl mx-auto px-4 sm:px-6 py-8">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
+              {t("কেন Astropixel Learn বেছে নেবেন?", "Why Choose Astropixel Learn?")}
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-2">
+              {t("আধুনিক শিক্ষা ব্যবস্থার সব সেরা সুবিধা এক প্ল্যাটফর্মে", "Modern features designed for optimal learning outcomes")}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((f, i) => {
+              const Icon = f.icon;
+              return (
+                <div
+                  key={i}
+                  className="rounded-2xl border border-gray-100 dark:border-border/50 bg-white dark:bg-card p-6 shadow-sm hover:shadow-md transition-shadow space-y-3"
+                >
+                  <div className="h-11 w-11 rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-900/30 flex items-center justify-center">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h4 className="text-base font-bold text-foreground">{f.title}</h4>
+                  <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">{f.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* 5. MENTOR PANEL */}
+        <section className="container max-w-6xl mx-auto px-4 sm:px-6 py-12">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
+              {t("আমাদের অভিজ্ঞ শিক্ষকবৃন্দ", "Our Expert Faculty")}
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-2">
+              {t("ইন্ডাস্ট্রি লিডারদের কাছ থেকে সরাসরি মেন্টরশিপ", "Direct mentorship from experienced practitioners")}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {STATIC_TRAINERS.map((tItem, idx) => (
+              <div
+                key={idx}
+                className="flex flex-col items-center text-center gap-3 rounded-2xl border border-gray-100 dark:border-border/50 bg-white dark:bg-card p-6 shadow-sm hover:shadow-md transition-shadow"
               >
                 <img
-                  src={learnLogo}
-                  alt="Learn with Astropixel Logo"
-                  className="h-24 md:h-32 w-auto mx-auto brightness-0 dark:invert mb-6"
+                  src={tItem.image}
+                  alt={tItem.name}
+                  className="h-24 w-24 rounded-full object-cover border-2 border-brand-500/30 p-1 bg-gray-50"
+                  loading="lazy"
                 />
-                <p className="text-primary text-lg font-semibold tracking-wide">
-                  {cms("mission.tagline.bn", "mission.tagline.en", "শেখো • তৈরি করো • এগিয়ে যাও", "Learn • Create • Grow")}
-                </p>
-                <div className="flex justify-center gap-3 mt-4">
-                  <span className="px-3 py-1 rounded-full bg-primary text-primary-foreground font-medium text-xs">
-                    {t("লার্নিং প্ল্যাটফর্ম", "Learning Platform")}
-                  </span>
-                  <span className="px-3 py-1 rounded-full bg-secondary border border-border font-medium text-xs">
-                    🇧🇩 Bangladesh
-                  </span>
+                <div>
+                  <h4 className="text-sm font-bold text-foreground">{tItem.name}</h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
+                    {isBn ? tItem.roleBn : tItem.roleEn}
+                  </p>
                 </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="space-y-5"
-              >
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/[0.06]">
-                  <Rocket size={14} className="text-primary" />
-                  <span className="text-xs font-bold tracking-[0.2em] uppercase text-primary">
-                    {cms("mission.badge.bn", "mission.badge.en", "আমাদের মিশন", "Our Mission")}
-                  </span>
-                </div>
-                <h2 className="text-3xl lg:text-4xl font-display font-bold leading-tight">
-                  {cms("mission.title.bn", "mission.title.en", "বাংলাদেশের ক্রিয়েটরদের জন্য একটি ", "A modern learning home for ")}
-                  <span className="gradient-text">
-                    {cms("mission.title2.bn", "mission.title2.en", "আধুনিক শিক্ষা প্ল্যাটফর্ম", "Bangladeshi creators")}
-                  </span>
-                </h2>
-                <p className="text-muted-foreground leading-relaxed">
-                  {cms("mission.desc.bn", "mission.desc.en",
-                    "Learn with Astropixel হলো Astropixel এজেন্সির লার্নিং শাখা। এখানে আমরা এমন কোর্স তৈরি করি যা শুধু থিওরি নয় — আসল ক্লায়েন্ট প্রজেক্টে ব্যবহৃত টুলস, প্রসেস ও ওয়ার্কফ্লো শেখায়। শিক্ষার্থীরা শেখেন, তৈরি করেন এবং সরাসরি পোর্টফোলিও গড়ে তোলেন।",
-                    "Learn with Astropixel is the education arm of the Astropixel agency. We build courses that go beyond theory — teaching the exact tools, processes, and workflows used on real client projects. Students learn, build, and grow a portfolio at the same time."
-                  )}
-                </p>
-
-                <div className="p-5 rounded-2xl glass-card">
-                  <h4 className="text-base font-bold mb-3 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-primary" />
-                    {cms("mission.whyTitle.bn", "mission.whyTitle.en", "কেন Learn with Astropixel?", "Why Learn with Astropixel?")}
-                  </h4>
-                  <div className="space-y-2.5">
-                    {whyChoose.map((item, i) => (
-                      <div key={i} className="flex items-center gap-3 group">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary group-hover:scale-150 transition-transform" />
-                        <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                          {item}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            </div>
+              </div>
+            ))}
           </div>
         </section>
 
-        {/* Features */}
-        <section className="py-12 lg:py-16 relative mesh-bg">
-          <div className="container mx-auto px-6">
-            <div className="max-w-6xl mx-auto">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="text-center mb-8"
+        {/* 6. DARK CTA BANNER */}
+        <section className="bg-[#0b1d33] text-white py-12 px-4 sm:px-6 mt-8">
+          <div className="container max-w-4xl mx-auto text-center space-y-4">
+            <h2 className="text-2xl sm:text-3xl font-extrabold">
+              {t("আজই শুরু করুন আপনার স্কিল ডেভেলপমেন্টের যাত্রা", "Start Your Skill Development Journey Today")}
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-300 max-w-xl mx-auto leading-relaxed">
+              {t(
+                "হাজারো শিক্ষার্থীর সাথে যুক্ত হয়ে নিজের পছন্দমতো কোর্স বেছে নিন এবং ক্যারিয়ারকে নিয়ে যান নতুন উচ্চতায়।",
+                "Join thousands of students, pick your favorite course, and accelerate your digital career."
+              )}
+            </p>
+            <div className="pt-2">
+              <Link
+                to="/courses"
+                className="inline-flex items-center gap-2 h-11 px-6 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm shadow-md transition-colors"
               >
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/[0.06] mb-6">
-                  <Sparkles size={14} className="text-primary" />
-                  <span className="text-xs font-bold tracking-[0.2em] uppercase text-primary">
-                    {cms("features.badge.bn", "features.badge.en", "প্ল্যাটফর্ম ফিচার", "Platform Features")}
-                  </span>
-                </div>
-                <h2 className="text-3xl lg:text-5xl font-display font-bold">
-                  {cms("features.title.bn", "features.title.en", "যা যা পাচ্ছেন এই ", "Everything you get on ")}
-                  <span className="gradient-text">Learn</span>
-                  {cms("features.title2.bn", "features.title2.en", " প্ল্যাটফর্মে", " platform")}
-                </h2>
-              </motion.div>
-
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {features.map((f, index) => (
-                  <motion.div
-                    key={f.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.06 }}
-                    whileHover={{ y: -6 }}
-                    className="group relative p-7 rounded-2xl glass-card overflow-hidden"
-                  >
-                    <div className="w-14 h-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                      <f.icon size={24} className="text-primary" />
-                    </div>
-                    <h3 className="text-lg font-display font-bold mb-2">{f.title}</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Values */}
-        <section className="py-12 lg:py-16 relative">
-          <div className="container mx-auto px-6">
-            <div className="max-w-6xl mx-auto">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="text-center mb-8"
-              >
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/[0.06] mb-6">
-                  <Target size={14} className="text-primary" />
-                  <span className="text-xs font-bold tracking-[0.2em] uppercase text-primary">
-                    {cms("values.badge.bn", "values.badge.en", "আমাদের মূল্যবোধ", "Core Values")}
-                  </span>
-                </div>
-                <h2 className="text-3xl lg:text-5xl font-display font-bold">
-                  {cms("values.title.bn", "values.title.en", "যে নীতিতে আমরা কোর্স তৈরি করি", "The principles behind every course")}
-                </h2>
-              </motion.div>
-
-              <div className="grid md:grid-cols-3 gap-5">
-                {values.map((v, i) => (
-                  <motion.div
-                    key={v.title}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.08 }}
-                    whileHover={{ y: -6 }}
-                    className="group relative p-7 rounded-2xl glass-card overflow-hidden"
-                  >
-                    <span className="absolute -bottom-4 -right-2 text-[7rem] font-display font-bold text-muted-foreground/[0.04] leading-none select-none">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <div className="w-14 h-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                      <v.icon size={24} className="text-primary" />
-                    </div>
-                    <h3 className="text-lg font-display font-bold mb-2">{v.title}</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">{v.desc}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Instructors */}
-        <section id="instructors" className="py-12 lg:py-16 relative border-t border-border/40">
-          <div className="container mx-auto px-6">
-            <div className="max-w-6xl mx-auto">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="text-center mb-8"
-              >
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/[0.06] mb-6">
-                  <Users size={14} className="text-primary" />
-                  <span className="text-xs font-bold tracking-[0.2em] uppercase text-primary">
-                    {cms("linstructors.badge.bn", "linstructors.badge.en", "আমাদের টিম", "Our Team")}
-                  </span>
-                </div>
-                <h2 className="text-3xl lg:text-5xl font-display font-bold">
-                  {cms("linstructors.title.bn", "linstructors.title.en", "এক্সপার্ট ", "Expert ")}
-                  <span className="gradient-text">{cms("linstructors.title2.bn", "linstructors.title2.en", "ইনস্ট্রাক্টর", "Instructors")}</span>
-                </h2>
-                <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
-                  {cms("linstructors.desc.bn", "linstructors.desc.en",
-                    "ইন্ডাস্ট্রি এক্সপার্টদের কাছ থেকে সরাসরি শিখুন।",
-                    "Learn directly from industry experts."
-                  )}
-                </p>
-              </motion.div>
-
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-                {(() => {
-                  const dbList = (teamMembers || []).filter(
-                    (m: any) => !m.site_scope || m.site_scope === "learn"
-                  );
-                  const norm = (s: string) => (s || "").trim().toLowerCase().replace(/\s+/g, " ");
-                  const seen = new Set<string>();
-                  const merged: { name: string; role: string; image: string | null; id: string }[] = [];
-                  // Static first (guaranteed images + order matches Learn carousel)
-                  STATIC_TRAINERS.forEach((tr) => {
-                    const k = norm(tr.name);
-                    if (seen.has(k)) return;
-                    seen.add(k);
-                    merged.push({ id: `s-${k}`, name: tr.name, role: isBn ? tr.roleBn : tr.roleEn, image: tr.image });
-                  });
-                  dbList.forEach((m: any) => {
-                    const k = norm(m.name);
-                    if (!k || seen.has(k)) return;
-                    seen.add(k);
-                    merged.push({ id: m.id, name: m.name, role: m.role, image: m.image_url || null });
-                  });
-                  return merged.map((tr, i) => (
-                    <motion.div
-                      key={tr.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: i * 0.05 }}
-                      className="group"
-                    >
-                      <div className="rounded-2xl overflow-hidden border border-border/40 bg-card hover:border-primary/40 transition-all hover:-translate-y-1 flex flex-col h-full">
-                        <div className="relative aspect-[4/5] w-full overflow-hidden">
-
-                          {tr.image ? (
-                            <img
-                              src={tr.image}
-                              alt={tr.name}
-                              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = "none";
-                              }}
-                            />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-4xl font-display font-bold text-primary/60">
-                              {(tr.name || "?").charAt(0)}
-                            </div>
-                          )}
-                        </div>
-                        <div className="p-4 text-center">
-                          <h3 className="font-display font-bold text-sm mb-1 group-hover:text-primary transition-colors">
-                            {tr.name}
-                          </h3>
-                          <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2">
-                            {tr.role}
-                          </p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ));
-                })()}
-              </div>
-
+                <span>{t("সকল কোর্স এক্সপ্লোর করুন", "Explore All Courses")}</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           </div>
         </section>

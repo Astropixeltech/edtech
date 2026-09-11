@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => ({
             if (id.includes("react-dom") || id.includes("react-router-dom")) {
               return "vendor-react";
             }
-            if (id.includes("framer-motion") || id.includes("gsap")) {
+            if (id.includes("framer-motion")) {
               return "vendor-animation";
             }
             if (id.includes("lucide-react")) {
@@ -39,9 +39,6 @@ export default defineConfig(({ mode }) => ({
             }
             if (id.includes("@supabase") || id.includes("@tanstack")) {
               return "vendor-db";
-            }
-            if (id.includes("swiper")) {
-              return "vendor-swiper";
             }
           }
         },

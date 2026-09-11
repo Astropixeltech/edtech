@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { collection, query, where, getDocs, onSnapshot, doc, setDoc, deleteDoc, orderBy, addDoc } from 'firebase/firestore';
-import { db } from '@/integrations/firebase/config';
+import { supabase } from '@/integrations/supabase/client';
 import { Course, Profile } from '@/types/lms';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -31,9 +30,12 @@ export function useStudentCourseManagement() {
     setError(null);
     try {
       // Fetch all student profiles (users with student role)
-      const qRoles = query(collection(db, 'user_roles'), where('role', '==', 'student'));
-      const rolesSnap = await getDocs(qRoles);
-      const studentRoles = rolesSnap.docs.map(d => d.data());
+      const { data: studentRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'student');
+
+      if (rolesError) throw rolesError;
 
       if (!studentRoles || studentRoles.length === 0) {
         setStudents([]);
@@ -44,16 +46,29 @@ export function useStudentCourseManagement() {
       const studentUserIds = studentRoles.map(r => r.user_id);
 
       // Fetch profiles for students
-      const profilesSnap = await getDocs(query(collection(db, 'profiles'), orderBy('created_at', 'desc')));
-      const profiles = profilesSnap.docs.map(d => ({ id: d.id, ...d.data() }) as Profile).filter(p => studentUserIds.includes(p.user_id));
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('user_id', studentUserIds)
+        .order('created_at', { ascending: false });
+
+      if (profilesError) throw profilesError;
 
       // Fetch all student_courses assignments
-      const assignSnap = await getDocs(query(collection(db, 'student_courses'), where('is_active', '==', true)));
-      const assignments = assignSnap.docs.map(d => d.data()).filter(a => studentUserIds.includes(a.user_id));
+      const { data: assignments, error: assignError } = await supabase
+        .from('student_courses')
+        .select('user_id, course_id')
+        .in('user_id', studentUserIds)
+        .eq('is_active', true);
+
+      if (assignError) throw assignError;
 
       // Fetch all courses
-      const coursesSnap = await getDocs(collection(db, 'courses'));
-      const coursesData = coursesSnap.docs.map(d => ({ id: d.id, ...d.data() }) as Course);
+      const { data: coursesData, error: coursesError } = await supabase
+        .from('courses')
+        .select('*');
+
+      if (coursesError) throw coursesError;
 
       const coursesMap = new Map((coursesData || []).map((c: Course) => [c.id, c]));
 
@@ -107,40 +122,50 @@ export function useStudentCourseManagement() {
   useEffect(() => {
     if (!isAdmin) return;
 
-    const unsubStudents = onSnapshot(collection(db, 'student_courses'), () => scheduleRefetch());
-    const unsubProfiles = onSnapshot(collection(db, 'profiles'), () => scheduleRefetch());
+    const channel = supabase
+      .channel('admin-students')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'student_courses' },
+        () => scheduleRefetch()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
+        () => scheduleRefetch()
+      )
+      .subscribe();
 
     return () => {
       if (refreshTimerRef.current) {
         window.clearTimeout(refreshTimerRef.current);
       }
-      unsubStudents();
-      unsubProfiles();
+      supabase.removeChannel(channel);
     };
   }, [isAdmin, scheduleRefetch]);
 
   const assignCourse = async (userId: string, courseId: string) => {
-    try {
-      await addDoc(collection(db, 'student_courses'), { user_id: userId, course_id: courseId, is_active: true });
+    const { error } = await supabase
+      .from('student_courses')
+      .insert({ user_id: userId, course_id: courseId });
+
+    if (!error) {
       await fetchStudents();
-      return { error: null };
-    } catch (err: any) {
-      return { error: err.message };
     }
+    return { error: error?.message };
   };
 
   const removeCourse = async (userId: string, courseId: string) => {
-    try {
-      const q = query(collection(db, 'student_courses'), where('user_id', '==', userId), where('course_id', '==', courseId));
-      const snap = await getDocs(q);
-      for (const d of snap.docs) {
-        await deleteDoc(d.ref);
-      }
+    const { error } = await supabase
+      .from('student_courses')
+      .delete()
+      .eq('user_id', userId)
+      .eq('course_id', courseId);
+
+    if (!error) {
       await fetchStudents();
-      return { error: null };
-    } catch (err: any) {
-      return { error: err.message };
     }
+    return { error: error?.message };
   };
 
   return {

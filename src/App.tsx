@@ -3,27 +3,23 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ScrollToTop from "@/components/ScrollToTop";
 import SmoothScroll from "@/components/SmoothScroll";
-import ScrollReveal from "@/components/ScrollReveal";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Primary Learn Pages
 import CoursesPage from "./views/CoursesPage";
 import AllCoursesCatalogPage from "./views/AllCoursesCatalogPage";
 import LearnAboutPage from "./views/LearnAboutPage";
 import LearnContactPage from "./views/LearnContactPage";
+import StudentLoginPage from "./views/StudentLoginPage";
 import NotFound from "./views/NotFound";
 
 // Lazy-loaded LMS Dashboards & Features
-const AdminLoginPage = lazy(() => import("./views/AdminLoginPage"));
-const StudentLoginPage = lazy(() => import("./views/StudentLoginPage"));
-const TeacherLoginPage = lazy(() => import("./views/TeacherLoginPage"));
-const DashboardPage = lazy(() => import("./views/DashboardPage"));
 const AdminDashboard = lazy(() => import("./views/AdminDashboard"));
 const StudentDashboard = lazy(() => import("./views/StudentDashboard"));
 const TeacherDashboard = lazy(() => import("./views/TeacherDashboard"));
@@ -37,12 +33,15 @@ const PaymentCallbackPage = lazy(() => import("./views/PaymentCallbackPage"));
 const PaymentCancelPage = lazy(() => import("./views/PaymentCancelPage"));
 const CustomCheckoutPage = lazy(() => import("./views/CustomCheckoutPage"));
 const CourseLandingPage = lazy(() => import("./views/CourseLandingPage"));
+const FreeResourcesPage = lazy(() => import("./views/FreeResourcesPage"));
+const SyllabusCalculatorPage = lazy(() => import("./views/SyllabusCalculatorPage"));
+const EligibilityCalculatorPage = lazy(() => import("./views/EligibilityCalculatorPage"));
 
 const queryClient = new QueryClient();
 
 function AppContent() {
   return (
-    <>
+    <ErrorBoundary>
       <SmoothScroll />
       <ScrollToTop />
 
@@ -52,6 +51,9 @@ function AppContent() {
           <Route path="/" element={<CoursesPage />} />
           <Route path="/courses" element={<AllCoursesCatalogPage />} />
           <Route path="/courses/all" element={<AllCoursesCatalogPage />} />
+          <Route path="/free-resources" element={<FreeResourcesPage />} />
+          <Route path="/syllabus-calculator" element={<SyllabusCalculatorPage />} />
+          <Route path="/eligibility-calculator" element={<EligibilityCalculatorPage />} />
           <Route path="/about" element={<LearnAboutPage />} />
           <Route path="/contact" element={<LearnContactPage />} />
 
@@ -62,7 +64,8 @@ function AppContent() {
           <Route path="/teacher/login" element={<StudentLoginPage />} />
           <Route path="/admin/login" element={<StudentLoginPage />} />
 
-          {/* Core Dashboards */}
+          {/* Core Dashboards & LMS Features */}
+          <Route path="/student/course/:courseId" element={<CourseViewerPage />} />
           <Route path="/student" element={<StudentDashboard />} />
           <Route path="/student/*" element={<StudentDashboard />} />
 
@@ -72,11 +75,29 @@ function AppContent() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/*" element={<AdminDashboard />} />
 
+          {/* Certificates System */}
+          <Route path="/my-certificates" element={<MyCertificatesPage />} />
+          <Route path="/certificate/:certificateId" element={<CertificatePage />} />
+          <Route path="/verify-certificate" element={<VerifyCertificatePage />} />
+
+          {/* Course Landing Pages */}
+          <Route path="/courses/:slug" element={<CourseLandingPage />} />
+          <Route path="/vibe-coding" element={<CourseLandingPage />} />
+
+          {/* Payments & Checkout */}
+          <Route path="/pay/:invoiceId" element={<CustomCheckoutPage />} />
+          <Route path="/payment/callback" element={<PaymentCallbackPage />} />
+          <Route path="/payment/cancel" element={<PaymentCancelPage />} />
+
+          {/* Auth Recovery */}
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+
           {/* 404 Fallback */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
-    </>
+    </ErrorBoundary>
   );
 }
 

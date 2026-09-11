@@ -63,6 +63,7 @@ import {
   ChevronRight,
   UserCheck,
   RefreshCw,
+  MessageSquare,
 } from 'lucide-react';
 
 import CourseManagement from '@/components/admin/CourseManagement';
@@ -75,6 +76,7 @@ import astropixelLogoAssetJson from '@/assets/astropixel-logo.png.asset.json';
 const learnLogo = learnLogoAssetJson.url;
 const alphazeroLogoAsset = astropixelLogoAssetJson;
 import TeacherManagement from '@/components/admin/TeacherManagement';
+import TeacherChatTab from '@/components/teacher/TeacherChatTab';
 import EmailManagement from '@/components/admin/EmailManagement';
 import ApiKeyManagement from '@/components/admin/ApiKeyManagement';
 import PaymentApiManagement from '@/components/admin/PaymentApiManagement';
@@ -88,8 +90,6 @@ import ContactManagement from "@/components/admin/ContactManagement";
 import AboutTeamManagement from "@/components/admin/AboutTeamManagement";
 import AdminAssistant from '@/components/admin/AdminAssistant';
 
-import { db } from '@/integrations/firebase/config';
-import { collection, query, where, orderBy, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
 
 // Chart colors
@@ -190,26 +190,35 @@ function AdminDashboardInner() {
     setLoadingAdmins(true);
     try {
       // Get all user_ids with admin role
-      const adminRolesQuery = query(collection(db, 'user_roles'), where('role', '==', 'admin'));
-      const adminRolesSnapshot = await getDocs(adminRolesQuery);
+      const { data: adminRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin');
 
-      if (adminRolesSnapshot.empty) {
+      if (rolesError) {
+        console.error('Error fetching admin roles:', rolesError);
+        return;
+      }
+
+      if (!adminRoles || adminRoles.length === 0) {
         setAdmins([]);
         return;
       }
 
-      const adminUserIds = adminRolesSnapshot.docs.map(doc => doc.data().user_id);
+      const adminUserIds = adminRoles.map(r => r.user_id);
 
       // Get profiles for these users
-      const adminProfilesQuery = query(collection(db, 'profiles'), where('user_id', 'in', adminUserIds));
-      const adminProfilesSnapshot = await getDocs(adminProfilesQuery);
+      const { data: adminProfiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, user_id, full_name, email, avatar_url, created_at')
+        .in('user_id', adminUserIds);
 
-      const adminProfiles = adminProfilesSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      if (profilesError) {
+        console.error('Error fetching admin profiles:', profilesError);
+        return;
+      }
 
-      setAdmins(adminProfiles as any || []);
+      setAdmins(adminProfiles || []);
     } catch (error) {
       console.error('Error fetching admins:', error);
     } finally {
@@ -221,10 +230,17 @@ function AdminDashboardInner() {
   const fetchEnrollmentRequests = async () => {
     setLoadingRequests(true);
     try {
-      const q = query(collection(db, 'enrollment_requests'), orderBy('created_at', 'desc'));
-      const snapshot = await getDocs(q);
-      const requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setEnrollmentRequests(requests as any);
+      const { data, error } = await supabase
+        .from('enrollment_requests')
+        .select(`
+          *,
+          course:courses(title)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (!error) {
+        setEnrollmentRequests((data || []) as any);
+      }
     } catch (error) {
       console.error('Error fetching enrollment requests:', error);
     } finally {
@@ -254,7 +270,10 @@ function AdminDashboardInner() {
       }
 
       // Delete the request after successful approval
-      await deleteDoc(doc(db, 'enrollment_requests', request.id));
+      await supabase
+        .from('enrollment_requests')
+        .delete()
+        .eq('id', request.id);
 
       toast.success(language === 'bn' ? 'Approved! Student account created.' : 'Approved! Student account created.', { id: 'approve' });
       fetchEnrollmentRequests();
@@ -267,12 +286,16 @@ function AdminDashboardInner() {
 
   // Reject enrollment request - delete instead of updating status
   const rejectEnrollment = async (requestId: string) => {
-    try {
-      await deleteDoc(doc(db, 'enrollment_requests', requestId));
+    const { error } = await supabase
+      .from('enrollment_requests')
+      .delete()
+      .eq('id', requestId);
+
+    if (error) {
+      toast.error('Error rejecting request');
+    } else {
       toast.success(language === 'bn' ? 'Rejected' : 'Request rejected');
       fetchEnrollmentRequests();
-    } catch (error) {
-      toast.error('Error rejecting request');
     }
   };
 
@@ -316,7 +339,7 @@ function AdminDashboardInner() {
       }
 
       // Delete the enrollment request after refund
-      await deleteDoc(doc(db, 'enrollment_requests', request.id));
+      await supabase.from('enrollment_requests').delete().eq('id', request.id);
 
       toast.success(language === 'bn' ? 'Refund successful!' : 'Refund successful!', { id: 'refund' });
       fetchEnrollmentRequests();
@@ -395,6 +418,21 @@ function AdminDashboardInner() {
     }
   }, [user, isAdmin, authLoading, navigate]);
 
+  // Show loading spinner while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-[#6D28D9] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm font-semibold text-slate-300">Verifying Admin Access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || !isAdmin) {
+    return null;
+  }
 
   const handleLogout = async () => {
     await signOut();
@@ -677,16 +715,10 @@ function AdminDashboardInner() {
 
     try {
       // Update profile in database
-      let profileError: any = null;
-      try {
-        const profileQuery = query(collection(db, 'profiles'), where('user_id', '==', user?.uid));
-        const profileSnapshot = await getDocs(profileQuery);
-        if (!profileSnapshot.empty) {
-          await updateDoc(profileSnapshot.docs[0].ref, { full_name: editName.trim() });
-        }
-      } catch (err: any) {
-        profileError = err;
-      }
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ full_name: editName.trim() })
+        .eq('user_id', user?.id);
 
       if (profileError) {
         toast.error(profileError.message);
@@ -736,7 +768,7 @@ function AdminDashboardInner() {
 
     try {
       const fileExt = file.name.split('.').pop();
-      const filePath = `${user?.uid}/avatar.${fileExt}`;
+      const filePath = `${user?.id}/avatar.${fileExt}`;
 
       // Upload to storage
       const { error: uploadError } = await supabase.storage
@@ -754,16 +786,10 @@ function AdminDashboardInner() {
         .getPublicUrl(filePath);
 
       // Update profile with avatar URL
-      let profileError: any = null;
-      try {
-        const profileQuery = query(collection(db, 'profiles'), where('user_id', '==', user?.uid));
-        const profileSnapshot = await getDocs(profileQuery);
-        if (!profileSnapshot.empty) {
-          await updateDoc(profileSnapshot.docs[0].ref, { avatar_url: publicUrl });
-        }
-      } catch (err: any) {
-        profileError = err;
-      }
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('user_id', user?.id);
 
       if (profileError) {
         toast.error(profileError.message);
@@ -812,6 +838,7 @@ function AdminDashboardInner() {
     { id: 'courses', icon: BookOpen, label: language === 'bn' ? 'Course' : 'Courses', scopeTag: 'learn' as const },
     { id: 'students', icon: Users, label: language === 'bn' ? 'Student' : 'Students', scopeTag: 'learn' as const },
     { id: 'teachers', icon: GraduationCap, label: language === 'bn' ? 'Teacher' : 'Teachers', scopeTag: 'learn' as const },
+    { id: 'chat', icon: MessageSquare, label: language === 'bn' ? 'স্টাফ ও টিচার চ্যাট' : 'Staff & Teacher Chat', scopeTag: 'learn' as const },
     { id: 'requests', icon: Mail, label: language === 'bn' ? 'Request' : 'Requests', badge: enrollmentRequests.filter(r => r.status === 'pending').length, scopeTag: 'learn' as const },
   ];
 
@@ -897,22 +924,6 @@ function AdminDashboardInner() {
       )}
     </button>
   );
-
-  // Show loading spinner while checking auth
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-[#6D28D9] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm font-semibold text-slate-300">Verifying Admin Access...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user || !isAdmin) {
-    return null;
-  }
 
   return (
     <div className={`min-h-screen bg-slate-50 dark:bg-slate-950 ${language === 'bn' ? 'font-bengali' : ''}`}>
@@ -1072,6 +1083,48 @@ function AdminDashboardInner() {
             </div>
           )}
 
+        </div>
+
+        {/* Setup Panel */}
+        <div className="bg-gradient-to-r from-violet-500/10 to-purple-500/5 border border-violet-500/20 rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center gap-4">
+          <div className="flex items-center gap-3 flex-1">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+              <UserCheck className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-bold">{language === 'bn' ? 'টেস্ট অ্যাকাউন্ট সেটআপ' : 'Setup Test Accounts'}</p>
+              <p className="text-xs text-muted-foreground">Admin • Teacher • Student অ্যাকাউন্ট তৈরি করুন</p>
+            </div>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-2 text-xs border-violet-500/50 text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-950/30"
+              disabled={seedingAccounts}
+              onClick={async () => {
+                setSeedingAccounts(true);
+                try {
+                  const results = await createTestAccounts();
+                  results.forEach(r => {
+                    if (r.startsWith('✅')) toast.success(r);
+                    else if (r.startsWith('⚠️')) toast(r);
+                    else toast.error(r);
+                  });
+                } catch (e: any) {
+                  toast.error(e.message);
+                } finally {
+                  setSeedingAccounts(false);
+                }
+              }}
+            >
+              {seedingAccounts ? <RefreshCw className="w-3 h-3 animate-spin" /> : <UserCheck className="w-3 h-3" />}
+              {seedingAccounts ? 'Creating...' : 'Create Test Accounts'}
+            </Button>
+            <div className="text-xs text-muted-foreground self-center hidden md:block">
+              admin@astropixel.online / Admin@2026!
+            </div>
+          </div>
         </div>
 
         {/* Content Area */}
@@ -1395,6 +1448,11 @@ function AdminDashboardInner() {
           {/* Teachers Tab */}
           <TabsContent value="teachers">
             <TeacherManagement language={language} />
+          </TabsContent>
+
+          {/* Staff & Teacher Chat Tab */}
+          <TabsContent value="chat" className="space-y-6">
+            <TeacherChatTab courses={courses} language={language} />
           </TabsContent>
 
           {/* Requests Tab */}
@@ -2129,7 +2187,7 @@ function AdminDashboardInner() {
                       <div 
                         key={admin.id}
                         className={`flex items-center gap-3 p-4 rounded-lg border ${
-                          admin.user_id === user?.uid 
+                          admin.user_id === user?.id 
                             ? 'border-primary bg-primary/5' 
                             : 'border-border hover:bg-muted/50'
                         } transition-colors`}
@@ -2150,7 +2208,7 @@ function AdminDashboardInner() {
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate flex items-center gap-2">
                             {admin.full_name}
-                            {admin.user_id === user?.uid && (
+                            {admin.user_id === user?.id && (
                               <Badge variant="secondary" className="text-xs">
                                 {language === 'bn' ? 'আপনি' : 'You'}
                               </Badge>

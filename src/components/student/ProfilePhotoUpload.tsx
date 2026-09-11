@@ -1,14 +1,10 @@
 import { useState, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { doc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/integrations/firebase/config';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Camera, Loader2, User } from 'lucide-react';
 import { Profile } from '@/types/lms';
-
-import { useAuth } from '@/contexts/AuthContext';
 
 interface ProfilePhotoUploadProps {
   profile: Profile;
@@ -16,7 +12,6 @@ interface ProfilePhotoUploadProps {
 }
 
 export default function ProfilePhotoUpload({ profile, onPhotoUpdated }: ProfilePhotoUploadProps) {
-  const { user } = useAuth();
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -39,23 +34,35 @@ export default function ProfilePhotoUpload({ profile, onPhotoUpdated }: ProfileP
     try {
       // Generate unique filename
       const fileExt = file.name.split('.').pop();
-      const fileName = `avatars/${user?.uid}/${Date.now()}.${fileExt}`;
+      const fileName = `${profile.user_id}/${Date.now()}.${fileExt}`;
 
       // Upload to storage
-      const storageRef = ref(storage, fileName);
-      await uploadBytes(storageRef, file);
-      const publicUrl = await getDownloadURL(storageRef);
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      const publicUrl = urlData.publicUrl;
 
       // Update profile
-      await setDoc(doc(db, 'profiles', user?.uid as string), {
-        avatar_url: publicUrl
-      }, { merge: true });
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', profile.id);
+
+      if (updateError) throw updateError;
 
       onPhotoUpdated(publicUrl);
       toast.success('Profile photo updated!');
     } catch (error: any) {
       console.error('Upload error:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to upload photo');
+      toast.error(error.message || 'Failed to upload photo');
     } finally {
       setUploading(false);
     }

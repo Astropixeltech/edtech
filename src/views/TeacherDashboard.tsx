@@ -7,7 +7,7 @@ import {
   LayoutDashboard, BookOpen, Users, DollarSign, Briefcase, 
   MessageSquare, User, LogOut, Home, Moon, Sun, Globe,
   TrendingUp, PlayCircle, Video, Gift, Wallet, ChevronRight,
-  Clock, CheckCircle, AlertCircle, Plus
+  Clock, CheckCircle, AlertCircle, Plus, Menu, X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -109,6 +109,7 @@ export default function TeacherDashboard() {
   const t = language === "bn" ? translations.bn : translations.en;
 
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   
   // Fetch all data
   const { stats, isLoading: statsLoading, refetch: refetchStats } = useTeacherStats();
@@ -174,14 +175,46 @@ export default function TeacherDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-card/80 backdrop-blur-md border-b border-border/50 z-40 flex items-center justify-between px-4">
+        <div className="flex items-center gap-2">
+          <img src={learnLogo} alt="Learn" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
+          <span className="font-semibold text-sm">Teacher Panel</span>
+        </div>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => setIsMobileSidebarOpen(true)}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+      </div>
+
+      {/* Mobile Backdrop Overlay */}
+      <div
+        className={`fixed inset-0 z-[45] bg-black/50 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
+          isMobileSidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setIsMobileSidebarOpen(false)}
+      />
+
       {/* Floating Sidebar */}
       <motion.aside
-        initial={{ x: -100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        className="fixed left-4 top-4 bottom-4 w-64 bg-card/80 backdrop-blur-xl rounded-2xl border border-border/50 shadow-2xl z-50 flex flex-col overflow-hidden"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className={`fixed left-0 lg:left-4 top-0 lg:top-4 bottom-0 lg:bottom-4 w-72 lg:w-64 bg-card lg:bg-card/80 lg:backdrop-blur-xl lg:rounded-2xl border-r lg:border border-border/50 shadow-2xl z-50 flex flex-col overflow-hidden transition-transform duration-300 lg:translate-x-0 ${
+          isMobileSidebarOpen ? "translate-x-0" : "-translate-x-[150%]"
+        }`}
       >
+        {/* Close Button on Mobile */}
+        <div className="lg:hidden absolute top-4 right-4 z-50">
+          <Button variant="ghost" size="icon" onClick={() => setIsMobileSidebarOpen(false)}>
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+
         {/* Logo + Profile */}
-        <div className="p-3 border-b border-border/50 space-y-3">
+        <div className="p-4 lg:p-3 border-b border-border/50 space-y-3 mt-8 lg:mt-0">
           <div className="flex items-center gap-2">
             <img src={learnLogo} alt="Learn with Astropixel" className="h-8 w-auto object-contain dark:brightness-0 dark:invert" />
             <div>
@@ -209,7 +242,10 @@ export default function TeacherDashboard() {
           {navItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                setActiveTab(item.id);
+                setIsMobileSidebarOpen(false);
+              }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                 activeTab === item.id
                   ? 'bg-primary text-primary-foreground shadow-lg'
@@ -251,7 +287,7 @@ export default function TeacherDashboard() {
       </motion.aside>
 
       {/* Main Content */}
-      <main className="ml-72 p-6 min-h-screen">
+      <main className="lg:ml-72 p-4 lg:p-6 min-h-screen pt-20 lg:pt-6">
         <AnimatePresence mode="wait">
           {activeTab === 'dashboard' && (
             <motion.div

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Mail, KeyRound, Lock, ShieldCheck, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { ArrowLeft, Mail, KeyRound, Lock, ShieldCheck, Eye, EyeOff, Loader2, Check, X } from 'lucide-react';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('সঠিক ইমেইল দিন');
@@ -20,6 +20,7 @@ export default function ForgotPasswordPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const sendOtp = async () => {
@@ -135,22 +136,82 @@ export default function ForgotPasswordPage() {
                   <Label htmlFor="np">নতুন পাসওয়ার্ড</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input id="np" type={showPassword ? 'text' : 'password'} placeholder="••••••••"
+                    <Input id="np" type={showPassword ? 'text' : 'password'} placeholder="কমপক্ষে ৬ অক্ষর"
                       value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="pl-10 pr-10" required />
                     <button type="button" onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1} aria-label={showPassword ? 'পাসওয়ার্ড লুকান' : 'পাসওয়ার্ড দেখুন'}>
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+
+                  {/* Password strength indicator */}
+                  {newPassword.length > 0 && (() => {
+                    let strength = 0;
+                    if (newPassword.length >= 6) strength += 1;
+                    if (newPassword.length >= 8) strength += 1;
+                    if (/[A-Z]/.test(newPassword) || /[a-z]/.test(newPassword)) strength += 1;
+                    if (/[0-9]/.test(newPassword) || /[^A-Za-z0-9]/.test(newPassword)) strength += 1;
+
+                    const colors = ['bg-red-500', 'bg-amber-500', 'bg-blue-500', 'bg-emerald-500'];
+                    const labels = ['দুর্বল', 'সাধারণ', 'ভালো', 'খুব শক্তিশালী'];
+
+                    return (
+                      <div className="space-y-1.5 pt-1">
+                        <div className="flex gap-1 h-1.5">
+                          {[0, 1, 2, 3].map((idx) => (
+                            <div
+                              key={idx}
+                              className={`flex-1 rounded-full transition-all duration-300 ${
+                                idx < strength ? colors[strength - 1] : 'bg-muted/40'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <div className="flex justify-between items-center text-[11px] text-muted-foreground">
+                          <span>পাসওয়ার্ড শক্তি:</span>
+                          <span className={`font-medium ${
+                            strength === 1 ? 'text-red-400' :
+                            strength === 2 ? 'text-amber-400' :
+                            strength === 3 ? 'text-blue-400' : 'text-emerald-400'
+                          }`}>
+                            {labels[strength - 1] || 'দুর্বল'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="cp">পাসওয়ার্ড কনফার্ম</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="cp">পাসওয়ার্ড কনফার্ম</Label>
+                    {confirmPassword.length > 0 && (
+                      <span className="text-[11px] flex items-center gap-1">
+                        {newPassword === confirmPassword ? (
+                          <span className="text-emerald-400 flex items-center gap-0.5">
+                            <Check className="w-3 h-3" /> মিলেছে
+                          </span>
+                        ) : (
+                          <span className="text-red-400 flex items-center gap-0.5">
+                            <X className="w-3 h-3" /> মিলছে না
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </div>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input id="cp" type={showPassword ? 'text' : 'password'} placeholder="••••••••"
-                      value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="pl-10" required />
+                    <Input id="cp" type={showConfirmPassword ? 'text' : 'password'} placeholder="আবার পাসওয়ার্ড দিন"
+                      value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="pl-10 pr-10" required />
+                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1} aria-label={showConfirmPassword ? 'পাসওয়ার্ড লুকান' : 'পাসওয়ার্ড দেখুন'}>
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
+
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />সেভ হচ্ছে...</> : 'পাসওয়ার্ড পরিবর্তন করুন'}
                 </Button>

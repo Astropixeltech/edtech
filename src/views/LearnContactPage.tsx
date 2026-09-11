@@ -1,12 +1,12 @@
-import { motion } from "framer-motion";
 import { useState } from "react";
-import { Mail, Phone, MessageCircle, Send, GraduationCap, HelpCircle, BookOpen, Clock, MapPin, Sparkles, ArrowUpRight, Loader2 } from "lucide-react";
+import { Mail, Phone, MessageCircle, Send, MapPin, Clock, Sparkles, CheckCircle2 } from "lucide-react";
 import Layout from "@/components/Layout";
+import { Helmet } from "react-helmet-async";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFooterContent } from "@/hooks/useFooterData";
 import { usePageContent } from "@/hooks/usePageContent";
-import { submitContactMessageAction } from "@/app/actions/contact";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const LearnContactPage = () => {
   const { language } = useLanguage();
@@ -16,32 +16,40 @@ const LearnContactPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isBn = language === "bn";
   const t = (bn: string, en: string) => (isBn ? bn : en);
-  const cms = (bnKey: string, enKey: string, bnFb: string, enFb: string) =>
-    isBn ? (getPageContent(bnKey) || bnFb) : (getPageContent(enKey) || enFb);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) {
-      toast.error(t("অনুগ্রহ করে সকল ঘর পূরণ করুন", "Please fill in all required fields"));
+      toast.error(t("অনুগ্রহ করে সব তথ্য দিন", "Please fill in all required fields"));
       return;
     }
     setIsSubmitting(true);
     try {
-      const result = await submitContactMessageAction({
+      // Insert into support_tickets table
+      const { error } = await supabase.from("support_tickets" as any).insert({
         name: formData.name,
         email: formData.email,
         subject: formData.topic,
         message: formData.message,
+        status: "open",
       });
 
-      if (result.success) {
-        toast.success(t("আপনার বার্তা সফলভাবে জমা দেওয়া হয়েছে!", "Your message has been sent successfully!"));
-        setFormData({ name: "", email: "", topic: "general", message: "" });
-      } else {
-        toast.error(result.error || t("বার্তা পাঠাতে সমস্যা হয়েছে", "Failed to send message"));
+      if (error) {
+        // Fallback: try sending via edge function
+        const { data: fnData, error: fnError } = await supabase.functions.invoke("send-custom-email", {
+          body: {
+            to: "hello@astropixel.tech",
+            subject: `[Contact Form] ${formData.topic} — ${formData.name}`,
+            body: `Name: ${formData.name}\nEmail: ${formData.email}\nTopic: ${formData.topic}\n\nMessage:\n${formData.message}`,
+          },
+        });
+        if (fnError) throw fnError;
       }
-    } catch (err: any) {
-      toast.error(err?.message || t("বার্তা পাঠাতে সমস্যা হয়েছে", "Failed to send message"));
+
+      toast.success(t("আপনার বার্তা সফলভাবে পাঠানো হয়েছে! আমরা শীঘ্রই উত্তর দেব।", "Your message has been sent successfully! We'll respond shortly."));
+      setFormData({ name: "", email: "", topic: "general", message: "" });
+    } catch {
+      toast.error(t("ত্রুটি ঘটেছে। আবার চেষ্টা করুন।", "Failed to send message. Please try again."));
     } finally {
       setIsSubmitting(false);
     }
@@ -51,159 +59,232 @@ const LearnContactPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const getFooterContent = (key: string) => {
-    const c = footerContents?.find((i) => i.content_key === key);
-    if (!c) return null;
-    return c.content_en;
-  };
-  const phone = getPageContent("learn.phone") || getFooterContent("phone") || "+880 1344-497808";
-  const rawEmail = (getPageContent("learn.email") || "hello@astropixel.tech").trim();
-  const email = (!rawEmail || rawEmail.includes("alphazero") || rawEmail.includes("contact@") || rawEmail.includes("support@learn")) ? "hello@astropixel.tech" : rawEmail;
-  const address = cms("learn.address", "learn.address.en", "ঢাকা, বাংলাদেশ", "Dhaka, Bangladesh");
-  const waNumber = phone.replace(/\D/g, "");
-
-  const topics = [
-    { value: "general", label: t("সাধারণ প্রশ্ন", "General Question") },
-    { value: "enrollment", label: t("কোর্স এনরোলমেন্ট", "Course Enrollment") },
-    { value: "payment", label: t("পেমেন্ট সহায়তা", "Payment Help") },
-    { value: "technical", label: t("টেকনিক্যাল ইস্যু", "Technical Issue") },
-    { value: "certificate", label: t("সার্টিফিকেট", "Certificate") },
-  ];
-
-  const quickHelp = [
-    { icon: BookOpen, title: t("কোর্স ব্রাউজ", "Browse Courses"), desc: t("আমাদের সমস্ত কোর্স দেখুন", "Explore all our courses"), href: "/courses" },
-    { icon: HelpCircle, title: t("সাধারণ প্রশ্ন", "FAQ"), desc: t("দ্রুত উত্তর পান", "Get quick answers"), href: "/learn-about" },
-    { icon: GraduationCap, title: t("স্টুডেন্ট লগইন", "Student Login"), desc: t("আপনার ড্যাশবোর্ডে প্রবেশ করুন", "Access your dashboard"), href: "/student/login" },
-  ];
+  const phone = "+880 1776-965533";
+  const email = "hello@astropixel.tech";
 
   return (
     <Layout>
-      <main className="min-h-screen bg-background">
-      {/* Hero */}
-      <section className="relative pt-12 pb-8 lg:pt-16 lg:pb-10 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.05] via-background to-background" />
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+      <Helmet>
+        <title>{t("যোগাযোগ করুন — Astropixel Learn", "Contact Us — Astropixel Learn")}</title>
+      </Helmet>
 
-        <div className="container mx-auto px-6 relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-              className="text-3xl lg:text-5xl font-display font-bold mb-3 leading-[1.1] tracking-tight">
-              {cms("hero.title.bn", "hero.title.en", "শিখতে চান? ", "Learning? ")}
-              <span className="bg-gradient-to-r from-cyan-400 via-primary to-blue-500 bg-clip-text text-transparent">
-                {cms("hero.title2.bn", "hero.title2.en", "আমরা সাহায্য করব", "We're here to help")}
-              </span>
-            </motion.h1>
-            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-              className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              {cms("hero.description.bn", "hero.description.en",
-                "কোর্স, এনরোলমেন্ট বা পেমেন্ট সংক্রান্ত যেকোনো প্রশ্ন — আমাদের একাডেমী টিম ২৪ ঘন্টার মধ্যে উত্তর দেবে।",
-                "Any question about courses, enrollment or payment — our academy team responds within 24 hours."
+      <div className="min-h-screen bg-background pb-20">
+        {/* 1. HERO HEADER */}
+        <section className="relative py-12 md:py-16 bg-gradient-to-b from-brand-50/50 via-transparent to-transparent dark:from-brand-950/20 border-b border-border/40">
+          <div className="container max-w-3xl mx-auto px-4 sm:px-6 text-center">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 text-xs font-bold mb-3">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>{t("২৪/৭ সার্বক্ষণিক সহায়তা", "Always Here to Help")}</span>
+            </span>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-foreground leading-tight">
+              {t("আমরা আপনাকে সাহায্য করতে প্রস্তুত", "Get in Touch with Our Team")}
+            </h1>
+            <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-3 max-w-xl mx-auto">
+              {t(
+                "কোর্স, এনরোলমেন্ট বা যেকোনো পরামর্শে আমাদের সাপোর্ট টিমের সাথে সরাসরি যোগাযোগ করুন।",
+                "Have questions about courses, admissions, or payments? We respond promptly."
               )}
-            </motion.p>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-              className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
-              <div className="inline-flex items-center gap-1.5"><Clock size={12} className="text-primary" /> {t("২৪ ঘন্টায় জবাব", "24h response")}</div>
-              <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
-              <div className="inline-flex items-center gap-1.5"><MessageCircle size={12} className="text-primary" /> {t("লাইভ WhatsApp", "Live WhatsApp")}</div>
-              <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
-              <div className="inline-flex items-center gap-1.5"><Sparkles size={12} className="text-primary" /> {t("বিশেষজ্ঞ টিম", "Expert team")}</div>
-            </motion.div>
+            </p>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Quick help cards */}
-      <section className="pb-4">
-        <div className="container mx-auto px-6">
-          <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-4">
-            {quickHelp.map((item, i) => (
-              <motion.a key={i} href={item.href}
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-                className="group relative p-6 rounded-2xl glass-card border border-border/60 hover:border-primary/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/25 to-primary/5 border border-primary/20 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                      <item.icon size={22} className="text-primary" />
-                    </div>
-                    <ArrowUpRight size={18} className="text-muted-foreground group-hover:text-primary group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all" />
-                  </div>
-                  <h3 className="font-display font-semibold text-lg mb-1 group-hover:text-primary transition-colors">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground">{item.desc}</p>
-                </div>
-              </motion.a>
-            ))}
+        {/* 2. CONTACT CHANNELS GRID */}
+        <section className="container max-w-6xl mx-auto px-4 sm:px-6 py-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            
+            {/* Phone */}
+            <div className="rounded-2xl border border-gray-100 dark:border-border/50 bg-white dark:bg-card p-6 shadow-sm space-y-3">
+              <div className="h-10 w-10 rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-900/30 flex items-center justify-center">
+                <Phone className="h-5 w-5" />
+              </div>
+              <h3 className="text-sm font-bold text-foreground">{t("হটলাইন নম্বর", "Call Helpline")}</h3>
+              <p className="text-xs text-gray-500">{t("সকাল ৯টা থেকে রাত ১০টা", "9:00 AM - 10:00 PM")}</p>
+              <a href={`tel:${phone}`} className="inline-block text-sm font-bold text-brand-600 hover:underline">
+                {phone}
+              </a>
+            </div>
+
+            {/* WhatsApp */}
+            <div className="rounded-2xl border border-gray-100 dark:border-border/50 bg-white dark:bg-card p-6 shadow-sm space-y-3">
+              <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 flex items-center justify-center">
+                <MessageCircle className="h-5 w-5" />
+              </div>
+              <h3 className="text-sm font-bold text-foreground">{t("সরাসরি WhatsApp", "Live WhatsApp")}</h3>
+              <p className="text-xs text-gray-500">{t("ইনস্ট্যান্ট চ্যাট সাপোর্ট", "Instant live chat support")}</p>
+              <a
+                href="https://wa.me/8801776965533"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block text-sm font-bold text-emerald-600 hover:underline"
+              >
+                +880 1776-965533
+              </a>
+            </div>
+
+            {/* Email */}
+            <div className="rounded-2xl border border-gray-100 dark:border-border/50 bg-white dark:bg-card p-6 shadow-sm space-y-3">
+              <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-900/30 flex items-center justify-center">
+                <Mail className="h-5 w-5" />
+              </div>
+              <h3 className="text-sm font-bold text-foreground">{t("অফিসিয়াল ইমেইল", "Official Email")}</h3>
+              <p className="text-xs text-gray-500">{t("২৪ ঘন্টার মধ্যে রিপ্লাই", "Response within 24h")}</p>
+              <a href={`mailto:${email}`} className="inline-block text-sm font-bold text-blue-600 hover:underline">
+                {email}
+              </a>
+            </div>
+
+            {/* Location */}
+            <div className="rounded-2xl border border-gray-100 dark:border-border/50 bg-white dark:bg-card p-6 shadow-sm space-y-3">
+              <div className="h-10 w-10 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-900/30 flex items-center justify-center">
+                <MapPin className="h-5 w-5" />
+              </div>
+              <h3 className="text-sm font-bold text-foreground">{t("প্রধান কার্যালয়", "Head Office")}</h3>
+              <p className="text-xs text-gray-500">{t("ঢাকা, বাংলাদেশ", "Dhaka, Bangladesh")}</p>
+              <span className="inline-block text-xs font-semibold text-foreground">
+                Astropixel Academy
+              </span>
+            </div>
+
           </div>
-        </div>
-      </section>
+        </section>
 
-
-      {/* Contact form + Info */}
-      <section className="py-16">
-        <div className="container mx-auto px-6">
-          <div className="max-w-6xl mx-auto grid lg:grid-cols-1 gap-8">
-            {/* Info sidebar */}
-            <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
-              className="space-y-4">
-
-              <div className="p-6 rounded-3xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/25">
-                <h3 className="font-display font-bold text-lg mb-4">{t("দ্রুত যোগাযোগ", "Quick Contact")}</h3>
-                <div className="space-y-3">
-                  <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-xl bg-background/40 hover:bg-background/70 transition-colors">
-                    <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                      <MessageCircle size={18} className="text-green-500" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-xs text-muted-foreground">WhatsApp</div>
-                      <div className="text-sm font-medium truncate">{phone}</div>
-                    </div>
-                  </a>
-                  <a href={`tel:${phone.replace(/[^\d+]/g, "")}`}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-background/40 hover:bg-background/70 transition-colors">
-                    <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                      <Phone size={18} className="text-primary" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-xs text-muted-foreground">{t("কল করুন", "Call")}</div>
-                      <div className="text-sm font-medium truncate">{phone}</div>
-                    </div>
-                  </a>
-                  <a href={`mailto:${email}`}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-background/40 hover:bg-background/70 transition-colors">
-                    <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                      <Mail size={18} className="text-primary" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-xs text-muted-foreground">Email</div>
-                      <div className="text-sm font-medium truncate">{email}</div>
-                    </div>
-                  </a>
-                </div>
+        {/* 3. MESSAGE FORM & FAQ SECTION */}
+        <section className="container max-w-6xl mx-auto px-4 sm:px-6 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Contact Form */}
+            <div className="lg:col-span-7 rounded-2xl border border-gray-100 dark:border-border/50 bg-white dark:bg-card p-6 sm:p-8 shadow-sm space-y-5">
+              <div>
+                <h3 className="text-xl font-bold text-foreground">
+                  {t("আমাদের বার্তা পাঠান", "Send Us a Message")}
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  {t("যেকোনো প্রশ্ন বা পরামর্শ লিখে পাঠালে আমরা শীঘ্রই যোগাযোগ করব।", "Fill out the form and our team will get back to you.")}
+                </p>
               </div>
 
-              <div className="p-6 rounded-3xl glass-card space-y-4">
-                <div className="flex items-start gap-3">
-                  <Clock size={18} className="text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <div className="text-xs text-muted-foreground uppercase tracking-wide">{t("সাপোর্ট সময়", "Support Hours")}</div>
-                    <div className="text-sm font-medium">{cms("info.hours.bn", "info.hours.en", "শনি — বৃহস্পতি, ১০টা — ১০টা", "Sat — Thu, 10am — 10pm")}</div>
-                  </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground">
+                    {t("আপনার নাম", "Your Name")} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder={t("আপনার নাম লিখুন", "Full name")}
+                    className="w-full h-11 px-3.5 rounded-xl border border-gray-300 dark:border-border bg-white dark:bg-card text-sm focus:outline-none focus:border-brand-500"
+                    required
+                  />
                 </div>
-                <div className="flex items-start gap-3">
-                  <MapPin size={18} className="text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <div className="text-xs text-muted-foreground uppercase tracking-wide">{t("ঠিকানা", "Location")}</div>
-                    <div className="text-sm font-medium">{address}</div>
-                  </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground">
+                    {t("ইমেইল অ্যাড্রেস", "Email Address")} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="example@mail.com"
+                    className="w-full h-11 px-3.5 rounded-xl border border-gray-300 dark:border-border bg-white dark:bg-card text-sm focus:outline-none focus:border-brand-500"
+                    required
+                  />
                 </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground">
+                    {t("বিষয় নির্বাচন করুন", "Topic")}
+                  </label>
+                  <select
+                    name="topic"
+                    value={formData.topic}
+                    onChange={handleChange}
+                    className="w-full h-11 px-3.5 rounded-xl border border-gray-300 dark:border-border bg-white dark:bg-card text-sm font-medium text-foreground focus:outline-none focus:border-brand-500"
+                  >
+                    <option value="general">{t("সাধারণ প্রশ্ন", "General Inquiry")}</option>
+                    <option value="enrollment">{t("কোর্স ভর্তি সম্পর্কিত", "Course Enrollment")}</option>
+                    <option value="payment">{t("পেমেন্ট ও রিফান্ড", "Payment & Refund")}</option>
+                    <option value="technical">{t("কারিগরি সহায়তা", "Technical Support")}</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground">
+                    {t("বার্তা", "Your Message")} <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    name="message"
+                    rows={4}
+                    value={formData.message}
+                    onChange={handleChange}
+                    placeholder={t("আপনার বার্তাটি বিস্তারিত লিখুন...", "Type your message here...")}
+                    className="w-full p-3.5 rounded-xl border border-gray-300 dark:border-border bg-white dark:bg-card text-sm focus:outline-none focus:border-brand-500 resize-none"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full h-11 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
+                >
+                  <Send className="h-4 w-4" />
+                  <span>{isSubmitting ? t("পাঠানো হচ্ছে...", "Sending...") : t("বার্তা পাঠান", "Send Message")}</span>
+                </button>
+              </form>
+            </div>
+
+            {/* Quick Assistance Card */}
+            <div className="lg:col-span-5 space-y-6">
+              <div className="rounded-2xl border border-gray-100 dark:border-border/50 bg-white dark:bg-card p-6 shadow-sm space-y-4">
+                <h4 className="text-base font-bold text-foreground">
+                  {t("দ্রুত সহায়তা প্রয়োজন?", "Need Quick Assistance?")}
+                </h4>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  {t(
+                    "আপনি যদি কোনো কোর্সে দ্রুত ভর্তি হতে চান বা পেমেন্টে সাহায্য প্রয়োজন হয়, সরাসরি আমাদের অফিশিয়াল হোয়াটসঅ্যাপে টেক্সট দিন।",
+                    "For instant enrollment and payment confirmation support, reach out to our official WhatsApp channel."
+                  )}
+                </p>
+                <a
+                  href="https://wa.me/8801776965533"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex w-full items-center justify-center gap-2 h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-colors"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  <span>{t("WhatsApp-এ কথা বলুন", "Chat on WhatsApp")}</span>
+                </a>
               </div>
-            </motion.div>
+
+              <div className="rounded-2xl border border-gray-100 dark:border-border/50 bg-white dark:bg-card p-6 shadow-sm space-y-3">
+                <h4 className="text-sm font-bold text-foreground">
+                  {t("আমাদের প্রতিশ্রুতি", "Our Commitment")}
+                </h4>
+                <ul className="space-y-2 text-xs text-gray-600 dark:text-gray-300">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-brand-500 shrink-0" />
+                    <span>{t("১০০% সুরক্ষিত পেমেন্ট গেটওয়ে", "100% Secure payment gateways")}</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-brand-500 shrink-0" />
+                    <span>{t("কোর্স সম্পর্কিত সব প্রশ্নের দ্রুত উত্তর", "Fast query resolution for students")}</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-brand-500 shrink-0" />
+                    <span>{t("লাইফটাইম সাপোর্ট ও আপডেট সুবিধা", "Lifetime community access and updates")}</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
           </div>
-        </div>
-      </section>
-      </main>
+        </section>
+
+      </div>
     </Layout>
   );
 };

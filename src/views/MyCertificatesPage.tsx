@@ -17,7 +17,7 @@ export default function MyCertificatesPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/auth');
+      navigate('/student/login');
       return;
     }
     if (user) {
@@ -32,7 +32,7 @@ export default function MyCertificatesPage() {
     const { data, error } = await supabase
       .from('certificates')
       .select('*')
-      .eq('user_id', user.uid)
+      .eq('user_id', user.id)
       .order('issued_at', { ascending: false });
 
     if (error) {

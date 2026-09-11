@@ -1,7 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo } from "react";
-import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
-import { db } from "@/integrations/firebase/config";
 
 interface PageContent {
   id: string;
@@ -16,36 +15,37 @@ export const usePageContent = (pageName: string, scopeOverride?: string) => {
   const scope = scopeOverride ?? "learn";
 
   useEffect(() => {
-    const q = query(
-      collection(db, 'page_content'),
-      where('page_name', '==', pageName),
-      where('site_scope', '==', scope)
-    );
-    const unsubscribe = onSnapshot(q, () => {
-      queryClient.invalidateQueries({ queryKey: ['page-content-public', pageName, scope] });
-    });
+    const channel = supabase
+      .channel(`page-content-${pageName}-${scope}-realtime`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'page_content' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['page-content-public', pageName, scope] });
+        }
+      )
+      .subscribe();
 
     return () => {
-      unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [queryClient, pageName, scope]);
 
   const { data: contents, isLoading } = useQuery({
     queryKey: ['page-content-public', pageName, scope],
     queryFn: async () => {
-      const q = query(
-        collection(db, 'page_content'),
-        where('page_name', '==', pageName),
-        where('site_scope', '==', scope),
-        where('is_active', '==', true)
-      );
-      try {
-        const snap = await getDocs(q);
-        return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as PageContent[];
-      } catch (error) {
+      const { data, error } = await supabase
+        .from('page_content')
+        .select('*')
+        .eq('page_name', pageName)
+        .eq('site_scope', scope)
+        .eq('is_active', true);
+
+      if (error) {
         console.error('Error fetching page content:', error);
         return [];
       }
+      return data as PageContent[];
     },
     staleTime: 1000 * 60 * 5,
   });

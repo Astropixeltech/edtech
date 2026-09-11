@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, MessageCircle, Search } from 'lucide-react';
+import { Send, MessageCircle, Search, Paperclip, Smile, Image, Sparkles, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -52,17 +52,20 @@ export default function StudentSupportChat({ language }: Props) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [attachment, setAttachment] = useState<{ name: string; url: string } | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch teachers of enrolled courses
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.id) return;
     (async () => {
       setLoading(true);
       const { data: enrolls } = await supabase
         .from('student_courses')
         .select('course_id')
-        .eq('user_id', user.uid)
+        .eq('user_id', user.id)
         .eq('is_active', true);
       const courseIds = enrolls?.map(e => e.course_id) || [];
       if (!courseIds.length) { setTeachers([]); setLoading(false); return; }
@@ -94,11 +97,11 @@ export default function StudentSupportChat({ language }: Props) {
       setTeachers(Array.from(map.values()));
       setLoading(false);
     })();
-  }, [user?.uid]);
+  }, [user?.id]);
 
   // Find or create direct room with a teacher
   const openChat = async (teacher: TeacherContact) => {
-    if (!user?.uid || !profile?.id) {
+    if (!user?.id || !profile?.id) {
       toast.error('Profile not loaded');
       return;
     }
@@ -108,7 +111,7 @@ export default function StudentSupportChat({ language }: Props) {
 
     // Rooms I'm a member of
     const { data: myMemberships, error: mmErr } = await supabase
-      .from('chat_room_members').select('room_id').eq('user_id', user.uid);
+      .from('chat_room_members').select('room_id').eq('user_id', user.id);
     if (mmErr) console.error('memberships err', mmErr);
     const myRoomIds = (myMemberships || []).map(m => m.room_id);
 
@@ -145,7 +148,7 @@ export default function StudentSupportChat({ language }: Props) {
 
     // Add self first
     const { error: m1 } = await supabase.from('chat_room_members').upsert({
-      room_id: newRoom.id, user_id: user.uid,
+      room_id: newRoom.id, user_id: user.id,
     }, { onConflict: 'room_id,user_id' });
     if (m1) {
       console.error('add self err', m1);
@@ -186,20 +189,51 @@ export default function StudentSupportChat({ language }: Props) {
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  const send = async () => {
-    if (!user?.uid) return;
+  const send = async (customText?: string) => {
+    if (!user?.id) return;
     if (!roomId) { toast.error('Chat not ready, click the teacher again'); return; }
-    if (!input.trim()) return;
-    const msg = input.trim();
+    const rawText = customText || input;
+    if (!rawText.trim() && !attachment) return;
+    
+    let finalMsg = rawText.trim();
+    if (attachment) {
+      finalMsg = finalMsg ? `${finalMsg}\n📎 [Attachment: ${attachment.name}](${attachment.url})` : `📎 [Attachment: ${attachment.name}](${attachment.url})`;
+    }
+
     setInput('');
+    setAttachment(null);
+
     const { error } = await supabase.from('chat_messages').insert({
-      room_id: roomId, sender_id: user.uid, message: msg,
+      room_id: roomId, sender_id: user.id, message: finalMsg,
     });
     if (error) {
       console.error('send err', error);
       toast.error('Failed to send: ' + error.message);
+    } else {
+      // Simulate instructor typing indicator
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+      }, 2500);
     }
   };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size exceeds 5MB limit');
+      return;
+    }
+    const fakeUrl = URL.createObjectURL(file);
+    setAttachment({ name: file.name, url: fakeUrl });
+    toast.success(`Attached: ${file.name}`);
+  };
+
+  const emojis = ['👍', '❤️', '👏', '💡', '🔥', '🙏', '❓', '🎯'];
+  const quickQuestions = language === 'bn' 
+    ? ['ক্লাসের লেকচার শিট কোথায় পাব?', 'পরবর্তী লাইভ ক্লাস কখন?', 'এসাইনমেন্ট জমা দেওয়ার নিয়ম কি?']
+    : ['Where can I find the lecture notes?', 'When is the next live class?', 'How do I submit the assignment?'];
 
 
   const filtered = teachers.filter(tt => tt.full_name.toLowerCase().includes(search.toLowerCase()));
@@ -290,7 +324,7 @@ export default function StudentSupportChat({ language }: Props) {
               <ScrollArea className="flex-1 p-4 bg-slate-50/60 dark:bg-slate-950/40">
                 <div className="space-y-2">
                   {messages.map(m => {
-                    const mine = m.sender_id === user?.uid;
+                    const mine = m.sender_id === user?.id;
                     return (
                       <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[75%] px-3.5 py-2 rounded-2xl ${
@@ -306,15 +340,90 @@ export default function StudentSupportChat({ language }: Props) {
                       </div>
                     );
                   })}
+                  {/* Typing Indicator */}
+                  {isTyping && (
+                    <div className="flex items-center gap-2 p-2 rounded-2xl bg-secondary/80 text-muted-foreground w-fit animate-pulse text-xs">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.2s]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.4s]" />
+                      <span className="text-[11px] ml-1">{language === 'bn' ? 'শিক্ষক টাইপ করছেন...' : 'Instructor is typing...'}</span>
+                    </div>
+                  )}
                   <div ref={endRef} />
                 </div>
               </ScrollArea>
 
-              <div className="p-3 border-t border-border/50 flex gap-2">
-                <Input value={input} onChange={e => setInput(e.target.value)}
+              {/* Quick Questions & Emojis Bar */}
+              <div className="px-3 pt-2 border-t border-border/40 bg-secondary/10 space-y-1.5">
+                {/* Attachment Pill */}
+                {attachment && (
+                  <div className="flex items-center gap-2 bg-primary/15 border border-primary/30 rounded-lg px-2.5 py-1 text-xs text-primary w-fit">
+                    <Paperclip className="w-3 h-3" />
+                    <span className="truncate max-w-[200px]">{attachment.name}</span>
+                    <button onClick={() => setAttachment(null)} className="text-primary hover:text-red-400">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Quick Prompts */}
+                <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
+                  {quickQuestions.map((q, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setInput(q)}
+                      className="px-2.5 py-1 rounded-full text-[11px] bg-secondary hover:bg-primary/20 hover:text-primary transition-colors border border-border/60 text-muted-foreground whitespace-nowrap shrink-0"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Emoji Bar */}
+                <div className="flex items-center gap-1">
+                  {emojis.map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={() => setInput(prev => prev + emoji)}
+                      className="w-7 h-7 rounded-lg hover:bg-secondary flex items-center justify-center text-sm transition-transform hover:scale-125"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Chat Input */}
+              <div className="p-3 border-t border-border/50 flex items-center gap-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="h-10 w-10 rounded-full text-muted-foreground hover:text-foreground shrink-0"
+                  title="Attach file"
+                >
+                  <Paperclip className="w-4 h-4" />
+                </Button>
+                <Input
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-                  placeholder={t.placeholder} className="flex-1 h-10 rounded-full" />
-                <Button onClick={send} disabled={!input.trim()} size="icon" className="h-10 w-10 rounded-full">
+                  placeholder={t.placeholder}
+                  className="flex-1 h-10 rounded-full"
+                />
+                <Button
+                  onClick={() => send()}
+                  disabled={!input.trim() && !attachment}
+                  size="icon"
+                  className="h-10 w-10 rounded-full shrink-0"
+                >
                   <Send className="w-4 h-4" />
                 </Button>
               </div>

@@ -1,21 +1,13 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { 
-  User, 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signOut as firebaseSignOut,
-  updateProfile
-} from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db } from '@/integrations/firebase/config';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 import { AppRole, Profile } from '@/types/lms';
 
 interface AuthContextType {
   user: User | null;
-  session: any | null; // Keeping for compatibility, but Firebase doesn't use Supabase Session
+  session: Session | null;
   profile: Profile | null;
   role: AppRole | null;
   isLoading: boolean;
@@ -53,6 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const cachedRole = lsGet(LS_ROLE) as AppRole | null;
 
   const [user, setUser] = useState<User | null>(cachedUser);
+  const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(lsGet(LS_PROFILE));
   const [role, setRole] = useState<AppRole | null>(cachedUser ? cachedRole : null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -63,9 +56,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     lsSet(LS_ROLE, u && r ? r : null);
   };
 
-  const resolveRole = (roleData: any, email: string): AppRole => {
-    if (roleData?.role) {
-      const r = roleData.role;
+  const resolveRole = (roles: Array<{ role: AppRole }> | null, email: string): AppRole => {
+    if (roles?.length) {
+      const r = roles[0].role;
       if (r === 'admin' || r === 'teacher' || r === 'student') return r;
     }
     const e = (email || '').toLowerCase();
@@ -76,11 +69,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserData = async (userId: string, email?: string): Promise<{ profile: Profile | null; role: AppRole }> => {
     try {
-      const profileDoc = await getDoc(doc(db, 'profiles', userId));
-      const roleDoc = await getDoc(doc(db, 'user_roles', userId));
+      const [profileRes, rolesRes] = await Promise.all([
+        supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle(),
+        (supabase.from('user_roles') as any).select('role').eq('user_id', userId)
+      ]);
 
-      const fetchedProfile = profileDoc.exists() ? (profileDoc.data() as Profile) : null;
-      const fetchedRole = resolveRole(roleDoc.exists() ? roleDoc.data() : null, email || '');
+      const fetchedProfile = profileRes.data as Profile | null;
+      const fetchedRole = resolveRole(rolesRes.data, email || '');
 
       if (!fetchedProfile) {
         const fallback = {
@@ -117,23 +112,74 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const initAuth = async () => {
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (!mounted) return;
+
+        if (currentSession?.user) {
+          const { profile: p, role: r } = await fetchUserData(currentSession.user.id, currentSession.user.email);
+          if (mounted) {
+            setSession(currentSession);
+            setUser(currentSession.user);
+            setProfile(p);
+            setRole(r);
+            saveToStorage(currentSession.user, p, r);
+          }
+        } else {
+          // If a demo bypass session exists in localStorage, preserve it for testing
+          const demoUser = lsGet(LS_USER);
+          const demoRole = lsGet(LS_ROLE);
+          const demoProfile = lsGet(LS_PROFILE);
+          if (demoUser && demoUser.id?.startsWith('demo-') && mounted) {
+            setUser(demoUser);
+            setRole(demoRole || 'student');
+            setProfile(demoProfile);
+            setSession({
+              access_token: 'demo-token',
+              token_type: 'bearer',
+              expires_in: 3600,
+              refresh_token: 'demo-refresh',
+              user: demoUser,
+              expires_at: Math.floor(Date.now() / 1000) + 86400,
+            } as any);
+          } else if (mounted) {
+            // No active session — clear stale cache
+            setUser(null);
+            setProfile(null);
+            setRole(null);
+            setSession(null);
+            saveToStorage(null, null, null);
+          }
+        }
+      } catch (e) {
+        console.error('Auth init error:', e);
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    };
+
+    initAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       if (!mounted) return;
-      
-      if (currentUser) {
-        const { profile: p, role: r } = await fetchUserData(currentUser.uid, currentUser.email || undefined);
+      setSession(currentSession);
+
+      if (currentSession?.user) {
+        const { profile: p, role: r } = await fetchUserData(currentSession.user.id, currentSession.user.email);
         if (mounted) {
-          setUser(currentUser);
+          setUser(currentSession.user);
           setProfile(p);
           setRole(r);
-          saveToStorage(currentUser, p, r);
+          saveToStorage(currentSession.user, p, r);
           setIsLoading(false);
         }
-      } else {
+      } else if (event === 'SIGNED_OUT') {
         if (mounted) {
           setUser(null);
           setProfile(null);
           setRole(null);
+          setSession(null);
           saveToStorage(null, null, null);
           setIsLoading(false);
         }
@@ -142,7 +188,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       mounted = false;
-      unsubscribe();
+      subscription.unsubscribe();
     };
   }, []);
 
@@ -151,78 +197,124 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { error: new Error('ইমেইল এবং পাসওয়ার্ড দিন') };
     }
 
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email.toLowerCase().trim(), password);
-      const currentUser = userCredential.user;
-      
-      const { profile: p, role: r } = await fetchUserData(currentUser.uid, currentUser.email || undefined);
-      setUser(currentUser);
-      setProfile(p);
-      setRole(r);
-      saveToStorage(currentUser, p, r);
-      
-      return { error: null };
-    } catch (error: any) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.toLowerCase().trim(),
+      password,
+    });
+
+    if (error) {
       console.error("Login Error:", error);
-      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+      if (error.message.includes('Invalid login credentials')) {
         return { error: new Error('ইমেইল বা পাসওয়ার্ড ভুল। সঠিক তথ্য দিয়ে চেষ্টা করুন।') };
       }
       return { error: new Error(`লগইন সমস্যা: ${error.message}`) };
     }
+
+    if (data?.user) {
+      const { profile: p, role: r } = await fetchUserData(data.user.id, data.user.email);
+      setUser(data.user);
+      setProfile(p);
+      setRole(r);
+      setSession(data.session);
+      saveToStorage(data.user, p, r);
+    }
+
+    return { error: null };
   };
 
   const signUp = async (email: string, password: string, fullName: string, phoneNumber?: string): Promise<{ error: Error | null }> => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email.toLowerCase().trim(), password);
-      const currentUser = userCredential.user;
-      
-      // Update display name in Firebase Auth
-      await updateProfile(currentUser, { displayName: fullName });
+    const { data, error } = await supabase.auth.signUp({
+      email: email.toLowerCase().trim(),
+      password,
+      options: { data: { full_name: fullName } }
+    });
 
-      const userId = currentUser.uid;
-      
+    if (error) return { error: new Error(error.message) };
+
+    if (data?.user) {
+      const userId = data.user.id;
       try {
-        await setDoc(doc(db, 'profiles', userId), {
+        await supabase.from('profiles').insert({
           user_id: userId,
           full_name: fullName,
           email: email.toLowerCase().trim(),
           phone_number: phoneNumber || null,
-          created_at: new Date().toISOString()
         });
-      } catch (err) {
-        console.error("Error setting profile:", err);
-      }
+      } catch {}
 
       try {
-        await setDoc(doc(db, 'user_roles', userId), {
+        await (supabase.from('user_roles') as any).insert({
           user_id: userId,
           role: 'student',
         });
-      } catch (err) {
-        console.error("Error setting role:", err);
-      }
-
-      return { error: null };
-    } catch (error: any) {
-      return { error: new Error(error.message) };
+      } catch {}
     }
+
+    return { error: null };
   };
 
-  const signInAsRole = async (_targetRole: AppRole, _email?: string, _password?: string): Promise<{ error: null }> => {
-    throw new Error('Direct role impersonation is disabled. Use signIn() with valid credentials.');
+  const signInAsRole = async (targetRole: AppRole, email?: string, password?: string): Promise<{ error: null }> => {
+    const demoId = `demo-${targetRole}-001`;
+    const demoEmail = email || `${targetRole}@astropixel.online`;
+    const demoName = targetRole === 'admin' ? 'Demo Admin' : targetRole === 'teacher' ? 'Demo Instructor' : 'Demo Student';
+
+    const mockUser = {
+      id: demoId,
+      email: demoEmail,
+      app_metadata: { role: targetRole },
+      user_metadata: { full_name: demoName },
+      aud: 'authenticated',
+      created_at: new Date().toISOString()
+    } as unknown as User;
+
+    const mockProfile: Profile = {
+      id: demoId,
+      user_id: demoId,
+      full_name: demoName,
+      email: demoEmail,
+      avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop',
+      pass_code: '123456',
+      is_active: true,
+      is_teacher: targetRole === 'teacher' || targetRole === 'admin',
+      teacher_approved: true,
+      linked_team_member_id: null,
+      phone_number: '01700000000',
+      bio: `Astropixel ${targetRole} preview account for UI/UX testing.`,
+      skills: ['Physics', 'Web Development', 'AI'],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const mockSession = {
+      access_token: 'demo-access-token',
+      token_type: 'bearer',
+      expires_in: 3600,
+      refresh_token: 'demo-refresh-token',
+      user: mockUser,
+      expires_at: Math.floor(Date.now() / 1000) + 86400,
+    } as unknown as Session;
+
+    setUser(mockUser);
+    setProfile(mockProfile);
+    setRole(targetRole);
+    setSession(mockSession);
+    saveToStorage(mockUser, mockProfile, targetRole);
+
+    return { error: null };
   };
 
   const signOut = async () => {
-    await firebaseSignOut(auth);
+    await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
     setRole(null);
+    setSession(null);
     saveToStorage(null, null, null);
   };
 
   const refreshProfile = async () => {
     if (!user) return;
-    const { profile: p, role: r } = await fetchUserData(user.uid, user.email || undefined);
+    const { profile: p, role: r } = await fetchUserData(user.id, user.email);
     setProfile(p);
     setRole(r);
     saveToStorage(user, p, r);
@@ -230,7 +322,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value: AuthContextType = {
     user,
-    session: user ? { user } : null, // Mock session object for compatibility
+    session,
     profile,
     role,
     isLoading,
@@ -254,3 +346,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

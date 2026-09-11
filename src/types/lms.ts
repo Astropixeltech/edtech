@@ -24,6 +24,17 @@ export interface UserRole {
   role: AppRole;
 }
 
+export interface CourseModule {
+  id: string;
+  course_id?: string;
+  title: string;
+  title_en?: string;
+  description?: string | null;
+  order_index: number;
+  lessons_count?: number;
+  duration?: string;
+}
+
 export interface Course {
   id: string;
   title: string;
@@ -37,6 +48,11 @@ export interface Course {
   trainer_name?: string | null;
   trainer_image?: string | null;
   trainer_designation?: string | null;
+  landing_slug?: string | null;
+  total_classes?: string | null;
+  duration?: string | null;
+  learning_outcomes?: string[] | null;
+  modules?: CourseModule[] | null;
   created_at: string;
   updated_at: string;
 }

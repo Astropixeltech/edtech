@@ -1,7 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
-import { collection, query, where, orderBy, getDocs, onSnapshot } from "firebase/firestore";
-import { db } from "@/integrations/firebase/config";
 
 interface FooterLink {
   id: string;
@@ -26,30 +25,34 @@ export const useFooterLinks = (scopeOverride?: string) => {
   const scope = scopeOverride ?? "learn";
 
   useEffect(() => {
-    const q = query(
-      collection(db, 'footer_links'),
-      where('site_scope', '==', scope)
-    );
-    const unsubscribe = onSnapshot(q, () => {
-      queryClient.invalidateQueries({ queryKey: ['footer-links-public', scope] });
-    });
+    const channel = supabase
+      .channel(`footer-links-${scope}-realtime`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'footer_links' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['footer-links-public', scope] });
+        }
+      )
+      .subscribe();
 
     return () => {
-      unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [queryClient, scope]);
 
   return useQuery({
     queryKey: ['footer-links-public', scope],
     queryFn: async () => {
-      const q = query(
-        collection(db, 'footer_links'),
-        where('site_scope', '==', scope),
-        where('is_active', '==', true),
-        orderBy('order_index')
-      );
-      const snap = await getDocs(q);
-      return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as FooterLink[];
+      const { data, error } = await supabase
+        .from('footer_links')
+        .select('*')
+        .eq('site_scope', scope)
+        .eq('is_active', true)
+        .order('order_index');
+
+      if (error) throw error;
+      return data as FooterLink[];
     },
   });
 };
@@ -59,28 +62,32 @@ export const useFooterContent = (scopeOverride?: string) => {
   const scope = scopeOverride ?? "learn";
 
   useEffect(() => {
-    const q = query(
-      collection(db, 'footer_content'),
-      where('site_scope', '==', scope)
-    );
-    const unsubscribe = onSnapshot(q, () => {
-      queryClient.invalidateQueries({ queryKey: ['footer-content-public', scope] });
-    });
+    const channel = supabase
+      .channel(`footer-content-${scope}-realtime`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'footer_content' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['footer-content-public', scope] });
+        }
+      )
+      .subscribe();
 
     return () => {
-      unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [queryClient, scope]);
 
   return useQuery({
     queryKey: ['footer-content-public', scope],
     queryFn: async () => {
-      const q = query(
-        collection(db, 'footer_content'),
-        where('site_scope', '==', scope)
-      );
-      const snap = await getDocs(q);
-      return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as FooterContent[];
+      const { data, error } = await supabase
+        .from('footer_content')
+        .select('*')
+        .eq('site_scope', scope);
+
+      if (error) throw error;
+      return data as FooterContent[];
     },
   });
 };

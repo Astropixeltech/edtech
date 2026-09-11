@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Lock, KeyRound, CheckCircle } from 'lucide-react';
+import { Lock, KeyRound, CheckCircle, Eye, EyeOff, Check, X } from 'lucide-react';
 import { z } from 'zod';
 
 const passwordSchema = z.object({
@@ -20,6 +20,8 @@ const passwordSchema = z.object({
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isValidSession, setIsValidSession] = useState(false);
@@ -168,29 +170,99 @@ export default function ResetPasswordPage() {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="কমপক্ষে ৬ অক্ষর"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 pr-10"
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                    aria-label={showPassword ? 'পাসওয়ার্ড লুকান' : 'পাসওয়ার্ড দেখুন'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
+
+                {/* Password strength indicator */}
+                {password.length > 0 && (() => {
+                  let strength = 0;
+                  if (password.length >= 6) strength += 1;
+                  if (password.length >= 8) strength += 1;
+                  if (/[A-Z]/.test(password) || /[a-z]/.test(password)) strength += 1;
+                  if (/[0-9]/.test(password) || /[^A-Za-z0-9]/.test(password)) strength += 1;
+
+                  const colors = ['bg-red-500', 'bg-amber-500', 'bg-blue-500', 'bg-emerald-500'];
+                  const labels = ['দুর্বল', 'সাধারণ', 'ভালো', 'খুব শক্তিশালী'];
+
+                  return (
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex gap-1 h-1.5">
+                        {[0, 1, 2, 3].map((idx) => (
+                          <div
+                            key={idx}
+                            className={`flex-1 rounded-full transition-all duration-300 ${
+                              idx < strength ? colors[strength - 1] : 'bg-muted/40'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <div className="flex justify-between items-center text-[11px] text-muted-foreground">
+                        <span>পাসওয়ার্ড শক্তি:</span>
+                        <span className={`font-medium ${
+                          strength === 1 ? 'text-red-400' :
+                          strength === 2 ? 'text-amber-400' :
+                          strength === 3 ? 'text-blue-400' : 'text-emerald-400'
+                        }`}>
+                          {labels[strength - 1] || 'দুর্বল'}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">পাসওয়ার্ড নিশ্চিত করুন</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="confirmPassword">পাসওয়ার্ড নিশ্চিত করুন</Label>
+                  {confirmPassword.length > 0 && (
+                    <span className="text-[11px] flex items-center gap-1">
+                      {password === confirmPassword ? (
+                        <span className="text-emerald-400 flex items-center gap-0.5">
+                          <Check className="w-3 h-3" /> মিলেছে
+                        </span>
+                      ) : (
+                        <span className="text-red-400 flex items-center gap-0.5">
+                          <X className="w-3 h-3" /> মিলছে না
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="confirmPassword"
-                    type="password"
+                    type={showConfirmPassword ? 'text' : 'password'}
                     placeholder="আবার পাসওয়ার্ড দিন"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 pr-10"
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                    aria-label={showConfirmPassword ? 'পাসওয়ার্ড লুকান' : 'পাসওয়ার্ড দেখুন'}
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
 

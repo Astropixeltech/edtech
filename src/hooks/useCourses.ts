@@ -1,9 +1,16 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, orderBy, getDocs, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { db } from '@/integrations/firebase/config';
+import { supabase } from '@/integrations/supabase/client';
 import { Course, Video, CourseWithVideos, CourseWithProgress, VideoWithProgress, VideoProgress } from '@/types/lms';
 import { useAuth } from '@/contexts/AuthContext';
 import { INITIAL_REAL_YOUTUBE_COURSES, seedRealCoursesToDatabase } from '@/lib/seedCourses';
+import {
+  getLocalVideoProgress,
+  getAllLocalProgressForUser,
+  saveLocalVideoProgress,
+  getLocalEnrolledCourses,
+  enrollLocalCourse,
+  getLocalCourseCompletions,
+} from '@/lib/localStorageData';
 
 export function useCourses() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -16,15 +23,16 @@ export function useCourses() {
     try {
       try { await seedRealCoursesToDatabase(); } catch {}
 
-      let q = query(collection(db, 'courses'), orderBy('created_at', 'desc'));
+      let query = supabase.from('courses').select('*').order('created_at', { ascending: false });
       
       if (!isAdmin) {
-        q = query(collection(db, 'courses'), where('is_published', '==', true), orderBy('created_at', 'desc'));
+        query = query.eq('is_published', true);
       }
 
-      const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const { data, error } = await query;
       
+      if (error) throw error;
+
       if (data && data.length > 0) {
         setCourses(data as Course[]);
       } else {
@@ -55,13 +63,17 @@ export function useCourseWithVideos(courseId: string) {
     try {
       try { await seedRealCoursesToDatabase(); } catch {}
 
-      const courseDocRef = doc(db, 'courses', courseId);
-      const courseDocSnap = await getDoc(courseDocRef);
-      const courseData = courseDocSnap.exists() ? { id: courseDocSnap.id, ...courseDocSnap.data() } : null;
+      const { data: courseData, error: courseError } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('id', courseId)
+        .maybeSingle();
 
-      const videosQuery = query(collection(db, 'videos'), where('course_id', '==', courseId), orderBy('order_index', 'asc'));
-      const videosSnapshot = await getDocs(videosQuery);
-      const videosData = videosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const { data: videosData } = await supabase
+        .from('videos')
+        .select('*')
+        .eq('course_id', courseId)
+        .order('order_index', { ascending: true });
 
       if (courseData) {
         setCourse({
@@ -103,96 +115,124 @@ export function useStudentCourses() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const effectiveUserId = user?.id || 'demo-student-001';
 
   const fetchStudentCourses = async () => {
-    if (!user) {
-      setIsLoading(false);
-      return;
-    }
-
     setIsLoading(true);
     try {
       try { await seedRealCoursesToDatabase(); } catch {}
 
-      // Get course IDs assigned to this student via student_courses
-      const studentCoursesQuery = query(collection(db, 'student_courses'), where('user_id', '==', user.uid), where('is_active', '==', true));
-      const studentCourseDataSnapshot = await getDocs(studentCoursesQuery);
-      const studentCourseData = studentCourseDataSnapshot.docs.map(doc => doc.data());
-
-      let courseIds = studentCourseData ? studentCourseData.map(sc => sc.course_id) : [];
-
-      // Fetch all published courses
-      const publishedCoursesQuery = query(collection(db, 'courses'), where('is_published', '==', true));
-      const allPublishedCoursesSnapshot = await getDocs(publishedCoursesQuery);
-      const allPublishedCourses = allPublishedCoursesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Course[];
-
-      const publishedList = (allPublishedCourses && allPublishedCourses.length > 0) 
-        ? allPublishedCourses 
-        : INITIAL_REAL_YOUTUBE_COURSES as Course[];
-
-      // Auto-enroll student in all published courses if not enrolled yet
-      const missingCourseIds = publishedList
-        .map(c => c.id)
-        .filter(id => !courseIds.includes(id));
-
-      if (missingCourseIds.length > 0 && user.uid) {
-        for (const mId of missingCourseIds) {
-          try {
-            const docId = `${user.uid}_${mId}`;
-            await setDoc(doc(db, 'student_courses', docId), {
-              user_id: user.uid,
-              course_id: mId,
-              is_active: true,
-              created_at: new Date().toISOString(),
-            }, { merge: true });
-          } catch {}
+      // 1. Fetch published courses from Supabase or fallback
+      let publishedList = INITIAL_REAL_YOUTUBE_COURSES as Course[];
+      try {
+        const { data: allPublishedCourses } = await supabase
+          .from('courses')
+          .select('*')
+          .eq('is_published', true);
+        if (allPublishedCourses && allPublishedCourses.length > 0) {
+          publishedList = allPublishedCourses as Course[];
         }
-        courseIds = publishedList.map(c => c.id);
+      } catch {}
+
+      // 2. Fetch student enrollment records
+      let courseIds: string[] = [];
+      if (user?.id && !user.id.startsWith('demo-')) {
+        try {
+          const { data: studentCourseData } = await supabase
+            .from('student_courses')
+            .select('course_id')
+            .eq('user_id', user.id)
+            .eq('is_active', true);
+          if (studentCourseData) {
+            courseIds = studentCourseData.map(sc => sc.course_id);
+          }
+        } catch {}
       }
 
-      // Fetch videos for these courses
+      // Merge with local device enrollments
+      const localEnrolled = getLocalEnrolledCourses(effectiveUserId);
+      const allEnrolledIds = Array.from(new Set([...courseIds, ...localEnrolled]));
+
+      // Auto-enroll in all published courses if none
+      publishedList.forEach(c => {
+        enrollLocalCourse(effectiveUserId, c.id);
+      });
+      const activeCourseIds = publishedList.map(c => c.id);
+
+      // 3. Fetch videos from DB or fallback
       let dbVideos: Video[] = [];
-      if (courseIds.length > 0) {
-        // Firestore 'in' query supports up to 10 items.
-        // We do multiple queries if needed, or we just fetch all videos.
-        // For simplicity we just fetch all and filter client side.
-        const vQuery = query(collection(db, 'videos'), orderBy('order_index', 'asc'));
-        const vSnapshot = await getDocs(vQuery);
-        dbVideos = vSnapshot.docs.map(d => ({ id: d.id, ...d.data() })) as Video[];
-        dbVideos = dbVideos.filter(v => courseIds.includes(v.course_id));
+      try {
+        const { data: vData } = await supabase
+          .from('videos')
+          .select('*')
+          .in('course_id', activeCourseIds)
+          .order('order_index', { ascending: true });
+        if (vData) dbVideos = vData as Video[];
+      } catch {}
+
+      // 4. Fetch remote video progress
+      let remoteProgress: VideoProgress[] = [];
+      if (user?.id && !user.id.startsWith('demo-')) {
+        try {
+          const { data: pData } = await supabase
+            .from('video_progress')
+            .select('*')
+            .eq('user_id', user.id);
+          if (pData) remoteProgress = pData as VideoProgress[];
+        } catch {}
       }
 
-      // Fetch video progress
-      const progressQuery = query(collection(db, 'video_progress'), where('user_id', '==', user.uid));
-      const progressSnapshot = await getDocs(progressQuery);
-      const progressData = progressSnapshot.docs.map(d => d.data() as VideoProgress);
+      // Merge with local device progress
+      const localProgressMap = getAllLocalProgressForUser(effectiveUserId);
+      const progressMap = new Map<string, VideoProgress>();
 
-      // Fetch course completions
-      const completionsQuery = query(collection(db, 'course_completions'), where('user_id', '==', user.uid));
-      const completionsSnapshot = await getDocs(completionsQuery);
-      const completionsData = completionsSnapshot.docs.map(d => d.data());
+      // Put remote progress first
+      remoteProgress.forEach(p => progressMap.set(p.video_id, p));
 
-      const progressMap = new Map((progressData || []).map((p: VideoProgress) => [p.video_id, p]));
-      const completionSet = new Set((completionsData || []).map((c: any) => c.course_id));
+      // Overlay local progress (local is always live on current device)
+      Object.entries(localProgressMap).forEach(([vid, lp]) => {
+        const existing = progressMap.get(vid);
+        progressMap.set(vid, {
+          id: existing?.id || `local-${vid}`,
+          user_id: effectiveUserId,
+          video_id: vid,
+          watched_seconds: Math.max(existing?.watched_seconds || 0, lp.watched_seconds || 0),
+          last_position: lp.last_position || existing?.last_position || 0,
+          progress_percent: Math.max(existing?.progress_percent || 0, lp.progress_percent || 0),
+          is_completed: (existing?.is_completed || false) || (lp.is_completed || false),
+          created_at: existing?.created_at || lp.last_watched_at,
+          last_watched_at: lp.last_watched_at || existing?.last_watched_at || new Date().toISOString(),
+        });
+      });
 
+      // 5. Course completions
+      const completionSet = new Set<string>();
+      if (user?.id && !user.id.startsWith('demo-')) {
+        try {
+          const { data: compData } = await supabase
+            .from('course_completions')
+            .select('*')
+            .eq('user_id', user.id);
+          if (compData) compData.forEach(c => completionSet.add(c.course_id));
+        } catch {}
+      }
+      const localComps = getLocalCourseCompletions(effectiveUserId);
+      Object.keys(localComps).forEach(cid => completionSet.add(cid));
+
+      // 6. Build courses with progress
       const coursesWithProgress: CourseWithProgress[] = publishedList.map((course: Course) => {
-        // Collect videos from DB or fallback static definitions
         const fallbackCourse = INITIAL_REAL_YOUTUBE_COURSES.find(ic => ic.id === course.id);
-        const courseVideos = (dbVideos && dbVideos.filter((v: Video) => v.course_id === course.id).length > 0)
+        const courseVideos = (dbVideos.filter((v: Video) => v.course_id === course.id).length > 0)
           ? dbVideos.filter((v: Video) => v.course_id === course.id)
           : (fallbackCourse?.videos || []);
 
         let lastCompletedIndex = -1;
         const videosWithProgress: VideoWithProgress[] = courseVideos.map((video: Video, index: number) => {
-          const progress = progressMap.get(video.id) as VideoProgress | undefined;
+          const progress = progressMap.get(video.id);
           const isCompleted = progress?.is_completed || false;
-          
-          if (isCompleted) {
-            lastCompletedIndex = index;
-          }
+          if (isCompleted) lastCompletedIndex = index;
 
           const isLocked = index > 0 && lastCompletedIndex < index - 1;
-
           return {
             ...video,
             progress,
@@ -200,7 +240,12 @@ export function useStudentCourses() {
           };
         });
 
-        // Recalculate locks
+        // First video is always unlocked
+        if (videosWithProgress.length > 0) {
+          videosWithProgress[0].is_locked = false;
+        }
+
+        // Recalculate locks sequentially
         for (let i = 1; i < videosWithProgress.length; i++) {
           const prevVideo = videosWithProgress[i - 1];
           videosWithProgress[i].is_locked = !prevVideo.progress?.is_completed;
@@ -216,13 +261,23 @@ export function useStudentCourses() {
           total_videos: totalVideos,
           completed_videos: completedCount,
           progress_percent: progressPercent,
-          is_completed: completionSet.has(course.id),
+          is_completed: completionSet.has(course.id) || (totalVideos > 0 && completedCount === totalVideos),
         };
       });
 
       setCourses(coursesWithProgress);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      // If error occurs, fallback to static courses with local progress
+      const fallbackList = INITIAL_REAL_YOUTUBE_COURSES.map(c => ({
+        ...c,
+        completed_videos: 0,
+        progress_percent: 0,
+        is_completed: false,
+        total_videos: c.videos.length,
+        videos: c.videos.map((v, i) => ({ ...v, is_locked: i > 0 })),
+      }));
+      setCourses(fallbackList);
     } finally {
       setIsLoading(false);
     }
@@ -239,27 +294,56 @@ export function useVideoProgress(videoId: string) {
   const [progress, setProgress] = useState<VideoProgress | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+  const effectiveUserId = user?.id || 'demo-student-001';
 
   const fetchProgress = async () => {
-    if (!user || !videoId) {
+    if (!videoId) {
       setIsLoading(false);
       return;
     }
 
-    try {
-      const q = query(collection(db, 'video_progress'), where('user_id', '==', user.uid), where('video_id', '==', videoId));
-      const snapshot = await getDocs(q);
-
-      if (!snapshot.empty) {
-        setProgress(snapshot.docs[0].data() as VideoProgress);
-      } else {
-        setProgress(null);
-      }
-    } catch (e) {
-      console.error('Error fetching video progress:', e);
-    } finally {
-      setIsLoading(false);
+    // 1. Instantly check local device storage
+    const local = getLocalVideoProgress(effectiveUserId, videoId);
+    if (local) {
+      setProgress({
+        id: `local-${videoId}`,
+        user_id: effectiveUserId,
+        video_id: videoId,
+        watched_seconds: local.watched_seconds,
+        last_position: local.last_position,
+        progress_percent: local.progress_percent,
+        is_completed: local.is_completed,
+        created_at: local.last_watched_at,
+        last_watched_at: local.last_watched_at,
+      });
     }
+
+    // 2. If real user, fetch from Supabase
+    if (user?.id && !user.id.startsWith('demo-')) {
+      try {
+        const { data } = await supabase
+          .from('video_progress')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('video_id', videoId)
+          .maybeSingle();
+
+        if (data) {
+          setProgress(prev => {
+            if (!prev) return data as VideoProgress;
+            return {
+              ...data,
+              watched_seconds: Math.max(data.watched_seconds || 0, prev.watched_seconds || 0),
+              progress_percent: Math.max(data.progress_percent || 0, prev.progress_percent || 0),
+              is_completed: data.is_completed || prev.is_completed,
+            } as VideoProgress;
+          });
+        }
+      } catch (e) {
+        console.error('Error fetching remote video progress:', e);
+      }
+    }
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -267,25 +351,45 @@ export function useVideoProgress(videoId: string) {
   }, [user, videoId]);
 
   const updateProgress = async (percent: number = 100, isCompleted: boolean = true) => {
-    if (!user || !videoId) return { error: new Error('User or video not found') };
-    try {
-      const docId = `${user.uid}_${videoId}`;
-      const progressData = {
-        user_id: user.uid,
-        video_id: videoId,
-        progress_percent: Math.min(percent, 100),
-        is_completed: isCompleted,
-        last_watched_at: new Date().toISOString(),
-      };
-      
-      await setDoc(doc(db, 'video_progress', docId), progressData, { merge: true });
-      setProgress(progressData as VideoProgress);
-      
-      return { data: progressData, error: null };
-    } catch (e) {
-      console.error('Error updating progress:', e);
-      return { error: e instanceof Error ? e : new Error(String(e)) };
+    if (!videoId) return { error: new Error('Video ID required') };
+
+    // 1. Immediately save to device local storage
+    const savedLocal = saveLocalVideoProgress(effectiveUserId, videoId, {
+      progress_percent: Math.min(percent, 100),
+      is_completed: isCompleted,
+    });
+
+    const updatedObj: VideoProgress = {
+      id: `local-${videoId}`,
+      user_id: effectiveUserId,
+      video_id: videoId,
+      watched_seconds: savedLocal.watched_seconds,
+      last_position: savedLocal.last_position,
+      progress_percent: savedLocal.progress_percent,
+      is_completed: savedLocal.is_completed,
+      created_at: savedLocal.last_watched_at,
+      last_watched_at: savedLocal.last_watched_at,
+    };
+    setProgress(updatedObj);
+
+    // 2. If real remote user, sync to Supabase (ignore failures silently)
+    if (user?.id && !user.id.startsWith('demo-')) {
+      try {
+        await supabase.from('video_progress').upsert({
+          user_id: user.id,
+          video_id: videoId,
+          progress_percent: Math.min(percent, 100),
+          is_completed: isCompleted,
+          last_watched_at: new Date().toISOString(),
+          watched_seconds: savedLocal.watched_seconds,
+          last_position: savedLocal.last_position,
+        }, { onConflict: 'user_id,video_id' });
+      } catch (e) {
+        console.warn('Supabase remote progress sync failed, saved locally:', e);
+      }
     }
+
+    return { data: updatedObj, error: null };
   };
 
   return { progress, isLoading, updateProgress, refetch: fetchProgress };

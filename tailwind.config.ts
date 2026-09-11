@@ -10,9 +10,13 @@ export default {
       padding: "2rem",
       screens: {
         "2xl": "1400px",
+        "4xl": "2560px",
       },
     },
     extend: {
+      screens: {
+        "4xl": "2560px",
+      },
       fontFamily: {
         display: ['Poppins', 'sans-serif'],
         body: ['Poppins', 'sans-serif'],
@@ -28,6 +32,24 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        brand: {
+          50: "#f0fdf4",
+          100: "#dcfce7",
+          200: "#bbf7d0",
+          300: "#86efac",
+          400: "#4ade80",
+          500: "#1d931d",
+          600: "#167a16",
+          700: "#116111",
+          800: "#0e4d0e",
+          900: "#093609",
+        },
+        "cus-gray": {
+          50: "#F9FAFB",
+          100: "#F3F4F6",
+        },
+        "gray-black": "#17181D",
+        "gray-light": "#9CA3AF",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -56,6 +78,12 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+      },
+      boxShadow: {
+        cus_round: "0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)",
+      },
+      padding: {
+        "2xl": "2.5rem",
       },
       borderRadius: {
         lg: "var(--radius)",

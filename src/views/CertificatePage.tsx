@@ -1,17 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/integrations/firebase/config';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Award, Download, CheckCircle, ArrowLeft, Sun, Moon, Globe, Loader2 } from 'lucide-react';
+import { Award, Download, CheckCircle, ArrowLeft, Sun, Moon, Globe, Loader2, Share2, Copy, Linkedin, LogIn, ExternalLink } from 'lucide-react';
 import { Certificate } from '@/types/lms';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { QRCodeSVG } from 'qrcode.react';
+import learnLogoAssetJson from '@/assets/learn-with-alphazero-logo.png.asset.json';
+const learnLogo = learnLogoAssetJson.url;
 
 // Public certificate data (from Edge Function - no student_name for privacy)
 interface PublicCertificateData {
@@ -44,28 +46,24 @@ export default function CertificatePage() {
 
     // If user is logged in, try to fetch their own certificate with full details
     if (user) {
-      try {
-        const certQuery = query(
-          collection(db, 'certificates'),
-          where('certificate_id', '==', certificateId),
-          where('user_id', '==', user.uid)
-        );
-        const snapshot = await getDocs(certQuery);
-        if (!snapshot.empty) {
-          setCertificate(snapshot.docs[0].data() as Certificate);
-          setIsVerified(true);
-          setIsLoading(false);
-          return;
-        }
-      } catch (error) {
-        console.error('Error fetching certificate:', error);
+      const { data, error } = await supabase
+        .from('certificates')
+        .select('*')
+        .eq('certificate_id', certificateId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!error && data) {
+        setCertificate(data as Certificate);
+        setIsVerified(true);
+        setIsLoading(false);
+        return;
       }
     }
 
     // For public verification (or if user doesn't own this certificate),
     // use the secure Edge Function that only returns public data
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
       const { data, error } = await supabase.functions.invoke('verify-certificate', {
         body: { certificate_id: certificateId }
       });
@@ -138,7 +136,19 @@ export default function CertificatePage() {
   const year = issuedDate.getFullYear();
   const month = String(issuedDate.getMonth() + 1).padStart(2, '0');
   const day = String(issuedDate.getDate()).padStart(2, '0');
-  const registrationNumber = displayData ? `AZA-${year}${month}${day}-${displayData.certificate_id.replace('CERT-', '')}` : '';
+  const registrationNumber = displayData ? `APL-${year}${month}${day}-${displayData.certificate_id.replace('CERT-', '')}` : '';
+
+  const verificationUrl = typeof window !== 'undefined' ? `${window.location.origin}/certificate/${certificateId}` : '';
+
+  const copyShareLink = () => {
+    navigator.clipboard.writeText(verificationUrl);
+    toast.success(language === 'bn' ? 'সার্টিফিকেট লিঙ্ক কপি করা হয়েছে!' : 'Certificate verification link copied!');
+  };
+
+  const shareOnLinkedIn = () => {
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(verificationUrl)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
 
   if (isLoading) {
     return (
@@ -186,17 +196,17 @@ export default function CertificatePage() {
               {/* Content */}
               <div className="absolute inset-10 flex flex-col items-center justify-between p-4 md:p-8 text-center">
                 {/* Header */}
-                <div className="flex flex-col items-center gap-2">
+                <div className="flex flex-col items-center gap-1">
                   <img 
-                    src="/logo.png" 
-                    alt="Astropixel Academy" 
-                    className="w-16 h-16 md:w-20 md:h-20 object-contain"
+                    src={learnLogo} 
+                    alt="Astropixel Learn" 
+                    className="h-10 md:h-12 object-contain"
                     crossOrigin="anonymous"
                   />
-                  <h2 className="text-[#1a3a4a] text-sm md:text-base font-semibold tracking-[0.3em] uppercase">
-                    Astropixel Academy
+                  <h2 className="text-[#1a3a4a] text-xs md:text-sm font-semibold tracking-[0.25em] uppercase">
+                    Astropixel Learn
                   </h2>
-                  <div className="w-24 h-px bg-[#c9a227] mt-1" />
+                  <div className="w-24 h-px bg-[#c9a227] mt-0.5" />
                 </div>
                 
                 {/* Title */}
@@ -235,10 +245,10 @@ export default function CertificatePage() {
                     </p>
                   </div>
                   
-                  <div className="text-center">
-                    <p className="text-[10px] md:text-xs text-gray-500">{t('cert.issued')}: {formattedDate}</p>
-                    <p className="text-[10px] md:text-xs text-[#1a3a4a] font-mono mt-1">{displayData.certificate_id}</p>
-                    <p className="text-[8px] md:text-[10px] text-[#c9a227] border border-[#c9a227] px-2 py-0.5 mt-1 inline-block">
+                  <div className="flex flex-col items-center">
+                    <QRCodeSVG value={verificationUrl} size={48} fgColor="#1a3a4a" />
+                    <p className="text-[8px] text-gray-500 font-mono mt-0.5">{displayData.certificate_id}</p>
+                    <p className="text-[7px] text-[#c9a227] border border-[#c9a227] px-1 py-0.2 mt-0.5 inline-block">
                       {registrationNumber}
                     </p>
                   </div>
@@ -265,30 +275,78 @@ export default function CertificatePage() {
               <span className="text-foreground font-medium">{t('cert.verified')}</span>
             </div>
             
-            {/* Download Button */}
-            {canDownload ? (
-              <Button 
-                onClick={downloadCertificate} 
-                disabled={isDownloading}
-                className="w-full gap-2 bg-[#1a3a4a] hover:bg-[#2d5a6a] text-white"
-              >
-                {isDownloading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    {t('cert.downloading')}
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4" />
-                    {t('cert.download')}
-                  </>
-                )}
-              </Button>
-            ) : (
-              <div className="text-center text-sm text-muted-foreground">
-                <p>{t('cert.loginToDownload')}</p>
-              </div>
-            )}
+            {/* Action Buttons Group */}
+            <div className="space-y-3">
+              {canDownload ? (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <Button 
+                    onClick={downloadCertificate} 
+                    disabled={isDownloading}
+                    className="sm:col-span-1 gap-2 bg-[#1a3a4a] hover:bg-[#2d5a6a] text-white h-10"
+                  >
+                    {isDownloading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {t('cert.downloading')}
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-4 h-4" />
+                        {t('cert.download')} (PDF)
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={copyShareLink}
+                    className="gap-2 border-border/80 h-10 text-xs"
+                  >
+                    <Copy className="w-4 h-4" />
+                    {language === 'bn' ? 'ভেরিফিকেশন লিঙ্ক কপি' : 'Copy Verification Link'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={shareOnLinkedIn}
+                    className="gap-2 border-border/80 h-10 text-xs"
+                  >
+                    <Linkedin className="w-4 h-4 text-blue-500" />
+                    {language === 'bn' ? 'লিঙ্কডইনে শেয়ার' : 'Share on LinkedIn'}
+                  </Button>
+                </div>
+              ) : (
+                <div className="bg-card border border-border/60 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      {language === 'bn' ? 'এই সার্টিফিকেটটি ডাউনলোড করতে চান?' : 'Want to download this verified certificate?'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {language === 'bn' ? 'পিডিএফ ফরম্যাটে হাই-রেজ্যুলেশন কপি ডাউনলোড করতে লগইন করুন।' : 'Log in with your enrolled student account to export high-res PDF.'}
+                    </p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={copyShareLink}
+                      className="gap-1.5 text-xs h-9"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      {language === 'bn' ? 'লিঙ্ক কপি' : 'Copy Link'}
+                    </Button>
+                    <Button
+                      asChild
+                      size="sm"
+                      className="gap-1.5 bg-primary text-primary-foreground text-xs h-9"
+                    >
+                      <Link to={`/student/login?redirect=/certificate/${certificateId}`}>
+                        <LogIn className="w-3.5 h-3.5" />
+                        {language === 'bn' ? 'লগইন করুন' : 'Log in to Download'}
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <Card className="max-w-md mx-auto border-dashed">
