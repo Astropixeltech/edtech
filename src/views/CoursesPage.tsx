@@ -290,205 +290,68 @@ export default function CoursesPage() {
 
       <div className="container-fluid-2k bg-white dark:bg-background overflow-hidden">
         
-        {/* 1. HERO SECTION (Editorial 2-Column with Framed Visual Card & Animation) */}
+        {/* 1. HERO BANNER SECTION (Recovered EdgeCourseBD responsive heights, aligned to max-w-6xl) */}
         <section 
           onMouseEnter={() => setIsSliderPaused(true)}
           onMouseLeave={() => setIsSliderPaused(false)}
-          className="relative pt-4 sm:pt-8 pb-10 sm:pb-14 px-4 sm:px-6 lg:px-8 overflow-hidden bg-gradient-to-b from-brand-50/40 via-background to-background dark:from-slate-950/40 dark:via-background dark:to-background border-b border-gray-100 dark:border-border/40"
+          className="relative w-full h-[250px] sm:h-[400px] md:h-[550px] 4xl:h-[700px] overflow-hidden bg-black group"
         >
-          {/* Ambient blur glow strictly below navbar */}
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[300px] bg-gradient-to-tr from-emerald-500/10 via-teal-500/10 to-transparent blur-3xl -z-10 pointer-events-none rounded-full" />
-
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
-              
-              {/* Left Column: Headlines, Target Program Switchers & CTAs */}
-              <div className="lg:col-span-7 space-y-5 sm:space-y-6">
-                
-                {/* Live Announcement Pill Badge */}
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-50/80 dark:bg-emerald-950/40 backdrop-blur-md text-emerald-700 dark:text-emerald-300 text-xs font-bold shadow-sm">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentHero.id || currentSlide}
+              initial={{ opacity: 0, scale: 1.02 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.99 }}
+              transition={{ duration: 1.2, ease: "easeInOut" }}
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{ backgroundImage: `url(${currentHero.image})` }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent flex items-end">
+                <div className="max-w-6xl mx-auto w-full pb-10 sm:pb-14 px-4 sm:px-6 lg:px-8 text-white">
+                  <span className="inline-block px-3 py-1 rounded-full bg-brand-500 text-white text-xs font-bold mb-2 shadow-sm">
+                    {isBn ? currentHero.eyebrowBn : currentHero.eyebrowEn}
                   </span>
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>{isBn ? "এইচএসসি ও এডমিশন ২০২৬-২৭ • স্পেশাল মেন্টরশিপ ব্যাচ" : "HSC & Admission 2026-27 • Special Mentorship"}</span>
+                  <h1 className="text-xl sm:text-3xl md:text-5xl font-extrabold max-w-2xl leading-tight">
+                    {isBn ? `${currentHero.title1Bn} ${currentHero.title2Bn}` : `${currentHero.title1En} ${currentHero.title2En}`}
+                  </h1>
+                  <p className="text-xs sm:text-sm md:text-base text-gray-200 mt-2 max-w-xl line-clamp-2">
+                    {isBn ? currentHero.subtitleBn : currentHero.subtitleEn}
+                  </p>
                 </div>
-
-                {/* Primary Heading */}
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground tracking-tight leading-[1.18]">
-                  {isBn ? "স্বপ্ন যেখানে" : "Where Dreams"}{" "}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400">
-                    {isBn ? "বুয়েট, মেডিকেল ও ঢাবিতে।" : "Meet University Excellence."}
-                  </span>
-                  <br />
-                  <span className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground/90 mt-1 block">
-                    {isBn ? "শীর্ষ শিক্ষকদের সাথে প্রস্তুতি।" : "Mentored by Top Rankers."}
-                  </span>
-                </h1>
-
-                {/* Subtitle */}
-                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed max-w-xl">
-                  {isBn
-                    ? "এইচএসসি বিজ্ঞান ও এডমিশন টেস্টের প্রতিটি বিষয়ের গভীর কনসেপ্ট ক্লিয়ারিং, অধ্যায়ভিত্তিক CQ-MCQ ও লিখিত প্রশ্নব্যাংক সমাধানের পূর্ণাঙ্গ একাডেমি।"
-                    : "Comprehensive academic mastery for HSC Science, Engineering, and Medical Admission with deep conceptual clarity and mentor guidance."}
-                </p>
-
-                {/* Interactive Quick-Target Switcher Pills */}
-                <div className="flex flex-wrap items-center gap-2 pt-1">
-                  {[
-                    { idx: 0, label: isBn ? "এইচএসসি বিজ্ঞান" : "HSC Science", icon: Atom },
-                    { idx: 1, label: isBn ? "বুয়েট ইঞ্জিনিয়ারিং" : "BUET Engineering", icon: Compass },
-                    { idx: 2, label: isBn ? "মেডিকেল এডমিশন" : "Medical Admission", icon: Stethoscope },
-                    { idx: 3, label: isBn ? "ঢাবি 'ক' ইউনিট" : "Varsity 'A' Unit", icon: GraduationCap },
-                  ].map((tab) => {
-                    const Icon = tab.icon;
-                    const isActive = currentSlide === tab.idx;
-                    return (
-                      <button
-                        key={tab.idx}
-                        onClick={() => setCurrentSlide(tab.idx)}
-                        className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-300 border ${
-                          isActive
-                            ? "bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-600/20 scale-105"
-                            : "bg-white/80 dark:bg-slate-900/60 text-foreground/80 border-border/70 hover:border-emerald-500/40 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20"
-                        }`}
-                      >
-                        <Icon className="w-3.5 h-3.5" />
-                        <span>{tab.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex items-center flex-wrap gap-3.5 pt-2">
-                  <Link
-                    to="/catalog?category=admission"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm shadow-lg shadow-emerald-600/25 hover:shadow-xl hover:shadow-emerald-600/35 hover:-translate-y-0.5 transition-all duration-300 group"
-                  >
-                    <span>{isBn ? "কোর্সসমূহ দেখুন" : "Explore Courses"}</span>
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
-
-                  <a
-                    href="#courses"
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-full border border-border/80 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md text-foreground font-bold text-sm hover:border-emerald-500/60 hover:bg-white dark:hover:bg-slate-900 transition-all duration-300 shadow-sm"
-                  >
-                    <Play className="w-4 h-4 text-emerald-500 fill-emerald-500" />
-                    <span>{isBn ? "ফ্রি ডেমো ক্লাস" : "Free Demo Class"}</span>
-                  </a>
-                </div>
-
-                {/* Trust Badges Row */}
-                <div className="flex items-center flex-wrap gap-4 pt-1 text-xs font-semibold text-gray-500 dark:text-gray-400">
-                  <span className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    {isBn ? "লাইভ + রেকর্ডেড ক্লাস" : "Live & Recorded Classes"}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    {isBn ? "অধ্যায়ভিত্তিক CQ & MCQ" : "Chapter-wise Tests"}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    {isBn ? "সার্টিফিকেট সুবিধা" : "Verified Certificate"}
-                  </span>
-                </div>
-
               </div>
+            </motion.div>
+          </AnimatePresence>
 
-              {/* Right Column: Framed Visual Card with Ambient Glow and Floating Badges */}
-              <div className="lg:col-span-5 relative mt-4 lg:mt-0">
-                
-                {/* Ambient Glow behind image card */}
-                <div className="absolute -inset-3 bg-gradient-to-tr from-emerald-500/25 via-teal-500/15 to-brand-500/20 blur-3xl -z-10 rounded-3xl opacity-75 dark:opacity-60 pointer-events-none" />
+          {/* Slider Prev / Next Buttons */}
+          <button
+            onClick={() => setCurrentSlide((prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length)}
+            aria-label="Previous slide"
+            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/40 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setCurrentSlide((prev) => (prev + 1) % bannerSlides.length)}
+            aria-label="Next slide"
+            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/40 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
 
-                {/* Framed Image Card (strictly contained with zero bleed into navbar) */}
-                <div className="relative rounded-3xl overflow-hidden border border-white/70 dark:border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] bg-slate-900 aspect-[16/11] sm:aspect-[16/10] group">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={currentHero.id || currentSlide}
-                      initial={{ opacity: 0, scale: 1.05 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.98 }}
-                      transition={{ duration: 0.6, ease: "easeInOut" }}
-                      className="absolute inset-0 bg-cover bg-center"
-                      style={{ backgroundImage: `url(${currentHero.image})` }}
-                    >
-                      {/* Gradient Scrim for Content Readability */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-6 sm:p-7 text-white">
-                        <span className="inline-block px-3 py-1 rounded-full bg-emerald-600/90 text-white text-[11px] font-bold w-max mb-2 shadow-sm backdrop-blur-sm">
-                          {isBn ? currentHero.eyebrowBn : currentHero.eyebrowEn}
-                        </span>
-                        <h3 className="text-lg sm:text-xl font-bold leading-snug">
-                          {isBn ? `${currentHero.title1Bn} ${currentHero.title2Bn}` : `${currentHero.title1En} ${currentHero.title2En}`}
-                        </h3>
-                        <p className="text-xs text-gray-200 mt-1 line-clamp-2 max-w-sm">
-                          {isBn ? currentHero.subtitleBn : currentHero.subtitleEn}
-                        </p>
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
-
-                  {/* Slide Prev/Next Arrows */}
-                  <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5 z-20">
-                    <button
-                      onClick={() => setCurrentSlide((prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length)}
-                      aria-label="Previous slide"
-                      className="w-7 h-7 rounded-full bg-black/45 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-all duration-200 shadow-sm"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setCurrentSlide((prev) => (prev + 1) % bannerSlides.length)}
-                      aria-label="Next slide"
-                      className="w-7 h-7 rounded-full bg-black/45 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-all duration-200 shadow-sm"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  {/* Indicator Dots */}
-                  <div className="absolute bottom-3 right-6 flex items-center gap-1.5 z-20">
-                    {bannerSlides.map((_: any, idx: number) => (
-                      <button
-                        key={idx}
-                        onClick={() => setCurrentSlide(idx)}
-                        aria-label={`Slide ${idx + 1}`}
-                        className={`h-1.5 rounded-full transition-all duration-300 ${
-                          currentSlide === idx ? "w-6 bg-emerald-400 shadow-sm" : "w-1.5 bg-white/40 hover:bg-white/80"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Floating Badge 1: Top Floating Metric */}
-                <div className="hidden sm:flex absolute -top-4 -left-4 z-20 items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-xl animate-float">
-                  <div className="h-9 w-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-inner">
-                    <GraduationCap className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-muted-foreground font-semibold">বুয়েট ও ঢাবিতে চান্স</p>
-                    <p className="text-xs font-extrabold text-foreground">৮৫০+ শিক্ষার্থী</p>
-                  </div>
-                </div>
-
-                {/* Floating Badge 2: Bottom Floating Metric */}
-                <div className="hidden sm:flex absolute -bottom-4 -right-3 z-20 items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-xl">
-                  <div className="h-9 w-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-500 flex items-center justify-center shadow-inner">
-                    <Star className="h-5 w-5 fill-current" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-muted-foreground font-semibold">শিক্ষার্থীদের সন্তুষ্টি</p>
-                    <p className="text-xs font-extrabold text-foreground">৪.৯/৫ (১০,০০০+ রিভিউ)</p>
-                  </div>
-                </div>
-
-              </div>
-
-            </div>
+          {/* Slider Indicators */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+            {bannerSlides.map((slide: any, idx: number) => (
+              <button
+                key={slide.id || idx}
+                onClick={() => setCurrentSlide(idx)}
+                aria-label={`Slide ${idx + 1}`}
+                className={`transition-all duration-300 rounded-full ${
+                  currentSlide === idx
+                    ? "w-8 h-2 bg-brand-500 shadow-sm"
+                    : "w-2 h-2 bg-white/50 hover:bg-white/90"
+                }`}
+              />
+            ))}
           </div>
         </section>
 
@@ -706,52 +569,59 @@ export default function CoursesPage() {
             </div>
           </div>
         </section>
-        {/* 6. STUDENT TESTIMONIALS (Sideways Infinite Marquee with Delay & Pause on Hover) */}
-        <section className="bg-white dark:bg-background py-12 px-4 sm:px-6 lg:px-8 border-t border-gray-100 dark:border-border/40 overflow-hidden">
-          <div className="max-w-6xl mx-auto space-y-6">
-            <div className="flex flex-col items-center gap-2 text-center">
+        {/* 6. STUDENT TESTIMONIALS (Curated Institutional Hall of Fame Grid) */}
+        <section className="bg-background py-14 px-4 sm:px-6 lg:px-8 border-t border-border/60">
+          <div className="max-w-6xl mx-auto space-y-8">
+            <div className="flex flex-col items-center gap-2 text-center max-w-xl mx-auto">
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                {isBn ? "সফলতার গল্প" : "Success Stories"}
+              </span>
               <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                {isBn ? "শিক্ষার্থীদের মতামত" : "Student Reviews"}
+                {isBn ? "শিক্ষার্থীদের সাফল্যের অভিজ্ঞতা" : "What Our Rankers Say"}
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {isBn ? "হাজারো সফল শিক্ষার্থীদের রিভিউ ও অভিজ্ঞতা" : "What our students say about their learning experience"}
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                {isBn ? "বুয়েট, মেডিকেল ও ঢাবিতে চান্সপ্রাপ্ত শিক্ষার্থীদের বাস্তব প্রতিক্রিয়া" : "Verified testimonials from students admitted into premier universities"}
               </p>
             </div>
 
-            {/* Moving sideways track with delay and pause on hover */}
-            <div className="relative overflow-hidden w-full group-marquee py-4 [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
-              <div className="animate-marquee-sideways flex gap-5 md:gap-6 py-2">
-                {[...studentReviews, ...studentReviews].map((rev, idx) => (
-                  <div
-                    key={idx}
-                    className="w-[300px] sm:w-[350px] shrink-0 space-y-4 rounded-2xl bg-white/75 dark:bg-slate-900/65 backdrop-blur-xl border border-white/60 dark:border-white/10 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:-translate-y-2 hover:scale-[1.02] hover:shadow-[0_20px_40px_rgba(16,185,129,0.15)] hover:border-emerald-500/60 transition-all duration-300 flex flex-col justify-between"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold text-base shrink-0 shadow-sm">
-                        {(isBn ? rev.nameBn : rev.nameEn)[0]}
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-bold text-foreground">
-                          {isBn ? rev.nameBn : rev.nameEn}
-                        </h4>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {isBn ? rev.roleBn : rev.roleEn}
-                        </p>
-                      </div>
+            {/* Curated Grid of Verified Reviews */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+              {studentReviews.map((rev, idx) => (
+                <div
+                  key={idx}
+                  className="space-y-4 rounded-2xl bg-card dark:bg-card/95 border border-border/80 dark:border-border/60 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/40 transition-all duration-200 flex flex-col justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-11 w-11 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-sm shrink-0 shadow-none">
+                      {(isBn ? rev.nameBn : rev.nameEn)[0]}
                     </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-foreground">
+                        {isBn ? rev.nameBn : rev.nameEn}
+                      </h4>
+                      <p className="text-xs text-muted-foreground font-medium">
+                        {isBn ? rev.roleBn : rev.roleEn}
+                      </p>
+                    </div>
+                  </div>
 
-                    <div className="flex items-center gap-1 text-amber-400">
+                  <p className="text-xs sm:text-sm text-foreground/80 leading-relaxed italic flex-1">
+                    "{isBn ? rev.quoteBn : rev.quoteEn}"
+                  </p>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                    <div className="flex items-center gap-0.5 text-amber-500">
                       {[1, 2, 3, 4, 5].map((s) => (
-                        <Star key={s} className="h-3.5 w-3.5 fill-current" />
+                        <Star key={s} className="h-3 w-3 fill-current" />
                       ))}
                     </div>
-
-                    <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed italic">
-                      "{isBn ? rev.quoteBn : rev.quoteEn}"
-                    </p>
+                    <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      {isBn ? "ভেরিফাইড রিভিউ" : "Verified Student"}
+                    </span>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -772,19 +642,19 @@ export default function CoursesPage() {
               {Object.entries(trainers).map(([key, t]) => (
                 <div
                   key={key}
-                  className="group/inst flex w-full min-w-[240px] max-w-[280px] shrink-0 flex-col items-center text-center gap-3 rounded-2xl bg-white/75 dark:bg-slate-900/65 backdrop-blur-xl border border-white/60 dark:border-white/10 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:-translate-y-2.5 hover:scale-[1.03] hover:shadow-[0_20px_40px_rgba(16,185,129,0.18)] hover:border-emerald-500/60 transition-all duration-300"
+                  className="group/inst flex w-full min-w-[240px] max-w-[280px] shrink-0 flex-col items-center text-center gap-3 rounded-2xl bg-card dark:bg-card/95 border border-border/80 dark:border-border/60 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/40 transition-all duration-200"
                 >
-                  <div className="relative overflow-hidden rounded-full p-1 border-2 border-emerald-500/30 group-hover/inst:border-emerald-500/80 transition-colors">
+                  <div className="relative overflow-hidden rounded-full p-1 border-2 border-primary/20 group-hover/inst:border-primary/60 transition-colors">
                     <img
                       src={t.image}
                       alt={t.name}
-                      className="h-24 w-24 rounded-full object-cover transition-transform duration-500 group-hover/inst:scale-110"
+                      className="h-24 w-24 rounded-full object-cover transition-transform duration-300 group-hover/inst:scale-105"
                       loading="lazy"
                     />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-foreground group-hover/inst:text-emerald-600 dark:group-hover/inst:text-emerald-400 transition-colors">{t.name}</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                    <h4 className="text-sm font-bold text-foreground group-hover/inst:text-primary transition-colors">{t.name}</h4>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                       {isBn ? t.qualificationBn : t.qualificationEn}
                     </p>
                   </div>

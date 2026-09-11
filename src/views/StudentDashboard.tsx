@@ -149,7 +149,7 @@ export default function StudentDashboard() {
           <div className="flex items-center gap-2">
             <Avatar className="w-8 h-8 border-2 border-primary/20">
               <AvatarImage src={profile?.avatar_url || ''} />
-              <AvatarFallback className="bg-gradient-to-br from-primary to-cyan-600 text-white text-[10px] font-bold">{profile?.full_name?.charAt(0) || 'S'}</AvatarFallback>
+              <AvatarFallback className="bg-primary/15 text-primary text-[10px] font-bold">{profile?.full_name?.charAt(0) || 'S'}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold truncate">{profile?.full_name}</p>
@@ -170,17 +170,17 @@ export default function StudentDashboard() {
               }}
               className={`w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 group relative ${
                 activeTab === item.id
-                  ? 'bg-gradient-to-r from-primary to-cyan-600 text-white shadow-lg shadow-primary/25'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary/80'
               }`}
             >
-              <item.icon className={`w-4 h-4 flex-shrink-0 ${activeTab === item.id ? '' : 'group-hover:scale-110 transition-transform'}`} />
+              <item.icon className={`w-4 h-4 flex-shrink-0 ${activeTab === item.id ? '' : 'group-hover:scale-105 transition-transform'}`} />
               <span className="flex-1 text-left truncate">{item.label}</span>
               {item.id === 'live' && (
                 <span className="inline-flex w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-auto" />
               )}
               {item.id === 'notices' && (
-                <span className="inline-flex text-[9px] px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-500 font-bold ml-auto">
+                <span className="inline-flex text-[9px] px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold ml-auto">
                   New
                 </span>
               )}
@@ -211,7 +211,7 @@ export default function StudentDashboard() {
               <span className="text-xs font-semibold">{profile?.full_name?.split(' ')[0]}</span>
               <Avatar className="w-8 h-8 border border-primary/20 cursor-pointer" onClick={() => setActiveTab('profile')}>
                 <AvatarImage src={profile?.avatar_url || ''} />
-                <AvatarFallback className="text-[10px] bg-primary text-white">{profile?.full_name?.charAt(0) || 'S'}</AvatarFallback>
+                <AvatarFallback className="text-[10px] bg-primary text-primary-foreground">{profile?.full_name?.charAt(0) || 'S'}</AvatarFallback>
               </Avatar>
             </div>
           </div>
@@ -219,29 +219,28 @@ export default function StudentDashboard() {
           {/* Tab: My Courses */}
           {activeTab === 'courses' && (
             <>
-              {/* Gamification & Streak Banner */}
-              <div className="bg-gradient-to-r from-primary/10 via-amber-500/10 to-cyan-500/10 border border-primary/25 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-md">
+              {/* Academic Progress & Study Streak Bar */}
+              <div className="bg-card dark:bg-card/90 border border-border/80 rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3 shadow-sm">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-500 flex items-center justify-center font-bold">
-                    <Flame className="w-5 h-5 fill-current animate-bounce" />
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+                    <Flame className="w-5 h-5 fill-current" />
                   </div>
                   <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-sm">{learningStreak} Day Study Streak</span>
-                      <span className="text-xs">🔥</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-foreground">{learningStreak} {language === 'bn' ? 'দিনের নিয়মিত পড়াশোনা' : 'Day Study Streak'}</span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground">
-                      {language === 'bn' ? 'প্রতিদিনের নিয়মিত পড়াশোনা চালিয়ে যান!' : 'Keep up the daily study streak to build deep mastery!'}
+                    <p className="text-xs text-muted-foreground">
+                      {language === 'bn' ? 'ধারাবাহিক অনুশীলনের মাধ্যমে কাঙ্ক্ষিত লক্ষ্যের দিকে এগিয়ে চলুন।' : 'Consistent daily practice builds true conceptual mastery.'}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 text-xs font-medium">
-                  <div className="flex items-center gap-1.5 bg-white/50 dark:bg-slate-800/80 px-3 py-1.5 rounded-xl border border-border/60">
-                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                <div className="flex items-center gap-2.5 text-xs font-semibold">
+                  <div className="flex items-center gap-1.5 bg-secondary/80 px-3 py-1.5 rounded-xl border border-border/60">
+                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                     <span>{totalXp} XP</span>
                   </div>
-                  <div className="flex items-center gap-1.5 bg-white/50 dark:bg-slate-800/80 px-3 py-1.5 rounded-xl border border-border/60">
+                  <div className="flex items-center gap-1.5 bg-secondary/80 px-3 py-1.5 rounded-xl border border-border/60">
                     <Award className="w-3.5 h-3.5 text-primary" />
                     <span>{studentLevel}</span>
                   </div>
@@ -441,8 +440,8 @@ export default function StudentDashboard() {
             <div className="space-y-4">
               <div className="bg-white dark:bg-slate-900 rounded-2xl border border-border/50 p-5 shadow-lg shadow-black/5">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-cyan-600 flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <Sparkles className="w-5 h-5" />
                   </div>
                   <div>
                     <h2 className="font-bold">{t('enroll.title')}</h2>
@@ -512,8 +511,8 @@ export default function StudentDashboard() {
             <div className="max-w-lg mx-auto">
               <div className="bg-white dark:bg-slate-900 rounded-2xl border border-border/50 p-5 shadow-lg shadow-black/5">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-cyan-600 flex items-center justify-center">
-                    <IdCard className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <IdCard className="w-5 h-5" />
                   </div>
                   <div>
                     <h2 className="font-bold">Student ID Card</h2>

@@ -224,7 +224,7 @@ export default function TeacherDashboard() {
           <div className="flex items-center gap-2">
             <Avatar className="w-8 h-8 border-2 border-primary/20">
               <AvatarImage src={profile?.avatar_url || ''} />
-              <AvatarFallback className="bg-gradient-to-br from-primary to-cyan-600 text-white text-[10px] font-bold">
+              <AvatarFallback className="bg-primary/15 text-primary text-[10px] font-bold">
                 {profile?.full_name?.charAt(0) || 'T'}
               </AvatarFallback>
             </Avatar>

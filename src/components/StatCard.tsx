@@ -106,18 +106,18 @@ export const StatCard = ({
   return (
     <div
       ref={cardRef}
-      className="group mx-auto grid w-full max-w-[300px] grid-cols-[48px_1fr] md:grid-cols-[64px_1fr] xl:grid-cols-[76px_1fr] items-center gap-3.5 sm:gap-4 xl:gap-5 rounded-2xl border border-white/60 dark:border-white/10 bg-white/80 dark:bg-slate-900/65 backdrop-blur-xl p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:-translate-y-2 hover:scale-[1.03] hover:shadow-[0_20px_40px_rgba(16,185,129,0.18)] dark:hover:shadow-[0_20px_40px_rgba(16,185,129,0.25)] hover:border-emerald-500/60 dark:hover:border-emerald-400/50 transition-all duration-300 cursor-default"
+      className="group mx-auto grid w-full max-w-[300px] grid-cols-[48px_1fr] md:grid-cols-[56px_1fr] items-center gap-3.5 sm:gap-4 rounded-2xl border border-border/80 dark:border-border/60 bg-card dark:bg-card/95 p-4 sm:p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/40 dark:hover:border-primary/50 transition-all duration-200 cursor-default"
     >
       <div
-        className={`flex h-12 w-12 md:h-14 md:w-14 xl:h-16 xl:w-16 items-center justify-center rounded-2xl ${iconBgColor} ${iconColor} shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300 shadow-sm`}
+        className={`flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0 group-hover:scale-105 transition-transform duration-200 shadow-none`}
       >
-        <Icon className="h-6 w-6 md:h-7 md:w-7 xl:h-8 xl:w-8" />
+        <Icon className="h-6 w-6 md:h-7 md:w-7" />
       </div>
       <div className="flex flex-col gap-0.5 min-w-0">
-        <span className="text-xl sm:text-2xl md:text-3xl font-extrabold text-foreground tracking-tight tabular-nums group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+        <span className="text-xl sm:text-2xl md:text-3xl font-extrabold text-foreground tracking-tight tabular-nums group-hover:text-primary transition-colors">
           {formattedCount}
         </span>
-        <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium truncate">
+        <span className="text-xs sm:text-sm text-muted-foreground font-medium truncate">
           {label}
         </span>
       </div>

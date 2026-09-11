@@ -1,6 +1,5 @@
-/* Font loading optimized with display=swap for better FCP/LCP */
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Hind+Siliguri:wght@400;500;600;700&display=swap');
-@import url('https://fonts.bunny.net/css?family=poppins:300,400,500,600,700,800,900|playfair-display:400,400i,600,600i,700,700i|hind-siliguri:400,500,600,700&display=swap');
+/* Optimized Font Loading: Playfair Display + Hind Siliguri */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -13,111 +12,84 @@
 html, body { scrollbar-width: none; -ms-overflow-style: none; }
 html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; width: 0; height: 0; }
 
-/* Sabina Shorolipi Font for Bengali titles */
-@font-face {
-  font-family: 'SabinaShorolipi';
-  src: url('/fonts/SabinaShorolipi.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Mahin Rafid Font for Bengali subtitles */
-@font-face {
-  font-family: 'MahinRafid';
-  src: url('/fonts/MahinRafid.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Aloka Font for Bengali body text */
-@font-face {
-  font-family: 'Aloka';
-  src: url('/fonts/Aloka.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
 @layer base {
   :root {
-    --gradient-color: #6d28d9;
-    --sparkles-color: #6d28d9;
+    --gradient-color: #115233;
+    --sparkles-color: #10b981;
 
-    --background: 0 0% 98%;
-    --foreground: 222.2 47.4% 11.2%;
+    --background: 40 20% 98%;          /* #FAF9F6 - Warm Editorial Alabaster */
+    --foreground: 155 30% 12%;          /* #132219 - Deep Charcoal Green */
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 47.4% 11.2%;
+    --card-foreground: 155 30% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 155 30% 12%;
 
-    --primary: 262.1 83.3% 57.8%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 154 65% 19%;             /* #115233 - Deep Academic Forest Green */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 150 20% 95%;           /* #EEF4F0 - Soft Sage Neutral */
+    --secondary-foreground: 154 65% 19%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 150 15% 94%;
+    --muted-foreground: 155 12% 45%;    /* #65776C - Balanced body neutral */
 
-    --accent: 262.1 83.3% 57.8%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 38 90% 48%;               /* #E59009 - Academic Gold / Distinction */
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 262.1 83.3% 57.8%;
+    --border: 150 15% 90%;
+    --input: 150 15% 90%;
+    --ring: 154 65% 25%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --gradient-start: 262.1 83.3% 57.8%;
-    --gradient-mid: 260 70% 50%;
-    --gradient-end: 255 60% 45%;
+    --gradient-start: 154 65% 19%;
+    --gradient-mid: 155 60% 25%;
+    --gradient-end: 156 55% 30%;
 
-    /* Light mode premium shadows */
-    --shadow-card: 0 1px 3px hsl(215 25% 10% / 0.04), 0 8px 24px hsl(185 100% 38% / 0.04);
-    --shadow-card-hover: 0 4px 12px hsl(215 25% 10% / 0.06), 0 16px 40px hsl(185 100% 38% / 0.08);
-    --shadow-elevated: 0 8px 30px hsl(215 25% 10% / 0.08), 0 2px 8px hsl(185 100% 38% / 0.05);
+    /* Light mode soft institutional shadows */
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(17, 82, 51, 0.04);
+    --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.06), 0 16px 32px rgba(17, 82, 51, 0.08);
+    --shadow-elevated: 0 8px 30px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(17, 82, 51, 0.05);
     
-    --font-display: 'Poppins', sans-serif;
-    --font-body: 'Poppins', sans-serif;
-    --font-display-bn: 'SabinaShorolipi', 'Aloka', sans-serif;
-    --font-subtitle-bn: 'Aloka', 'Hind Siliguri', sans-serif;
-    --font-body-bn: 'MahinRafid', 'Hind Siliguri', sans-serif;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'Hind Siliguri', sans-serif;
+    --font-display-bn: 'Hind Siliguri', sans-serif;
+    --font-subtitle-bn: 'Hind Siliguri', sans-serif;
+    --font-body-bn: 'Hind Siliguri', sans-serif;
   }
 
   .dark {
-    --gradient-color: #8350e8;
-    --sparkles-color: #ffffff;
+    --gradient-color: #10b981;
+    --sparkles-color: #34d399;
 
-    --background: 220 15% 4%;
-    --foreground: 0 0% 98%;
-    --card: 220 15% 7%;
-    --card-foreground: 0 0% 98%;
-    --popover: 220 15% 7%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 185 100% 50%;
-    --primary-foreground: 220 15% 4%;
-    --secondary: 220 12% 12%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 220 12% 16%;
-    --muted-foreground: 220 10% 55%;
-    --accent: 185 100% 50%;
-    --accent-foreground: 220 15% 4%;
-    --destructive: 0 62.8% 30.6%;
+    --background: 160 25% 4%;           /* #050B08 - Deep Obsidian Black */
+    --foreground: 150 15% 96%;
+    --card: 160 20% 7%;                 /* #0B1410 - Dark Emerald Slate */
+    --card-foreground: 150 15% 96%;
+    --popover: 160 20% 7%;
+    --popover-foreground: 150 15% 96%;
+    --primary: 152 60% 42%;             /* #2A9D6A - Luminous Emerald Accent */
+    --primary-foreground: 160 25% 4%;
+    --secondary: 160 15% 12%;
+    --secondary-foreground: 150 15% 96%;
+    --muted: 160 15% 12%;
+    --muted-foreground: 150 10% 60%;
+    --accent: 40 85% 55%;               /* Warm Academic Gold */
+    --accent-foreground: 160 25% 4%;
+    --destructive: 0 62.8% 40%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 12% 16%;
-    --input: 220 12% 16%;
-    --ring: 185 100% 50%;
+    --border: 160 15% 16%;
+    --input: 160 15% 16%;
+    --ring: 152 60% 42%;
     
-    --gradient-start: 185 100% 50%;
-    --gradient-mid: 195 100% 55%;
-    --gradient-end: 210 100% 60%;
+    --gradient-start: 154 65% 19%;
+    --gradient-mid: 152 60% 30%;
+    --gradient-end: 150 55% 38%;
   }
 }
 

@@ -36,7 +36,7 @@ export const EdgeCourseCard = ({ course, onEnroll, className }: EdgeCourseCardPr
 
   return (
     <div
-      className={`group w-full shrink-0 overflow-hidden rounded-2xl border border-white/60 dark:border-white/10 bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:-translate-y-2 hover:scale-[1.01] hover:shadow-[0_22px_45px_rgba(16,185,129,0.2)] dark:hover:shadow-[0_22px_45px_rgba(16,185,129,0.25)] hover:border-emerald-500/60 dark:hover:border-emerald-400/50 transition-all duration-300 snap-start flex flex-col justify-between ${className || "min-w-[260px] max-w-[320px]"}`}
+      className={`group w-full shrink-0 overflow-hidden rounded-2xl border border-border/80 dark:border-border/60 bg-card dark:bg-card/95 shadow-sm hover:shadow-md hover:-translate-y-1 hover:border-primary/40 dark:hover:border-primary/50 transition-all duration-200 snap-start flex flex-col justify-between ${className || "min-w-[260px] max-w-[320px]"}`}
     >
       {/* Thumbnail */}
       <Link to={targetLink} className="relative block h-[180px] w-full overflow-hidden bg-gray-100 dark:bg-accent rounded-t-2xl">
@@ -92,10 +92,10 @@ export const EdgeCourseCard = ({ course, onEnroll, className }: EdgeCourseCardPr
         </div>
 
         {/* Footer Row: Price and Enroll CTA */}
-        <div className="flex items-center justify-between pt-2.5 border-t border-gray-100 dark:border-border/40 mt-auto">
+        <div className="flex items-center justify-between pt-2.5 border-t border-border/60 mt-auto">
           <div className="flex flex-col">
-            <span className="text-[11px] text-gray-400">{isBn ? "কোর্স ফি" : "Fee"}</span>
-            <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400">
+            <span className="text-[11px] text-muted-foreground">{isBn ? "কোর্স ফি" : "Fee"}</span>
+            <span className="text-base font-extrabold text-primary">
               {price > 0 ? `৳ ${price.toLocaleString()}` : (isBn ? "ফ্রি" : "Free")}
             </span>
           </div>
@@ -103,7 +103,7 @@ export const EdgeCourseCard = ({ course, onEnroll, className }: EdgeCourseCardPr
           {onEnroll ? (
             <button
               onClick={() => onEnroll(course)}
-              className="h-8 px-4 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md hover:shadow-emerald-500/20 active:scale-95"
+              className="h-8 px-4 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95"
             >
               <span>{isBn ? "বিস্তারিত দেখুন" : "View Details"}</span>
               <ArrowRight className="h-3 w-3" />
@@ -111,7 +111,7 @@ export const EdgeCourseCard = ({ course, onEnroll, className }: EdgeCourseCardPr
           ) : (
             <Link
               to={targetLink}
-              className="h-8 px-4 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md hover:shadow-emerald-500/20 active:scale-95"
+              className="h-8 px-4 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95"
             >
               <span>{isBn ? "বিস্তারিত দেখুন" : "View Details"}</span>
               <ArrowRight className="h-3 w-3" />
