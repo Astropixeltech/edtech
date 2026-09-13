@@ -34,7 +34,7 @@ export const usePageContent = (pageName: string, scopeOverride?: string) => {
   const { data: contents, isLoading } = useQuery({
     queryKey: ['page-content-public', pageName, scope],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('page_content')
         .select('*')
         .eq('page_name', pageName)

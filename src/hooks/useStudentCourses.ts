@@ -70,7 +70,7 @@ export function useStudentCourseManagement() {
 
       if (coursesError) throw coursesError;
 
-      const coursesMap = new Map((coursesData || []).map((c: Course) => [c.id, c]));
+      const coursesMap = new Map((coursesData || []).map((c: any) => [c.id, c as Course]));
 
       // Build students with courses
       const studentsWithCourses: StudentWithCourses[] = (profiles || []).map((profile: Profile) => {

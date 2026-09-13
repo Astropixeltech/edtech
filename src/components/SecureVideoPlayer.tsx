@@ -128,14 +128,16 @@ function YouTubeCustomPlayer({
         .eq('user_id', userId)
         .eq('video_id', videoId)
         .maybeSingle()
-        .then(({ data }) => {
-          if (data) {
-            const maxW = Math.max(data.watched_seconds || 0, data.last_position || 0, maxWatchedSeconds, local?.watched_seconds || 0);
-            setHighestWatched(maxW);
-            if (data.is_completed) setIsCompleted(true);
-          }
-        })
-        .catch(() => {});
+        .then(
+          ({ data }) => {
+            if (data) {
+              const maxW = Math.max(data.watched_seconds || 0, data.last_position || 0, maxWatchedSeconds, local?.watched_seconds || 0);
+              setHighestWatched(maxW);
+              if (data.is_completed) setIsCompleted(true);
+            }
+          },
+          () => {}
+        );
     }
   }, [videoId, userId, maxWatchedSeconds]);
 
@@ -492,6 +494,33 @@ function YouTubeCustomPlayer({
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
+  // Screen click handler for single click (play/pause) vs double click (skip -10s / +10s)
+  const handlePlayerAreaClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest('.player-controls-bar')) return;
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const clickX = e.clientX - rect.left;
+    const width = rect.width;
+    const now = Date.now();
+    const timeSinceLast = now - lastClickTimeRef.current;
+    lastClickTimeRef.current = now;
+
+    if (timeSinceLast < 300) {
+      if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+      if (clickX < width * 0.35) {
+        skipBack();
+      } else if (clickX > width * 0.65) {
+        skipForward();
+      } else {
+        togglePlay();
+      }
+    } else {
+      clickTimerRef.current = setTimeout(() => {
+        togglePlay();
+      }, 250);
+    }
+  };
+
   const startFromPoster = () => {
     setShowPoster(false);
   };
@@ -816,16 +845,18 @@ export default function SecureVideoPlayer({
         .eq('user_id', userId)
         .eq('video_id', videoId)
         .maybeSingle()
-        .then(({ data }) => {
-          if (data) {
-            const maxW = Math.max(data.watched_seconds || 0, data.last_position || 0, maxWatchedSeconds, local?.watched_seconds || 0);
-            setHighestWatched(maxW);
-            if (data.is_completed) {
-              setIsCompleted(true);
+        .then(
+          ({ data }) => {
+            if (data) {
+              const maxW = Math.max(data.watched_seconds || 0, data.last_position || 0, maxWatchedSeconds, local?.watched_seconds || 0);
+              setHighestWatched(maxW);
+              if (data.is_completed) {
+                setIsCompleted(true);
+              }
             }
-          }
-        })
-        .catch(() => {});
+          },
+          () => {}
+        );
     }
   }, [videoId, userId, maxWatchedSeconds]);
 

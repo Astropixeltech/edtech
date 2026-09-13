@@ -168,7 +168,7 @@ export default function TeacherChatTab({ courses, language }: TeacherChatTabProp
 
     try {
       let courseIds: string[] = [];
-      if (isAdmin || role === 'admin' || role === 'moderator') {
+      if (isAdmin || (role as string) === 'admin' || (role as string) === 'moderator') {
         courseIds = (courses || []).map((c: any) => c.id);
       } else {
         // 1. Owner courses (courses.teacher_id = my profile id)

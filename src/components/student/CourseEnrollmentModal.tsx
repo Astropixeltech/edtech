@@ -38,6 +38,7 @@ interface CourseEnrollmentModalProps {
 const translations = {
   en: {
     processing: 'Processing...',
+    redirecting: 'Redirecting to payment gateway...',
     success: 'Enrollment successful! Welcome to the course.',
     error: 'Failed to complete enrollment.',
     free: 'Free',
@@ -54,6 +55,7 @@ const translations = {
   },
   bn: {
     processing: 'প্রসেসিং...',
+    redirecting: 'পেমেন্ট গেটওয়েতে রিডাইরেক্ট হচ্ছে...',
     success: 'এনরোলমেন্ট সফল হয়েছে! ক্লাসে আপনাকে স্বাগতম।',
     error: 'এনরোল সম্পন্ন করতে ব্যর্থ।',
     free: 'ফ্রি',

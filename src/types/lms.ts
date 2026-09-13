@@ -78,6 +78,7 @@ export interface VideoProgress {
   last_watched_at: string;
   watched_seconds?: number;
   last_position?: number;
+  created_at?: string;
 }
 
 export interface CourseCompletion {

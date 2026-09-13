@@ -154,7 +154,7 @@ export default function CourseLandingPage() {
                 short_description: dbCourse.description ? dbCourse.description.slice(0, 150) + "..." : undefined,
                 thumbnail_url: dbCourse.thumbnail_url || undefined,
                 price: dbCourse.price || 0,
-                category: dbCourse.category || "Professional Development",
+                category: (dbCourse as any).category || "Professional Development",
                 trainer_name: dbCourse.trainer_name || "Astropixel Expert Mentors",
                 trainer_designation: dbCourse.trainer_designation || "Lead Instructor",
                 trainer_image: dbCourse.trainer_image || undefined,

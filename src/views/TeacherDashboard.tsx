@@ -623,7 +623,7 @@ export default function TeacherDashboard() {
                           <div className="flex items-center gap-2">
                             <Button
                               size="sm"
-                              onClick={() => toast.success(language === 'bn' ? 'খাতা ওপেন হচ্ছে...' : 'Opening submission file...')}
+                              onClick={() => toast({ title: language === 'bn' ? 'খাতা ওপেন হচ্ছে...' : 'Opening submission file...' })}
                               className="h-8 px-3 text-xs font-bold bg-primary hover:bg-primary/90 text-white rounded-lg shadow-xs"
                             >
                               {language === 'bn' ? 'খাতা দেখুন ও নম্বর দিন' : 'Grade Now'}
