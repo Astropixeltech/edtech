@@ -7,7 +7,8 @@ import {
   LayoutDashboard, BookOpen, Users, DollarSign, Briefcase, 
   MessageSquare, User, LogOut, Home, Moon, Sun, Globe,
   TrendingUp, PlayCircle, Video, Gift, Wallet, ChevronRight,
-  Clock, CheckCircle, AlertCircle, Plus, Menu, X
+  Clock, CheckCircle, AlertCircle, Plus, Menu, X, Sparkles,
+  FileCheck, BarChart3, UploadCloud, CheckCircle2, Star, Percent
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -157,13 +158,14 @@ export default function TeacherDashboard() {
 
   const navItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: t.dashboard },
-    { id: 'courses', icon: BookOpen, label: t.courses },
-    { id: 'landing', icon: Sparkles, label: language === 'bn' ? 'ল্যান্ডিং পেজ' : 'Landing Pages' },
+    { id: 'courses', icon: UploadCloud, label: language === 'bn' ? 'কোর্স ও ক্লাস আপলোড' : 'Course & Class Upload' },
+    { id: 'assignments', icon: FileCheck, label: language === 'bn' ? 'অ্যাসাইনমেন্ট চেকিং' : 'Assignment Checking' },
+    { id: 'analytics', icon: BarChart3, label: language === 'bn' ? 'ক্লাস অ্যানালিটিক্স' : 'Class Analytics' },
+    { id: 'earnings', icon: DollarSign, label: language === 'bn' ? 'উপার্জন ও কমিশন' : 'Earnings & Commission' },
     { id: 'liveClasses', icon: Video, label: language === 'bn' ? 'লাইভ ক্লাস' : 'Live Classes' },
     { id: 'students', icon: Users, label: t.students },
     { id: 'notices', icon: MessageSquare, label: language === 'bn' ? 'নোটিশ' : 'Notices' },
     { id: 'chat', icon: MessageSquare, label: language === 'bn' ? 'চ্যাট' : 'Chat' },
-    { id: 'earnings', icon: DollarSign, label: t.earnings },
     { id: 'paidWorks', icon: Briefcase, label: t.paidWorks },
     { id: 'support', icon: MessageSquare, label: t.support },
     { id: 'profile', icon: User, label: t.profile },
@@ -520,6 +522,199 @@ export default function TeacherDashboard() {
               refetch={refetchTickets}
               language={language}
             />
+          )}
+
+          {/* Tab: Assignment Checking */}
+          {activeTab === 'assignments' && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border/70 rounded-2xl p-5 shadow-xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <FileCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-foreground">
+                      {language === 'bn' ? 'অ্যাসাইনমেন্ট চেকিং ও মূল্যায়ন' : 'Assignment Grading & Review'}
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      {language === 'bn' ? 'শিক্ষার্থীদের জমা দেওয়া খাতা ও হোমওয়ার্ক মূল্যায়ন করুন' : 'Review and grade student assignment submissions'}
+                    </p>
+                  </div>
+                </div>
+                <Badge variant="outline" className="text-xs font-semibold px-3 py-1 border-primary/30 text-primary self-start sm:self-auto">
+                  {language === 'bn' ? '৬টি পেন্ডিং খাতা' : '6 Pending Submissions'}
+                </Badge>
+              </div>
+
+              {/* Assignment Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground">{language === 'bn' ? 'মোট জমা পড়েছে' : 'Total Submissions'}</p>
+                    <p className="text-2xl font-bold mt-1">৪৮টি</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground">{language === 'bn' ? 'পেন্ডিং মূল্যায়ন' : 'Pending'}</p>
+                    <p className="text-2xl font-bold text-amber-500 mt-1">৬টি</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground">{language === 'bn' ? 'চেক সম্পন্ন' : 'Graded'}</p>
+                    <p className="text-2xl font-bold text-emerald-500 mt-1">৪২টি</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground">{language === 'bn' ? 'গড় ক্লাস স্কোর' : 'Avg Score'}</p>
+                    <p className="text-2xl font-bold text-primary mt-1">৮২%</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Submission List */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">{language === 'bn' ? 'সাম্প্রতিক শিক্ষার্থী সাবমিশন' : 'Recent Submissions'}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {[
+                    { student: "সাকিব আল হাসান", course: "HSC পদার্থবিজ্ঞান ১ম পত্র", topic: "নিউটনিয়ান বলবিদ্যা প্রবলেম সেট ১", time: "২ ঘণ্টা আগে", status: "pending" },
+                    { student: "মারিয়া সুলতানা", course: "মেডিকেল জীববিজ্ঞান", topic: "কোষ বিভাজন ডায়াগ্রাম ও অ্যাসাইনমেন্ট", time: "৫ ঘণ্টা আগে", status: "pending" },
+                    { student: "ফারহান তানভীর", course: "উচ্চতর গণিত ১ম পত্র", topic: "ক্যালকুলাস ও ভেক্টর ম্যাথ শিট ২", time: "গতকাল", status: "graded", score: "৯৫/১০০" },
+                    { student: "আফরিন আক্তার", course: "HSC রসায়ন ১ম পত্র", topic: "মৌলের পর্যায়বৃত্ত ধর্ম সংক্ষিপ্ত প্রশ্ন", time: "২ দিন আগে", status: "graded", score: "৮৮/১০০" },
+                  ].map((sub, sIdx) => (
+                    <div key={sIdx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-muted/30 border border-border/40 hover:bg-muted/50 transition-colors">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm text-foreground">{sub.student}</span>
+                          <span className="text-xs text-muted-foreground">• {sub.course}</span>
+                        </div>
+                        <p className="text-xs font-medium text-primary">{sub.topic}</p>
+                        <p className="text-[11px] text-muted-foreground">জমা দেওয়ার সময়: {sub.time}</p>
+                      </div>
+
+                      <div className="flex items-center gap-3 shrink-0">
+                        {sub.status === 'graded' ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-md">
+                              নম্বর: {sub.score}
+                            </span>
+                            <Button size="sm" variant="ghost" className="h-8 text-xs">
+                              {language === 'bn' ? 'রিভিউ' : 'Review'}
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => toast.success(language === 'bn' ? 'খাতা ওপেন হচ্ছে...' : 'Opening submission file...')}
+                              className="h-8 px-3 text-xs font-bold bg-primary hover:bg-primary/90 text-white rounded-lg shadow-xs"
+                            >
+                              {language === 'bn' ? 'খাতা দেখুন ও নম্বর দিন' : 'Grade Now'}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* Tab: Class Analytics */}
+          {activeTab === 'analytics' && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border/70 rounded-2xl p-5 shadow-xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <BarChart3 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-foreground">
+                      {language === 'bn' ? 'ক্লাস ও শিক্ষার্থী অ্যানালিটিক্স' : 'Class & Student Analytics'}
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      {language === 'bn' ? 'লাইভ ক্লাসে উপস্থিতি, শিক্ষার্থীদের ওয়াচটাইম ও পারফরম্যান্স মেট্রিক্স' : 'Attendance, engagement, and completion metrics'}
+                    </p>
+                  </div>
+                </div>
+                <Badge variant="outline" className="text-xs font-semibold px-3 py-1 border-primary/30 text-primary self-start sm:self-auto">
+                  {language === 'bn' ? 'লাইভ ডাটা' : 'Live Data'}
+                </Badge>
+              </div>
+
+              {/* Engagement Highlights */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground">{language === 'bn' ? 'গড় লাইভ উপস্থিতি' : 'Avg Live Attendance'}</p>
+                    <p className="text-2xl font-bold text-emerald-500 mt-1">৮৯%</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">গত সপ্তাহের তুলনায় +৪%</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground">{language === 'bn' ? 'গড় ওয়াচটাইম' : 'Avg Watch Time'}</p>
+                    <p className="text-2xl font-bold text-blue-500 mt-1">৫২ মি.</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">প্রতিটি ক্লাসে</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground">{language === 'bn' ? 'সাপ্তাহিক সক্রিয় ছাত্র' : 'Active Students'}</p>
+                    <p className="text-2xl font-bold text-purple-500 mt-1">১,২৪০ জন</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">আপনার সকল ব্যাচে</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground">{language === 'bn' ? 'শিক্ষার্থী সন্তুষ্টি' : 'Student Rating'}</p>
+                    <p className="text-2xl font-bold text-amber-500 mt-1">৪.৯ ★</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">৩৪০+ রিভিউ ভিত্তিতে</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Most Engaging Lectures */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">{language === 'bn' ? 'শীর্ষ এনগেজিং ক্লাস ও লেকচার' : 'Top Performing Lectures'}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {[
+                    { title: "নিউটনিয়ান বলবিদ্যা: লিফট ও পুলি ট্রিকস", course: "HSC পদার্থবিজ্ঞান", views: "১,৮৫০ বার দেখা হয়েছে", satisfaction: "৯৮%" },
+                    { title: "জৈব রসায়ন: হাইব্রিডাইজেশন ও মেকানিজম", course: "HSC রসায়ন ১ম পত্র", views: "১,৬২০ বার দেখা হয়েছে", satisfaction: "৯৭%" },
+                    { title: "ক্যালকুলাস: লিমিট ও ইন্টিগ্রেশন শর্টকাট টেকনিক", course: "উচ্চতর গণিত ১ম পত্র", views: "১,৪৫০ বার দেখা হয়েছে", satisfaction: "৯৬%" },
+                  ].map((lec, lIdx) => (
+                    <div key={lIdx} className="flex items-center justify-between p-3.5 rounded-xl bg-muted/30 border border-border/40">
+                      <div>
+                        <h4 className="text-sm font-bold text-foreground">{lec.title}</h4>
+                        <p className="text-xs text-muted-foreground mt-0.5">{lec.course} • {lec.views}</p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
+                          {lec.satisfaction} সন্তুষ্টি
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </motion.div>
           )}
 
           {activeTab === 'liveClasses' && (

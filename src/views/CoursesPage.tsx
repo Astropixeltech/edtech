@@ -355,9 +355,9 @@ export default function CoursesPage() {
           </div>
         </section>
 
-        {/* 2. STAT CARDS ROW (Exact 4-column layout aligned to max-w-6xl) */}
-        <section className="bg-white dark:bg-background border-b border-gray-100 dark:border-border/40">
-          <div className="max-w-6xl mx-auto grid grid-cols-2 gap-4 sm:gap-6 pb-10 pt-[20px] lg:grid-cols-4 lg:pt-[20px] px-4 sm:px-6 lg:px-8">
+        {/* 2. STAT CARDS ROW (Balanced spacing under hero banner) */}
+        <section className="bg-white dark:bg-background border-b border-gray-100 dark:border-border/40 py-8 sm:py-10">
+          <div className="max-w-6xl mx-auto grid grid-cols-2 gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8 lg:grid-cols-4">
             <StatCard
               icon={Users}
               value="১০,০০০+"
@@ -389,8 +389,8 @@ export default function CoursesPage() {
           </div>
         </section>
 
-        {/* 3. CATEGORY GRID (8 academic-based cards) */}
-        <section className="bg-white dark:bg-background py-10 lg:pt-[40px] px-4 sm:px-6 lg:px-8">
+        {/* 3. CATEGORY GRID (8 academic-based cards with normalized padding) */}
+        <section className="bg-white dark:bg-background py-12 md:py-14 px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col items-center gap-2 text-center mb-8">
               <h2 className="text-2xl md:text-3xl font-bold text-foreground">
@@ -471,7 +471,7 @@ export default function CoursesPage() {
         </section>
 
         {/* 4. POPULAR COURSES (Horizontal Scroller Section) */}
-        <section id="courses" className="py-10 bg-background/50 border-t border-gray-100 dark:border-border/40 px-4 sm:px-6 lg:px-8">
+        <section id="courses" className="py-12 md:py-14 bg-background/50 border-t border-gray-100 dark:border-border/40 px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto space-y-6">
             <div className="flex flex-col items-center gap-2 text-center">
               <h2 className="text-2xl md:text-3xl font-bold text-foreground">
@@ -522,55 +522,115 @@ export default function CoursesPage() {
           </div>
         </section>
 
-        {/* 5. DARK PROMO BANNER (Exact EdgeCourseBD #0b1d33 layout) */}
-        <section className="bg-[#0b1d33] text-white py-10 md:py-14 px-4 sm:px-6 lg:px-8">
+        {/* 5. DARK PROMO BANNER — Academic HSC & Admission Focus */}
+        <section className="bg-[#0b1d33] text-white py-12 md:py-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-10">
+            <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-12">
               
               {/* Text & CTA */}
-              <div className="order-2 space-y-4 md:order-1">
-                <span className="inline-block px-3 py-1 rounded-full bg-brand-500/30 text-brand-300 text-xs font-bold border border-brand-400/30">
-                  {isBn ? "ফ্ল্যাগশিপ প্রোগ্রাম" : "Flagship Program"}
+              <div className="order-2 space-y-5 md:order-1">
+                <span className="inline-block px-3 py-1 rounded-full bg-primary/30 text-emerald-300 text-xs font-bold border border-primary/30 tracking-wide uppercase">
+                  {isBn ? "বিশেষ প্রোগ্রাম" : "Special Program"}
                 </span>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight">
                   {isBn
-                    ? "কোডিং না জেনেও ফুল-স্ট্যাক অ্যাপ বিল্ড করার ভবিষ্যৎ"
-                    : "The Future of Building Full-Stack Apps Without Coding"}
+                    ? "বুয়েট, মেডিকেল ও ঢাবি — সঠিক গাইডেন্সেই সফলতা"
+                    : "BUET, Medical & DU — Succeed with the Right Guidance"}
                 </h2>
                 <p className="text-gray-300 text-sm md:text-base leading-relaxed">
                   {isBn
-                    ? "আধুনিক AI অ্যাসিস্ট্যান্ট ও প্রম্পট আর্কিটেকচার ব্যবহার করে মাত্র কয়েক মিনিটে প্রোডাকশন-রেডি ওয়েব অ্যাপ ডেভেলপমেন্ট শিখুন।"
-                    : "Learn to build and ship production-ready web apps in minutes using cutting-edge AI coding workflows."}
+                    ? "অভিজ্ঞ মেন্টরদের সাথে কনসেপ্ট বেসড প্রস্তুতি। পদার্থ, রসায়ন, উচ্চতর গণিত ও জীববিজ্ঞানে সম্পূর্ণ মাস্টারি অর্জন করুন এবং ভর্তি পরীক্ষায় শীর্ষ স্থান নিশ্চিত করুন।"
+                    : "Concept-based preparation with experienced mentors. Master Physics, Chemistry, Higher Math, and Biology to secure your seat at top universities."}
                 </p>
-                <div className="pt-2">
+                <div className="flex flex-col sm:flex-row gap-3 pt-1">
                   <Link
-                    to="/vibe-coding"
-                    className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-md bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm transition-colors shadow-md"
+                    to="/courses?category=admission"
+                    className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-md bg-primary hover:bg-primary/90 text-white font-semibold text-sm transition-colors shadow-md"
                   >
-                    <span>{isBn ? "ভাইব কোডিং কোর্স দেখুন" : "Explore Vibe Coding"}</span>
+                    <span>{isBn ? "এডমিশন কোর্স দেখুন" : "Explore Admission Courses"}</span>
                     <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <Link
+                    to="/courses"
+                    className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-md bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition-colors border border-white/20"
+                  >
+                    <span>{isBn ? "সব কোর্স দেখুন" : "Browse All Courses"}</span>
                   </Link>
                 </div>
               </div>
 
-              {/* Promo Visual */}
-              <div className="order-1 mx-auto w-full max-w-[440px] md:order-2 md:ml-auto md:mr-0">
-                <div className="aspect-square w-full rounded-2xl overflow-hidden bg-white/5 border border-white/10 p-6 flex flex-col items-center justify-center text-center backdrop-blur-sm relative group">
-                  <div className="h-20 w-20 rounded-2xl bg-brand-500/20 flex items-center justify-center text-brand-400 mb-4 group-hover:scale-110 transition-transform">
-                    <Sparkles className="h-10 w-10" />
+              {/* Feature highlight cards */}
+              <div className="order-1 md:order-2 grid grid-cols-2 gap-3">
+                {[
+                  { icon: Atom, label: isBn ? "পদার্থবিজ্ঞান" : "Physics", sub: isBn ? "কনসেপ্ট + প্র্যাক্টিস" : "Concept + Practice" },
+                  { icon: FlaskConical, label: isBn ? "রসায়ন" : "Chemistry", sub: isBn ? "পরীক্ষামূলক ও তাত্ত্বিক" : "Lab + Theory" },
+                  { icon: Calculator, label: isBn ? "উচ্চতর গণিত" : "Higher Math", sub: isBn ? "বোর্ড ও ভর্তি" : "Board & Admission" },
+                  { icon: Stethoscope, label: isBn ? "জীববিজ্ঞান" : "Biology", sub: isBn ? "মেডিকেল প্রস্তুতি" : "Medical Prep" },
+                ].map(({ icon: Icon, label, sub }) => (
+                  <div key={label} className="rounded-xl bg-white/5 border border-white/10 p-4 flex flex-col gap-2 hover:bg-white/10 transition-colors">
+                    <div className="h-9 w-9 rounded-lg bg-primary/20 flex items-center justify-center text-emerald-300">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white">{label}</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">{sub}</p>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-1">Astropixel Interactive LMS</h3>
-                  <p className="text-xs text-gray-300 max-w-xs">
-                    লাইভ সেশন, প্রজেক্ট রিভিউ এবং ভেরিফাইড সার্টিফিকেট সুবিধা।
-                  </p>
-                </div>
+                ))}
               </div>
 
             </div>
           </div>
         </section>
-        {/* 6. STUDENT TESTIMONIALS (Curated Institutional Hall of Fame Grid) */}
-        <section className="bg-background py-14 px-4 sm:px-6 lg:px-8 border-t border-border/60">
+        {/* 6. EXPERT INSTRUCTORS (Continuous Infinite Loop with Square Images) */}
+        <section className="bg-background/50 py-12 md:py-14 px-4 sm:px-6 lg:px-8 border-t border-border/60">
+          <div className="max-w-6xl mx-auto space-y-8">
+            <div className="flex flex-col items-center gap-2 text-center max-w-xl mx-auto">
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                {isBn ? "শীর্ষ ফ্যাকাল্টি" : "Top Faculty"}
+              </span>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                {isBn ? "দেশসেরা প্রশিক্ষকদের প্যানেল" : "Expert Instructors"}
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                {isBn ? "বুয়েট, মেডিকেল ও শীর্ষ বিশ্ববিদ্যালয়ের অভিজ্ঞ মেন্টরদের সাথে সরাসরি প্রস্তুতি" : "Learn directly from top engineering & medical mentors"}
+              </p>
+            </div>
+
+            {/* Continuous Infinite Marquee Scroller */}
+            <div className="relative w-full overflow-hidden group/scroller py-2">
+              <div className="flex gap-4 sm:gap-6 animate-marquee-sideways hover:[animation-play-state:paused]">
+                {[...Object.entries(trainers), ...Object.entries(trainers)].map(([key, t], idx) => (
+                  <div
+                    key={`${key}-${idx}`}
+                    className="group/inst flex w-[240px] sm:w-[260px] shrink-0 flex-col items-center text-center gap-3.5 rounded-2xl bg-card dark:bg-card/95 border border-border/80 dark:border-border/60 p-5 shadow-xs hover:shadow-md hover:-translate-y-1 hover:border-primary/50 transition-all duration-200"
+                  >
+                    {/* Square Image with Rounded Corners */}
+                    <div className="relative w-full aspect-square max-w-[180px] overflow-hidden rounded-xl border border-border/70 bg-muted/20 group-hover/inst:border-primary/50 transition-colors shadow-xs">
+                      <img
+                        src={t.image}
+                        alt={t.name}
+                        className="h-full w-full object-cover object-top transition-transform duration-300 group-hover/inst:scale-105"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="w-full space-y-1">
+                      <h4 className="text-sm font-bold text-foreground group-hover/inst:text-primary transition-colors">
+                        {t.name}
+                      </h4>
+                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                        {isBn ? t.qualificationBn : t.qualificationEn}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 7. STUDENT TESTIMONIALS (Curated Institutional Hall of Fame Grid) */}
+        <section className="bg-background py-12 md:py-14 px-4 sm:px-6 lg:px-8 border-t border-border/60">
           <div className="max-w-6xl mx-auto space-y-8">
             <div className="flex flex-col items-center gap-2 text-center max-w-xl mx-auto">
               <span className="text-xs font-bold uppercase tracking-wider text-primary">
@@ -623,44 +683,6 @@ export default function CoursesPage() {
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* 7. EXPERT INSTRUCTORS (Horizontal Scroller with Glassmorphism & Prominent Hover) */}
-        <section className="bg-background/40 py-12 px-4 sm:px-6 lg:px-8 border-t border-gray-100 dark:border-border/40">
-          <div className="max-w-6xl mx-auto space-y-6">
-            <div className="flex flex-col items-center gap-2 text-center">
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                {isBn ? "দেশসেরা প্রশিক্ষকদের প্যানেল" : "Expert Instructors"}
-              </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {isBn ? "শীর্ষ বিশ্ববিদ্যালয় ও মেডিকেলের অভিজ্ঞ মেন্টরদের সাথে প্রস্তুতি" : "Learn directly from top university & medical mentors"}
-              </p>
-            </div>
-
-            <HorizontalScroller>
-              {Object.entries(trainers).map(([key, t]) => (
-                <div
-                  key={key}
-                  className="group/inst flex w-full min-w-[240px] max-w-[280px] shrink-0 flex-col items-center text-center gap-3 rounded-2xl bg-card dark:bg-card/95 border border-border/80 dark:border-border/60 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/40 transition-all duration-200"
-                >
-                  <div className="relative overflow-hidden rounded-full p-1 border-2 border-primary/20 group-hover/inst:border-primary/60 transition-colors">
-                    <img
-                      src={t.image}
-                      alt={t.name}
-                      className="h-24 w-24 rounded-full object-cover transition-transform duration-300 group-hover/inst:scale-105"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-foreground group-hover/inst:text-primary transition-colors">{t.name}</h4>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                      {isBn ? t.qualificationBn : t.qualificationEn}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </HorizontalScroller>
           </div>
         </section>
 

@@ -88,6 +88,7 @@ import HeroBannerManagement from "@/components/admin/HeroBannerManagement";
 import InstructorManagement from "@/components/admin/InstructorManagement";
 import ContactManagement from "@/components/admin/ContactManagement";
 import AboutTeamManagement from "@/components/admin/AboutTeamManagement";
+import TestimonialManagement from '@/components/admin/TestimonialManagement';
 import AdminAssistant from '@/components/admin/AdminAssistant';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
@@ -835,11 +836,12 @@ function AdminDashboardInner() {
   // Navigation items - grouped logically
   // scopeTag: 'learn' | 'agency' | 'both' — controls visibility per selected site scope
   const lmsCoreItemsAll = [
-    { id: 'courses', icon: BookOpen, label: language === 'bn' ? 'Course' : 'Courses', scopeTag: 'learn' as const },
-    { id: 'students', icon: Users, label: language === 'bn' ? 'Student' : 'Students', scopeTag: 'learn' as const },
-    { id: 'teachers', icon: GraduationCap, label: language === 'bn' ? 'Teacher' : 'Teachers', scopeTag: 'learn' as const },
+    { id: 'courses', icon: BookOpen, label: language === 'bn' ? 'কোর্সসমূহ' : 'Courses', scopeTag: 'learn' as const },
+    { id: 'students', icon: Users, label: language === 'bn' ? 'শিক্ষার্থীবৃন্দ' : 'Students', scopeTag: 'learn' as const },
+    { id: 'teachers', icon: GraduationCap, label: language === 'bn' ? 'শিক্ষকমণ্ডলী' : 'Teachers', scopeTag: 'learn' as const },
+    { id: 'requests', icon: Banknote, label: language === 'bn' ? 'পেমেন্ট ও রিকোয়েস্ট' : 'Payments & Enrollments', badge: enrollmentRequests.filter(r => r.status === 'pending').length, scopeTag: 'learn' as const },
+    { id: 'testimonials', icon: Sparkles, label: language === 'bn' ? 'শিক্ষার্থীদের রিভিউ' : 'Reviews & Testimonials', scopeTag: 'learn' as const },
     { id: 'chat', icon: MessageSquare, label: language === 'bn' ? 'স্টাফ ও টিচার চ্যাট' : 'Staff & Teacher Chat', scopeTag: 'learn' as const },
-    { id: 'requests', icon: Mail, label: language === 'bn' ? 'Request' : 'Requests', badge: enrollmentRequests.filter(r => r.status === 'pending').length, scopeTag: 'learn' as const },
   ];
 
   const lmsMoreItemsAll: any[] = [];
@@ -1203,14 +1205,14 @@ function AdminDashboardInner() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {[
-                    { id: 'courses', icon: BookOpen, label: 'Courses', desc: 'Manage courses', gradient: 'from-sky-500 to-cyan-500' },
-                    { id: 'students', icon: Users, label: 'Students', desc: 'Enrolled users', gradient: 'from-emerald-500 to-teal-500' },
-                    { id: 'teachers', icon: GraduationCap, label: 'Teachers', desc: 'Instructors', gradient: 'from-violet-500 to-purple-500' },
-                    { id: 'requests', icon: Mail, label: 'Requests', desc: 'Enrollment queue', gradient: 'from-amber-500 to-orange-500' },
-                    { id: 'banner-management', icon: Image, label: 'Hero Banners', desc: 'Slider banners', gradient: 'from-purple-500 to-indigo-500' },
-                    { id: 'instructor-management', icon: GraduationCap, label: 'Instructors', desc: 'Home trainers', gradient: 'from-pink-500 to-rose-500' },
-                    { id: 'contact-management', icon: Phone, label: 'Contact Info', desc: 'Branch & socials', gradient: 'from-emerald-500 to-teal-500' },
-                    { id: 'about-management', icon: Info, label: 'About & Team', desc: 'Mission & members', gradient: 'from-amber-500 to-orange-500' },
+                    { id: 'courses', icon: BookOpen, label: language === 'bn' ? 'কোর্সসমূহ' : 'Courses', desc: language === 'bn' ? 'কোর্স পরিচালনা' : 'Manage courses', gradient: 'from-sky-500 to-cyan-500' },
+                    { id: 'students', icon: Users, label: language === 'bn' ? 'শিক্ষার্থীবৃন্দ' : 'Students', desc: language === 'bn' ? 'শিক্ষার্থী তালিকা' : 'Enrolled users', gradient: 'from-emerald-500 to-teal-500' },
+                    { id: 'teachers', icon: GraduationCap, label: language === 'bn' ? 'শিক্ষকমণ্ডলী' : 'Teachers', desc: language === 'bn' ? 'শিক্ষক ও পারমিশন' : 'Instructors', gradient: 'from-violet-500 to-purple-500' },
+                    { id: 'requests', icon: Banknote, label: language === 'bn' ? 'পেমেন্ট ও রিকোয়েস্ট' : 'Payment Requests', desc: language === 'bn' ? 'এনরোলমেন্ট ভেরিফাই' : 'Enrollment queue', gradient: 'from-amber-500 to-orange-500' },
+                    { id: 'testimonials', icon: Sparkles, label: language === 'bn' ? 'রিভিউ ও মতামত' : 'Testimonials', desc: language === 'bn' ? 'শিক্ষার্থীদের রিভিউ' : 'Student reviews', gradient: 'from-fuchsia-500 to-pink-500' },
+                    { id: 'banner-management', icon: Image, label: language === 'bn' ? 'হিরো ব্যানার' : 'Hero Banners', desc: language === 'bn' ? 'হোম স্লাইডার' : 'Slider banners', gradient: 'from-purple-500 to-indigo-500' },
+                    { id: 'instructor-management', icon: GraduationCap, label: language === 'bn' ? 'হোম ইনস্ট্রাক্টর' : 'Instructors', desc: language === 'bn' ? 'প্রোফাইল প্রদর্শন' : 'Home trainers', gradient: 'from-pink-500 to-rose-500' },
+                    { id: 'settings', icon: Settings, label: language === 'bn' ? 'সেটিংস' : 'Settings', desc: language === 'bn' ? 'প্ল্যাটফর্ম কনফিগ' : 'System config', gradient: 'from-slate-600 to-slate-800' },
                   ].map((card) => (
                     <button
                       key={card.id}
@@ -1616,7 +1618,10 @@ function AdminDashboardInner() {
             )}
           </TabsContent>
 
-          {/* Pass Codes Tab - Removed */}
+          {/* Testimonials Tab */}
+          <TabsContent value="testimonials" className="space-y-6">
+            <TestimonialManagement language={language} />
+          </TabsContent>
 
           {/* Students Tab */}
           <TabsContent value="students" className="space-y-6">

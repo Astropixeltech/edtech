@@ -60,31 +60,31 @@ export const EdgeCourseCard = ({ course, onEnroll, className }: EdgeCourseCardPr
       </Link>
 
       {/* Content */}
-      <div className="flex flex-col flex-1 justify-between p-4.5 space-y-3">
-        <div className="space-y-2">
-          <Link to={targetLink} className="block">
-            <h4 className="text-sm font-bold text-foreground line-clamp-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors leading-snug">
+      <div className="flex flex-col flex-1 justify-between p-5 space-y-4">
+        <div className="space-y-2.5">
+          <Link to={targetLink} className="block group-hover:text-primary transition-colors">
+            <h4 className="text-sm sm:text-[15px] font-bold text-foreground line-clamp-2 min-h-[2.5rem] leading-snug">
               {displayTitle}
             </h4>
           </Link>
 
           {course.instructor_name && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+            <p className="text-xs text-muted-foreground truncate">
               {isBn ? "প্রশিক্ষক: " : "Instructor: "}
-              <span className="font-medium text-foreground">{course.instructor_name}</span>
+              <span className="font-semibold text-foreground/90">{course.instructor_name}</span>
             </p>
           )}
 
-          <div className="flex items-center gap-3 text-[11px] text-gray-500 dark:text-gray-400 font-medium">
+          <div className="flex items-center gap-3 text-[11px] text-muted-foreground font-medium pt-1">
             {course.total_enrolled !== undefined && (
               <span className="flex items-center gap-1">
-                <Users className="h-3 w-3 text-emerald-500" />
+                <Users className="h-3.5 w-3.5 text-primary" />
                 <span>{course.total_enrolled} {isBn ? "জন" : "students"}</span>
               </span>
             )}
             {course.duration && (
               <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3 text-emerald-500" />
+                <Clock className="h-3.5 w-3.5 text-primary" />
                 <span>{course.duration}</span>
               </span>
             )}
@@ -92,29 +92,39 @@ export const EdgeCourseCard = ({ course, onEnroll, className }: EdgeCourseCardPr
         </div>
 
         {/* Footer Row: Price and Enroll CTA */}
-        <div className="flex items-center justify-between pt-2.5 border-t border-border/60 mt-auto">
-          <div className="flex flex-col">
-            <span className="text-[11px] text-muted-foreground">{isBn ? "কোর্স ফি" : "Fee"}</span>
-            <span className="text-base font-extrabold text-primary">
-              {price > 0 ? `৳ ${price.toLocaleString()}` : (isBn ? "ফ্রি" : "Free")}
+        <div className="flex items-center justify-between pt-3.5 border-t border-border/70 mt-auto gap-2">
+          <div className="flex flex-col min-w-0">
+            <span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">
+              {isBn ? "কোর্স ফি" : "Course Fee"}
             </span>
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              <span className="text-base font-extrabold text-primary">
+                {price > 0 ? `৳ ${price.toLocaleString()}` : (isBn ? "ফ্রি" : "Free")}
+              </span>
+              {course.sale_price !== undefined && course.sale_price !== null && course.price && course.price > course.sale_price && (
+                <span className="text-xs text-muted-foreground line-through">
+                  ৳ {course.price.toLocaleString()}
+                </span>
+              )}
+            </div>
           </div>
 
           {onEnroll ? (
             <button
+              type="button"
               onClick={() => onEnroll(course)}
-              className="h-8 px-4 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95"
+              className="h-9 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-xs shrink-0 active:scale-95 cursor-pointer"
             >
               <span>{isBn ? "বিস্তারিত দেখুন" : "View Details"}</span>
-              <ArrowRight className="h-3 w-3" />
+              <ArrowRight className="h-3.5 w-3.5" />
             </button>
           ) : (
             <Link
               to={targetLink}
-              className="h-8 px-4 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95"
+              className="h-9 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-xs shrink-0 active:scale-95"
             >
               <span>{isBn ? "বিস্তারিত দেখুন" : "View Details"}</span>
-              <ArrowRight className="h-3 w-3" />
+              <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           )}
         </div>

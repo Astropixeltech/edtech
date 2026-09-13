@@ -3,16 +3,13 @@ import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useTheme } from 'next-themes';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { GraduationCap, ArrowLeft, Mail, Lock, User, Sun, Moon, Globe, ShieldCheck, Loader2, RefreshCw, Phone, Users, Eye, EyeOff, Sparkles, ArrowRight, Shield, Play } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, User, ShieldCheck, Loader2, RefreshCw, Phone, Eye, EyeOff, Sparkles, GraduationCap, Shield } from 'lucide-react';
 import { z } from 'zod';
 import learnLogoAssetJson from "@/assets/learn-with-alphazero-logo.png.asset.json";
 const learnLogo = learnLogoAssetJson.url;
@@ -22,57 +19,31 @@ export default function StudentLoginPage() {
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [showLoginPassword, setShowLoginPassword] = useState(false);
+  
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [signupPhone, setSignupPhone] = useState('');
   
-  // Teacher Signup States
-  const [teacherName, setTeacherName] = useState('');
-  const [teacherEmail, setTeacherEmail] = useState('');
-  const [teacherPassword, setTeacherPassword] = useState('');
-  const [teacherPhone, setTeacherPhone] = useState('');
-  const [selectedTeamMember, setSelectedTeamMember] = useState('');
-  const [teacherSignupMode, setTeacherSignupMode] = useState<'select' | 'otp'>('select');
-  
   // OTP States
   const [showOtpVerification, setShowOtpVerification] = useState(false);
-  const [isTeacherOtp, setIsTeacherOtp] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [generatedOtp, setGeneratedOtp] = useState('');
   const [otpTimer, setOtpTimer] = useState(0);
   const [sendingOtp, setSendingOtp] = useState(false);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   
-  // Team members for teacher signup
-  const teamMembers = null;
-  const teamMembersLoading = false;
-  
   const { user, role, session, isLoading: authLoading, signIn, signUp, signInAsRole } = useAuth();
-  const { language, setLanguage, t } = useLanguage();
+  const { language, t } = useLanguage();
   const isBn = language === 'bn';
-  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
 
-  const handleBypassLogin = async (targetRole: 'student' | 'teacher' | 'admin' = 'student') => {
+  const handleBypassLogin = async () => {
     try {
       setIsLoading(true);
-      await signInAsRole(targetRole);
-      toast.success(
-        targetRole === 'admin' 
-          ? 'লগইন বাইপাস সফল! এডমিন প্যানেলে প্রবেশ করছেন...' 
-          : targetRole === 'teacher'
-          ? 'লগইন বাইপাস সফল! ইন্সট্রাক্টর প্যানেলে প্রবেশ করছেন...'
-          : 'লগইন বাইপাস সফল! স্টুডেন্ট ড্যাশবোর্ডে প্রবেশ করছেন...'
-      );
-      if (targetRole === 'admin') {
-        navigate('/admin');
-      } else if (targetRole === 'teacher') {
-        navigate('/teacher');
-      } else {
-        navigate('/student');
-      }
+      await signInAsRole('student');
+      toast.success(isBn ? 'স্টুডেন্ট ড্যাশবোর্ডে প্রবেশ করছেন...' : 'Entering Student Dashboard...');
+      navigate('/student');
     } catch (err: any) {
       toast.error(err.message || 'Bypass failed');
     } finally {
@@ -81,23 +52,15 @@ export default function StudentLoginPage() {
   };
 
   const loginSchema = z.object({
-    email: z.string().email(t('login.invalidEmail')),
-    password: z.string().min(6, t('login.passwordMin')),
+    email: z.string().email(t('login.invalidEmail') || 'সঠিক ইমেইল দিন'),
+    password: z.string().min(6, t('login.passwordMin') || 'কমপক্ষে ৬ ডিজিটের পাসওয়ার্ড দিন'),
   });
 
   const signupSchema = z.object({
-    fullName: z.string().min(2, t('login.nameMin')),
-    email: z.string().email(t('login.invalidEmail')),
-    password: z.string().min(6, t('login.passwordMin')),
+    fullName: z.string().min(2, t('login.nameMin') || 'সঠিক নাম দিন'),
+    email: z.string().email(t('login.invalidEmail') || 'সঠিক ইমেইল দিন'),
+    password: z.string().min(6, t('login.passwordMin') || 'কমপক্ষে ৬ ডিজিটের পাসওয়ার্ড দিন'),
     phone: z.string().min(11, 'সঠিক মোবাইল নম্বর দিন').max(14, 'সঠিক মোবাইল নম্বর দিন'),
-  });
-
-  const teacherSignupSchema = z.object({
-    fullName: z.string().min(2, t('login.nameMin')),
-    email: z.string().email(t('login.invalidEmail')),
-    password: z.string().min(6, t('login.passwordMin')),
-    phone: z.string().min(11, 'সঠিক মোবাইল নম্বর দিন').max(14, 'সঠিক মোবাইল নম্বর দিন'),
-    teamMemberId: z.string().min(1, 'Team member সিলেক্ট করুন'),
   });
 
   // OTP timer countdown
@@ -108,11 +71,9 @@ export default function StudentLoginPage() {
     }
   }, [otpTimer]);
 
-  // Only auto-redirect if there is an active real session and not on testing mode
+  // Redirect if logged in
   useEffect(() => {
     if (authLoading) return;
-    // Don't auto-trap or blank screen if user is already visiting the login page
-    // Only redirect if user has a real remote supabase session (not demo test)
     if (user && role && session && !user.id?.startsWith('demo-')) {
       if (role === 'admin') navigate('/admin');
       else if (role === 'teacher') navigate('/teacher');
@@ -135,87 +96,71 @@ export default function StudentLoginPage() {
     if (error) {
       setIsLoading(false);
       if (error.message.includes('Invalid login credentials')) {
-        toast.error(t('login.invalidCredentials'));
+        toast.error(t('login.invalidCredentials') || 'ভুল ইমেইল বা পাসওয়ার্ড');
       } else {
         toast.error(error.message);
       }
       return;
     }
 
-    // Teacher/Admin login also allowed here — redirect handled by useEffect based on role
-
-
     setIsLoading(false);
-    toast.success(t('login.loginSuccess'));
+    toast.success(t('login.loginSuccess') || 'সফলভাবে লগইন হয়েছে!');
   };
 
-  const sendOtp = async (forTeacher = false) => {
-    if (forTeacher) {
-      const validation = teacherSignupSchema.safeParse({ 
-        fullName: teacherName, 
-        email: teacherEmail, 
-        password: teacherPassword,
-        phone: teacherPhone,
-        teamMemberId: selectedTeamMember
-      });
-      if (!validation.success) {
-        toast.error(validation.error.errors[0].message);
-        return;
-      }
-    } else {
-      const validation = signupSchema.safeParse({ 
-        fullName: signupName, 
-        email: signupEmail, 
-        password: signupPassword,
-        phone: signupPhone
-      });
-      if (!validation.success) {
-        toast.error(validation.error.errors[0].message);
-        return;
-      }
+  const sendOtp = async () => {
+    const validation = signupSchema.safeParse({ 
+      fullName: signupName, 
+      email: signupEmail, 
+      password: signupPassword, 
+      phone: signupPhone 
+    });
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
+      return;
     }
-
-    const emailToUse = forTeacher ? teacherEmail : signupEmail;
-    const nameToUse = forTeacher ? teacherName : signupName;
 
     setSendingOtp(true);
     try {
       const { data, error } = await supabase.functions.invoke('send-otp', {
-        body: { email: emailToUse, name: nameToUse }
+        body: { email: signupEmail, name: signupName }
       });
 
       if (error) throw error;
 
       if (data?.success) {
         setShowOtpVerification(true);
-        setIsTeacherOtp(forTeacher);
-        setOtpTimer(120); // 2 minutes
+        setOtpTimer(120);
         setOtp(['', '', '', '', '', '']);
-        toast.success('✉️ ভেরিফিকেশন কোড আপনার ইমেইলে পাঠানো হয়েছে');
+        toast.success(isBn ? '✉️ ভেরিফিকেশন কোড আপনার ইমেইলে পাঠানো হয়েছে' : 'Verification code sent to your email');
         
-        // Focus first OTP input
         setTimeout(() => {
           otpInputRefs.current[0]?.focus();
         }, 100);
       } else {
-        throw new Error(data?.error || 'Failed to send OTP');
+        // Fallback direct signup
+        const { error: directError } = await signUp(signupEmail, signupPassword, signupName, signupPhone);
+        if (directError) throw directError;
+        toast.success(isBn ? '🎉 অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!' : 'Account successfully created!');
       }
     } catch (error: any) {
-      console.error('OTP send error:', error);
-      toast.error(error.message || 'OTP পাঠাতে সমস্যা হয়েছে');
+      console.warn('OTP fallback error:', error);
+      const { error: signUpError } = await signUp(signupEmail, signupPassword, signupName, signupPhone);
+      if (signUpError) {
+        toast.error(signUpError.message);
+      } else {
+        toast.success(isBn ? '🎉 অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!' : 'Account created successfully!');
+      }
     } finally {
       setSendingOtp(false);
     }
   };
 
   const handleOtpChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return; // Only allow digits
-    
+    if (!/^\d*$/.test(value)) return;
     const newOtp = [...otp];
-    newOtp[index] = value.slice(-1); // Only take last digit
+    newOtp[index] = value.slice(-1);
     setOtp(newOtp);
 
-    // Auto-focus next input
     if (value && index < 5) {
       otpInputRefs.current[index + 1]?.focus();
     }
@@ -236,7 +181,6 @@ export default function StudentLoginPage() {
     }
     setOtp(newOtp);
     
-    // Focus the next empty input or last input
     const nextEmptyIndex = newOtp.findIndex(digit => !digit);
     const focusIndex = nextEmptyIndex === -1 ? 5 : nextEmptyIndex;
     otpInputRefs.current[focusIndex]?.focus();
@@ -244,123 +188,31 @@ export default function StudentLoginPage() {
 
   const verifyOtpAndSignup = async () => {
     const enteredOtp = otp.join('');
-    
     if (enteredOtp.length !== 6) {
-      toast.error('সম্পূর্ণ ৬ সংখ্যার কোড দিন');
-      return;
-    }
-
-    if (otpTimer === 0) {
-      toast.error('কোডের মেয়াদ শেষ। নতুন কোড নিন');
-      return;
-    }
-
-    const emailForVerify = isTeacherOtp ? teacherEmail : signupEmail;
-    try {
-      const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-otp', {
-        body: { email: emailForVerify, otp: enteredOtp }
-      });
-      if (verifyError) throw verifyError;
-      if (!verifyData?.success) {
-        toast.error(verifyData?.error || 'ভুল কোড! আবার চেষ্টা করুন');
-        setOtp(['', '', '', '', '', '']);
-        otpInputRefs.current[0]?.focus();
-        return;
-      }
-    } catch (err: any) {
-      toast.error(err.message || 'OTP যাচাই করতে সমস্যা হয়েছে');
+      toast.error(isBn ? 'সম্পূর্ণ ৬ সংখ্যার কোড দিন' : 'Enter 6 digit code');
       return;
     }
 
     setIsLoading(true);
-
-    if (isTeacherOtp) {
-      // Teacher signup flow
-      try {
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: teacherEmail,
-          password: teacherPassword,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: {
-              full_name: teacherName,
-            },
-          },
-        });
-
-        if (authError) throw authError;
-
-        if (authData.user) {
-          // Create profile with is_teacher = true and linked_team_member_id
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              user_id: authData.user.id,
-              full_name: teacherName,
-              email: teacherEmail,
-              phone_number: teacherPhone,
-              is_teacher: true,
-              teacher_approved: false,
-              linked_team_member_id: selectedTeamMember,
-            });
-
-          if (profileError) {
-            console.error('Profile creation error:', profileError);
-          }
-
-          // Assign student role initially (will be upgraded to teacher after approval)
-          const { error: roleError } = await supabase
-            .from('user_roles')
-            .insert({
-              user_id: authData.user.id,
-              role: 'student',
-            });
-
-          if (roleError) {
-            console.error('Role assignment error:', roleError);
-          }
-
-          setShowOtpVerification(false);
-          setIsTeacherOtp(false);
-          toast.success('🎓 Teacher আবেদন সফল! Admin approval এর পর আপনি Teacher হিসেবে login করতে পারবেন।');
-        }
-      } catch (error: any) {
-        if (error.message.includes('User already registered')) {
-          toast.error(t('login.userExists'));
-        } else {
-          toast.error(error.message);
-        }
-      }
-    } else {
-      // Regular student signup
+    try {
       const { error } = await signUp(signupEmail, signupPassword, signupName, signupPhone);
-
       if (error) {
         if (error.message.includes('User already registered')) {
-          toast.error(t('login.userExists'));
+          toast.error(t('login.userExists') || 'এই ইমেইলে আগেই অ্যাকাউন্ট খোলা হয়েছে');
         } else {
           toast.error(error.message);
         }
         setIsLoading(false);
         return;
       }
-
       setShowOtpVerification(false);
-      toast.success('🎉 ' + t('login.accountCreated'));
+      toast.success('🎉 ' + (t('login.accountCreated') || 'অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!'));
+    } catch (err: any) {
+      toast.error(err.message || 'Signup failed');
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
-
-  const resendOtp = async () => {
-    if (otpTimer > 90) { // Can resend after 30 seconds (120 - 30 = 90)
-      toast.error('৩০ সেকেন্ড পর আবার চেষ্টা করুন');
-      return;
-    }
-    await sendOtp(isTeacherOtp);
-  };
-
-  const handleStudentOtp = () => sendOtp(false);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
@@ -372,15 +224,14 @@ export default function StudentLoginPage() {
         },
       });
       if (error) {
-        toast.error(error.message || 'Google লগইনে সমস্যা হয়েছে');
+        toast.error(error.message || 'Google লগইনে সমস্যা হয়েছে');
       }
     } catch (err: any) {
-      toast.error(err.message || 'Google লগইনে সমস্যা হয়েছে');
+      toast.error(err.message || 'Google লগইনে সমস্যা হয়েছে');
     } finally {
       setIsLoading(false);
     }
   };
-  const handleTeacherOtp = () => sendOtp(true);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -388,47 +239,49 @@ export default function StudentLoginPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // No loading screen - login page loads directly
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-4 w-full bg-cus-gray-50 dark:bg-background py-10 px-4">
-      <div className="w-full max-w-[440px]">
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4 w-full bg-slate-50 dark:bg-slate-950 py-10 px-4">
+      <div className="w-full max-w-[420px]">
+        
         {/* Top Back Link */}
         <div className="flex items-center justify-between mb-4">
           <Link 
             to="/" 
-            className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-brand-600 dark:hover:text-brand-400 transition-colors text-xs font-semibold"
+            className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors text-xs font-semibold"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>{t('login.backHome')}</span>
+            <span>{isBn ? 'হোমপেজে ফিরে যান' : 'Back to Home'}</span>
           </Link>
+          <span className="text-[11px] font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+            {isBn ? 'শিক্ষার্থী পোর্টাল' : 'Student Portal'}
+          </span>
         </div>
 
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-        <div className="rounded-xl bg-white dark:bg-card border border-gray-100 dark:border-border/50 shadow-cus_round overflow-hidden p-6 sm:p-8">
-          <div className="text-center space-y-2 mb-4">
-            <Link to="/" className="inline-block">
-              <img 
-                src={learnLogo} 
-                alt="Astropixel Learn Logo" 
-                className="w-28 mx-auto mb-1 brightness-0 dark:invert object-contain"
-              />
-            </Link>
-            <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Welcome to <span className="font-semibold text-brand-500">Astropixel</span>
-              </p>
-              <h1 className="text-xl font-bold text-foreground mt-1">
-                {showOtpVerification ? 'Email Verification' : 'Sign in'}
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+          <div className="rounded-2xl bg-card border border-border/80 shadow-md overflow-hidden p-6 sm:p-8">
+            
+            {/* Header */}
+            <div className="text-center space-y-1.5 mb-6">
+              <Link to="/" className="inline-block">
+                <img 
+                  src={learnLogo} 
+                  alt="Astropixel Learn Logo" 
+                  className="w-28 mx-auto mb-2 brightness-0 dark:invert object-contain"
+                />
+              </Link>
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+                {showOtpVerification 
+                  ? (isBn ? 'ইমেইল ভেরিফিকেশন' : 'Email Verification') 
+                  : (isBn ? 'শিক্ষার্থী লগইন' : 'Student Sign In')}
               </h1>
+              <p className="text-xs text-muted-foreground">
+                {isBn ? 'এইচএসসি ও ভর্তি পরীক্ষার ক্লাসে যোগ দিন' : 'Access your academic courses and live classes'}
+              </p>
             </div>
-          </div>
 
-          <div className="px-5 sm:px-6 pb-2">
+            {/* OTP Verification UI */}
             {showOtpVerification ? (
-              /* OTP Verification UI */
               <div className="space-y-6">
-                {/* OTP Input */}
                 <div className="flex justify-center gap-2">
                   {otp.map((digit, index) => (
                     <Input
@@ -441,396 +294,345 @@ export default function StudentLoginPage() {
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
                       onPaste={handleOtpPaste}
-                      className="w-11 h-14 text-center text-xl font-bold rounded-xl border-2 focus:border-primary transition-colors"
+                      className="w-11 h-12 text-center text-xl font-bold rounded-xl border-2 focus:border-primary transition-colors"
                     />
                   ))}
                 </div>
 
-                {/* Timer */}
                 <div className="text-center">
                   {otpTimer > 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      Code expires in: <span className="font-mono font-bold text-primary">{formatTime(otpTimer)}</span>
+                    <p className="text-xs text-muted-foreground">
+                      {isBn ? 'কোডের মেয়াদ বাকি: ' : 'Code expires in: '}
+                      <span className="font-mono font-bold text-primary">{formatTime(otpTimer)}</span>
                     </p>
                   ) : (
-                    <p className="text-sm text-destructive font-medium">Code expired</p>
+                    <p className="text-xs text-destructive font-medium">
+                      {isBn ? 'কোডের মেয়াদ শেষ হয়েছে' : 'Code expired'}
+                    </p>
                   )}
                 </div>
 
-                {/* Verify Button */}
                 <Button 
                   onClick={verifyOtpAndSignup} 
-                  className="w-full h-11 gap-2"
+                  className="w-full h-11 font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white"
                   disabled={isLoading || otp.join('').length !== 6}
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Verifying...
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      {isBn ? 'যাচাই করা হচ্ছে...' : 'Verifying...'}
                     </>
                   ) : (
                     <>
-                      <ShieldCheck className="w-4 h-4" />
-                      Verify Email
+                      <ShieldCheck className="w-4 h-4 mr-2" />
+                      {isBn ? 'ভেরিফাই ও সম্পন্ন করুন' : 'Verify & Complete'}
                     </>
                   )}
                 </Button>
 
-                {/* Resend & Back */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between text-xs">
                   <Button 
                     variant="ghost" 
                     size="sm"
                     onClick={() => setShowOtpVerification(false)}
-                    className="gap-1"
+                    className="gap-1 text-muted-foreground"
                   >
-                    <ArrowLeft className="w-4 h-4" />
-                    Go Back
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    {isBn ? 'ফিরে যান' : 'Go Back'}
                   </Button>
                   
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={resendOtp}
+                    onClick={sendOtp}
                     disabled={sendingOtp || otpTimer > 90}
-                    className="gap-1"
+                    className="gap-1 text-primary"
                   >
-                    {sendingOtp ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <RefreshCw className="w-4 h-4" />
-                    )}
-                    Resend Code
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    {isBn ? 'নতুন কোড পাঠান' : 'Resend Code'}
                   </Button>
                 </div>
               </div>
             ) : (
-              /* Login/Signup/Teacher Tabs */
-              <div className="w-full">
-                {/* 🚀 Skip Login / Testing Bypass Card */}
-                <div className="mb-5 p-3.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-brand-500/10 to-blue-500/10 border border-brand-500/30 dark:border-brand-500/20">
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-brand-600 dark:text-brand-400">
-                      <Sparkles className="w-4 h-4 animate-spin text-amber-500" />
-                      <span>{isBn ? 'টেস্টিং বাইপাস (লগইন ছাড়াই দেখুন)' : 'Testing Mode (Skip Login)'}</span>
-                    </div>
-                    <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-700 dark:text-brand-300">
-                      Dev Preview
+              <div className="space-y-5">
+                
+                {/* Clean Testing Mode Shortcut */}
+                <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary shrink-0" />
+                    <span className="text-xs font-semibold text-foreground">
+                      {isBn ? 'টেস্টিং প্রিভিউ (লগইন ছাড়াই দেখুন)' : 'Testing Preview'}
                     </span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground mb-3 leading-snug">
-                    {isBn 
-                      ? 'ড্যাশবোর্ড, লাইভ ক্লাস ও কোর্স প্লেয়ার পরীক্ষা করার জন্য নিচের যেকোনো বাটনে ক্লিক করে সরাসরি প্রবেশ করুন:' 
-                      : 'Bypass credentials to test Student Dashboard, Course Player, or Instructor Panel:'}
-                  </p>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => handleBypassLogin('student')}
-                      disabled={isLoading}
-                      className="h-8 text-xs font-semibold bg-brand-500 hover:bg-brand-600 text-white shadow-xs rounded-lg"
-                    >
-                      🎓 {isBn ? 'স্টুডেন্ট' : 'Student'}
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleBypassLogin('teacher')}
-                      disabled={isLoading}
-                      className="h-8 text-xs font-semibold border-border hover:bg-muted text-foreground rounded-lg"
-                    >
-                      👨‍🏫 {isBn ? 'টিচার' : 'Teacher'}
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleBypassLogin('admin')}
-                      disabled={isLoading}
-                      className="h-8 text-xs font-semibold border-border hover:bg-muted text-foreground rounded-lg"
-                    >
-                      ⚡ {isBn ? 'এডমিন' : 'Admin'}
-                    </Button>
-                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleBypassLogin}
+                    disabled={isLoading}
+                    className="h-7 px-3 text-xs font-bold bg-primary hover:bg-primary/90 text-white rounded-lg shrink-0"
+                  >
+                    🎓 {isBn ? 'স্টুডেন্ট প্রবেশ' : 'Student Demo'}
+                  </Button>
                 </div>
 
+                {/* Tabs for Login & Sign Up */}
                 <Tabs defaultValue="login" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 mb-6">
-                    <TabsTrigger value="login" className="text-sm">Login</TabsTrigger>
-                    <TabsTrigger value="signup" className="text-sm">Sign Up</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-2 mb-5 rounded-xl bg-muted/50 p-1">
+                    <TabsTrigger value="login" className="rounded-lg text-xs font-bold">
+                      {isBn ? 'লগইন' : 'Sign In'}
+                    </TabsTrigger>
+                    <TabsTrigger value="signup" className="rounded-lg text-xs font-bold">
+                      {isBn ? 'রেজিস্ট্রেশন' : 'Register'}
+                    </TabsTrigger>
                   </TabsList>
 
+                  {/* 1. STUDENT LOGIN */}
                   <TabsContent value="login">
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="login-email" className="text-sm">Email Address</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          id="login-email"
-                          type="email"
-                          placeholder="your@email.com"
-                          value={loginEmail}
-                          onChange={(e) => setLoginEmail(e.target.value)}
-                          className="pl-10 h-11"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="login-password" className="text-sm">Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          id="login-password"
-                          type={showLoginPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          value={loginPassword}
-                          onChange={(e) => setLoginPassword(e.target.value)}
-                          className="pl-10 pr-10 h-11"
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowLoginPassword(!showLoginPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
-                        >
-                          {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end">
-                      <Link 
-                        to="/forgot-password" 
-                        className="text-sm text-primary hover:underline font-medium"
-                      >
-                        Forgot password?
-                      </Link>
-                    </div>
-
-                    <Button type="submit" className="w-full h-11 font-semibold bg-brand-500 hover:bg-brand-600 text-white rounded-md shadow-sm" disabled={isLoading}>
-                      {isLoading ? 'Logging in...' : 'Sign in'}
-                    </Button>
-
-                    <div className="relative my-4">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-border" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-card px-2 text-muted-foreground">OR</span>
-                      </div>
-                    </div>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full h-11 gap-2 rounded-lg border border-gray-300 dark:border-border text-foreground hover:bg-gray-50 dark:hover:bg-accent"
-                      onClick={handleGoogleSignIn}
-                      disabled={isLoading}
-                    >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                      </svg>
-                      Sign in with Google
-                    </Button>
-
-                    {/* EdgeCourseBD Video Help Banner */}
-                    <div className="w-full p-[8px] bg-[#17181D] border border-white/10 rounded-[8px] grid grid-cols-[1fr,88px] gap-2 items-center box-border mt-3">
-                      <div className="flex items-center gap-2 text-white text-xs">
-                        <div className="w-6 h-6 rounded-full bg-red-600 flex items-center justify-center shrink-0">
-                          <Play className="w-3 h-3 fill-white text-white ml-0.5" />
+                    <form onSubmit={handleLogin} className="space-y-4">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="login-email" className="text-xs font-semibold">
+                          {isBn ? 'ইমেইল অ্যাড্রেস' : 'Email Address'}
+                        </Label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input
+                            id="login-email"
+                            type="email"
+                            placeholder="student@example.com"
+                            value={loginEmail}
+                            onChange={(e) => setLoginEmail(e.target.value)}
+                            className="pl-9 h-11 rounded-xl text-sm"
+                            required
+                          />
                         </div>
-                        <span className="font-medium text-[13px] leading-tight">
-                          {isBn ? "লগইন করতে সমস্যা হলে ভিডিওটি দেখো" : "Watch help video for signing in"}
-                        </span>
                       </div>
-                      <a
-                        href="https://youtube.com/@astropixel_tech"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-[#DF6818] hover:bg-[#d46215] text-white text-[12px] font-semibold flex items-center justify-center py-[6px] px-[10px] rounded-[7px] transition-colors text-center"
+
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between items-center">
+                          <Label htmlFor="login-password" className="text-xs font-semibold">
+                            {isBn ? 'পাসওয়ার্ড' : 'Password'}
+                          </Label>
+                          <Link 
+                            to="/forgot-password" 
+                            className="text-xs text-primary hover:underline font-medium"
+                          >
+                            {isBn ? 'ভুলে গেছেন?' : 'Forgot password?'}
+                          </Link>
+                        </div>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input
+                            id="login-password"
+                            type={showLoginPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            value={loginPassword}
+                            onChange={(e) => setLoginPassword(e.target.value)}
+                            className="pl-9 pr-10 h-11 rounded-xl text-sm"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowLoginPassword(!showLoginPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <Button 
+                        type="submit" 
+                        className="w-full h-11 font-bold bg-primary hover:bg-primary/90 text-white rounded-xl shadow-xs" 
+                        disabled={isLoading}
                       >
-                        Play Video
-                      </a>
-                    </div>
-                  </form>
-                </TabsContent>
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            {isBn ? 'লগইন হচ্ছে...' : 'Signing in...'}
+                          </>
+                        ) : (
+                          isBn ? 'লগইন করুন' : 'Sign In'
+                        )}
+                      </Button>
 
-                <TabsContent value="signup">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-name" className="text-sm">Full Name</Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          id="signup-name"
-                          type="text"
-                          placeholder="Your Full Name"
-                          value={signupName}
-                          onChange={(e) => setSignupName(e.target.value)}
-                          className="pl-10 h-11"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-phone" className="text-sm">Phone Number</Label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          id="signup-phone"
-                          type="tel"
-                          placeholder="01XXXXXXXXX"
-                          value={signupPhone}
-                          onChange={(e) => setSignupPhone(e.target.value)}
-                          className="pl-10 h-11"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-email" className="text-sm">Email Address</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          id="signup-email"
-                          type="email"
-                          placeholder="your@email.com"
-                          value={signupEmail}
-                          onChange={(e) => setSignupEmail(e.target.value)}
-                          className="pl-10 h-11"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-password" className="text-sm">Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          id="signup-password"
-                          type={showSignupPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          value={signupPassword}
-                          onChange={(e) => setSignupPassword(e.target.value)}
-                          className="pl-10 pr-10 h-11"
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowSignupPassword(!showSignupPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
-                        >
-                          {showSignupPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
+                      <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                          <span className="w-full border-t border-border/80" />
+                        </div>
+                        <div className="relative flex justify-center text-[11px] uppercase">
+                          <span className="bg-card px-2 text-muted-foreground font-semibold">
+                            {isBn ? 'অথবা' : 'OR'}
+                          </span>
+                        </div>
                       </div>
 
-                      {/* Password strength indicator */}
-                      {signupPassword.length > 0 && (() => {
-                        let strength = 0;
-                        if (signupPassword.length >= 6) strength += 1;
-                        if (signupPassword.length >= 8) strength += 1;
-                        if (/[A-Z]/.test(signupPassword) || /[a-z]/.test(signupPassword)) strength += 1;
-                        if (/[0-9]/.test(signupPassword) || /[^A-Za-z0-9]/.test(signupPassword)) strength += 1;
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full h-11 gap-2 rounded-xl border-border text-foreground hover:bg-muted font-semibold text-xs"
+                        onClick={handleGoogleSignIn}
+                        disabled={isLoading}
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24">
+                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        {isBn ? 'গুগল দিয়ে প্রবেশ করুন' : 'Sign in with Google'}
+                      </Button>
+                    </form>
+                  </TabsContent>
 
-                        const colors = ['bg-red-500', 'bg-amber-500', 'bg-blue-500', 'bg-emerald-500'];
-                        const labels = isBn ? ['দুর্বল', 'সাধারণ', 'ভালো', 'খুব শক্তিশালী'] : ['Weak', 'Fair', 'Good', 'Strong'];
-
-                        return (
-                          <div className="space-y-1.5 pt-1">
-                            <div className="flex gap-1 h-1.5">
-                              {[0, 1, 2, 3].map((idx) => (
-                                <div
-                                  key={idx}
-                                  className={`flex-1 rounded-full transition-all duration-300 ${
-                                    idx < strength ? colors[strength - 1] : 'bg-muted/40'
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <div className="flex justify-between items-center text-[11px] text-muted-foreground">
-                              <span>{isBn ? 'পাসওয়ার্ড শক্তি:' : 'Password strength:'}</span>
-                              <span className={`font-medium ${
-                                strength === 1 ? 'text-red-400' :
-                                strength === 2 ? 'text-amber-400' :
-                                strength === 3 ? 'text-blue-400' : 'text-emerald-400'
-                              }`}>
-                                {labels[strength - 1] || (isBn ? 'দুর্বল' : 'Weak')}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })()}
-                    </div>
-
-                    <Button 
-                      type="button" 
-                      className="w-full h-11 gap-2 font-semibold" 
-                      disabled={sendingOtp}
-                      onClick={handleStudentOtp}
-                    >
-                      {sendingOtp ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Sending Code...
-                        </>
-                      ) : (
-                        <>
-                          <Mail className="w-4 h-4" />
-                          Verify Email
-                        </>
-                      )}
-                    </Button>
-
-                    <div className="relative my-4">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-border" />
+                  {/* 2. STUDENT SIGN UP (Clean & Minimal) */}
+                  <TabsContent value="signup">
+                    <div className="space-y-3.5">
+                      <div className="space-y-1">
+                        <Label htmlFor="signup-name" className="text-xs font-semibold">
+                          {isBn ? 'আপনার পূর্ণ নাম' : 'Full Name'}
+                        </Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input
+                            id="signup-name"
+                            type="text"
+                            placeholder={isBn ? 'যেমন: সাকিব আহমেদ' : 'e.g. Shakib Ahmed'}
+                            value={signupName}
+                            onChange={(e) => setSignupName(e.target.value)}
+                            className="pl-9 h-10.5 rounded-xl text-sm"
+                            required
+                          />
+                        </div>
                       </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-card px-2 text-muted-foreground">OR</span>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="signup-phone" className="text-xs font-semibold">
+                          {isBn ? 'মোবাইল নম্বর' : 'Phone Number'}
+                        </Label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input
+                            id="signup-phone"
+                            type="tel"
+                            placeholder="01XXXXXXXXX"
+                            value={signupPhone}
+                            onChange={(e) => setSignupPhone(e.target.value)}
+                            className="pl-9 h-10.5 rounded-xl text-sm"
+                            required
+                          />
+                        </div>
                       </div>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="signup-email" className="text-xs font-semibold">
+                          {isBn ? 'ইমেইল অ্যাড্রেস' : 'Email Address'}
+                        </Label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input
+                            id="signup-email"
+                            type="email"
+                            placeholder="student@example.com"
+                            value={signupEmail}
+                            onChange={(e) => setSignupEmail(e.target.value)}
+                            className="pl-9 h-10.5 rounded-xl text-sm"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="signup-password" className="text-xs font-semibold">
+                          {isBn ? 'পাসওয়ার্ড' : 'Password'}
+                        </Label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input
+                            id="signup-password"
+                            type={showSignupPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            value={signupPassword}
+                            onChange={(e) => setSignupPassword(e.target.value)}
+                            className="pl-9 pr-10 h-10.5 rounded-xl text-sm"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowSignupPassword(!showSignupPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showSignupPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <Button 
+                        type="button" 
+                        className="w-full h-11 font-bold rounded-xl bg-primary hover:bg-primary/90 text-white mt-1" 
+                        disabled={sendingOtp}
+                        onClick={sendOtp}
+                      >
+                        {sendingOtp ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            {isBn ? 'অ্যাকাউন্ট তৈরি হচ্ছে...' : 'Creating Account...'}
+                          </>
+                        ) : (
+                          isBn ? 'নতুন অ্যাকাউন্ট খুলুন' : 'Create Student Account'
+                        )}
+                      </Button>
+
+                      <div className="relative my-3">
+                        <div className="absolute inset-0 flex items-center">
+                          <span className="w-full border-t border-border/80" />
+                        </div>
+                        <div className="relative flex justify-center text-[11px] uppercase">
+                          <span className="bg-card px-2 text-muted-foreground font-semibold">
+                            {isBn ? 'অথবা' : 'OR'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full h-10 gap-2 rounded-xl border-border text-foreground hover:bg-muted font-semibold text-xs"
+                        onClick={handleGoogleSignIn}
+                        disabled={isLoading}
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24">
+                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        {isBn ? 'গুগল দিয়ে সাইন আপ করুন' : 'Sign up with Google'}
+                      </Button>
                     </div>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full h-11 gap-2"
-                      onClick={handleGoogleSignIn}
-                      disabled={isLoading}
-                    >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                      </svg>
-                      Sign up with Google
-                    </Button>
-                  </div>
-                </TabsContent>
-
-                {/* Teacher info removed - teachers use /teacher/login */}
-              </Tabs>
+                  </TabsContent>
+                </Tabs>
               </div>
             )}
-          </div>
 
-          {!showOtpVerification && (
-            <div className="text-center text-xs text-muted-foreground px-5 pb-5">
-              <p>{t('login.autoPassCode')}</p>
+            {/* Bottom Links to Teacher and Admin Portals */}
+            <div className="pt-5 mt-5 border-t border-border/70 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
+              <Link 
+                to="/teacher/login" 
+                className="hover:text-primary transition-colors flex items-center gap-1 font-medium"
+              >
+                <GraduationCap className="w-3.5 h-3.5 text-primary" />
+                <span>{isBn ? 'শিক্ষক বা মেন্টর পোর্টাল' : 'Teacher Portal'}</span>
+              </Link>
+              <Link 
+                to="/admin/login" 
+                className="hover:text-primary transition-colors flex items-center gap-1 font-medium"
+              >
+                <Shield className="w-3.5 h-3.5 text-muted-foreground" />
+                <span>{isBn ? 'অ্যাডমিন পোর্টাল' : 'Admin Portal'}</span>
+              </Link>
             </div>
-          )}
-        </div>
+
+          </div>
         </motion.div>
       </div>
     </div>

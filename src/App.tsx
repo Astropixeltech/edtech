@@ -37,6 +37,9 @@ const FreeResourcesPage = lazy(() => import("./views/FreeResourcesPage"));
 const SyllabusCalculatorPage = lazy(() => import("./views/SyllabusCalculatorPage"));
 const EligibilityCalculatorPage = lazy(() => import("./views/EligibilityCalculatorPage"));
 
+const TeacherLoginPage = lazy(() => import("./views/TeacherLoginPage"));
+const AdminLoginPage = lazy(() => import("./views/AdminLoginPage"));
+
 const queryClient = new QueryClient();
 
 function AppContent() {
@@ -57,12 +60,12 @@ function AppContent() {
           <Route path="/about" element={<LearnAboutPage />} />
           <Route path="/contact" element={<LearnContactPage />} />
 
-          {/* Unified Login Portal */}
+          {/* Dedicated Login Portals */}
           <Route path="/login" element={<StudentLoginPage />} />
           <Route path="/auth" element={<StudentLoginPage />} />
           <Route path="/student/login" element={<StudentLoginPage />} />
-          <Route path="/teacher/login" element={<StudentLoginPage />} />
-          <Route path="/admin/login" element={<StudentLoginPage />} />
+          <Route path="/teacher/login" element={<TeacherLoginPage />} />
+          <Route path="/admin/login" element={<AdminLoginPage />} />
 
           {/* Core Dashboards & LMS Features */}
           <Route path="/student/course/:courseId" element={<CourseViewerPage />} />

@@ -63,7 +63,7 @@ const CoursesNavbar = () => {
     <>
       {/* Floating Glassmorphism Navbar Container (Permanently Pinned on Scroll) */}
       <header className="fixed top-0 left-0 right-0 z-[100] w-full px-3 sm:px-6 pt-2 sm:pt-3 pointer-events-none transition-all duration-300">
-        <div className={`pointer-events-auto mx-auto max-w-6xl h-14 sm:h-16 px-4 sm:px-6 flex items-center justify-between rounded-2xl md:rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 ${isScrolled ? "shadow-xl shadow-black/10 border-emerald-500/20" : ""}`}>
+        <div className={`pointer-events-auto mx-auto max-w-6xl h-14 sm:h-16 px-4 sm:px-6 flex items-center justify-between rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-gray-200/80 dark:border-white/10 shadow-[0_4px_20px_rgb(0,0,0,0.06)] transition-all duration-300 ${isScrolled ? "shadow-lg shadow-black/8 border-primary/20 bg-white dark:bg-slate-900" : ""}`}>
           
           {/* Brand Logo */}
           <div className="flex items-center gap-3">

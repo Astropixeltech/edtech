@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useStudentCourses } from '@/hooks/useCourses';
@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import { 
   BookOpen, CheckCircle, LogOut, Award, PlayCircle, User, Sun, Moon, Languages,
   GraduationCap, Sparkles, CreditCard, IdCard, TrendingUp, Home, Search, Calendar, Clock, Lock, Play, Bell,
-  Flame, Star
+  Flame, Star, FileCheck, FileText, Receipt, Download, ExternalLink, CheckCircle2, AlertCircle, Clock3
 } from 'lucide-react';
 import { CourseWithProgress, Course } from '@/types/lms';
 import { useTheme } from 'next-themes';
@@ -75,7 +75,15 @@ export default function StudentDashboard() {
   }, [profile]);
 
   useEffect(() => {
-    if (activeTab === 'explore' && user) { fetchAllCourses(); fetchEnrollmentRequests(); }
+    if (user) {
+      fetchEnrollmentRequests();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (activeTab === 'explore' && user) {
+      fetchAllCourses();
+    }
   }, [activeTab, user]);
 
   const fetchAllCourses = async () => {
@@ -126,12 +134,15 @@ export default function StudentDashboard() {
 
   const navItems = [
     { id: 'courses', icon: BookOpen, label: language === 'bn' ? 'আমার কোর্স' : 'My Courses' },
+    { id: 'routine', icon: Calendar, label: language === 'bn' ? 'ক্লাস রুটিন' : 'Class Routine' },
+    { id: 'exams', icon: FileCheck, label: language === 'bn' ? 'পরীক্ষা ও ফলাফল' : 'Exams & Results' },
+    { id: 'notes', icon: FileText, label: language === 'bn' ? 'নোটস ও শিট' : 'Notes & Sheets' },
     { id: 'live', icon: VideoIcon, label: language === 'bn' ? 'লাইভ ক্লাস' : 'Live Class' },
+    { id: 'payments', icon: Receipt, label: language === 'bn' ? 'পেমেন্ট হিস্ট্রি' : 'Payment History' },
     { id: 'notices', icon: Bell, label: language === 'bn' ? 'নোটিশ' : 'Notices' },
     { id: 'recorded', icon: Folder, label: language === 'bn' ? 'রেকর্ডেড' : 'Recorded' },
-    { id: 'explore', icon: Search, label: language === 'bn' ? 'নতুন কোর্স ব্রাউজ' : 'Browse New Courses' },
     { id: 'certificates', icon: Award, label: language === 'bn' ? 'সনদ' : 'Certificates' },
-    { id: 'id-card', icon: IdCard, label: language === 'bn' ? 'আইডি' : 'ID Card' },
+    { id: 'id-card', icon: IdCard, label: language === 'bn' ? 'আইডি কার্ড' : 'ID Card' },
     { id: 'profile', icon: User, label: language === 'bn' ? 'প্রোফাইল' : 'Profile' },
   ];
 
@@ -498,6 +509,405 @@ export default function StudentDashboard() {
                   })}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Tab: Class Routine */}
+          {activeTab === 'routine' && (
+            <div className="space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border/70 rounded-2xl p-4 sm:p-5 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <Calendar className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-base sm:text-lg text-foreground">
+                      {language === 'bn' ? 'একাডেমিক ক্লাস রুটিন' : 'Academic Class Routine'}
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      {language === 'bn' ? 'এইচএসসি বিজ্ঞান ও এডমিশন প্রোগ্রামের সাপ্তাহিক লাইভ ক্লাস সূচি' : 'Weekly live class schedule for HSC & Admission programs'}
+                    </p>
+                  </div>
+                </div>
+                <Badge variant="outline" className="text-xs font-semibold px-3 py-1 border-primary/30 text-primary self-start sm:self-auto">
+                  {language === 'bn' ? 'লাইভ সেশন সূচি' : 'Live Schedule'}
+                </Badge>
+              </div>
+
+              <div className="grid gap-4">
+                {[
+                  {
+                    dayBn: "শনিবার (Saturday)",
+                    dayEn: "Saturday",
+                    badge: language === 'bn' ? "আজকের ক্লাস" : "Today",
+                    classes: [
+                      { subjectBn: "পদার্থবিজ্ঞান ১ম পত্র", topicBn: "নিউটনিয়ান বলবিদ্যা (ক্ল্যাসিকাল ও ইঞ্জিনিয়ারিং মেকানিক্স)", instructor: "Engr. Tanvir Ahmed (BUET)", time: "07:30 PM - 09:30 PM", status: "live" },
+                      { subjectBn: "উচ্চতর গণিত ১ম পত্র", topicBn: "ম্যাট্রিক্স ও নির্ণায়ক (শর্টকাট ও রিটেন ট্রিকস)", instructor: "Fahim Shahriar (DU)", time: "10:00 PM - 11:30 PM", status: "upcoming" },
+                    ]
+                  },
+                  {
+                    dayBn: "রবিবার (Sunday)",
+                    dayEn: "Sunday",
+                    badge: language === 'bn' ? "আসন্ন" : "Upcoming",
+                    classes: [
+                      { subjectBn: "রসায়ন ১ম পত্র", topicBn: "মৌলের পর্যায়বৃত্ত ধর্ম ও রাসায়নিক বন্ধন", instructor: "Dr. Sumaiya Farhana (SSMC)", time: "08:00 PM - 09:30 PM", status: "upcoming" },
+                    ]
+                  },
+                  {
+                    dayBn: "সোমবার (Monday)",
+                    dayEn: "Monday",
+                    badge: language === 'bn' ? "আসন্ন" : "Upcoming",
+                    classes: [
+                      { subjectBn: "জীববিজ্ঞান ১ম পত্র", topicBn: "কোষ ও এর গঠন (মেডিকেল স্পেশাল ডায়াগ্রাম ও MCQ)", instructor: "Dr. Sajid Hasan (DMC)", time: "07:30 PM - 09:00 PM", status: "upcoming" },
+                      { subjectBn: "আইসিটি", topicBn: "সি প্রোগ্রামিং ও লজিক গেইট সমস্যা সমাধান", instructor: "Tahmid Chowdhury (BUET CSE)", time: "09:30 PM - 11:00 PM", status: "upcoming" },
+                    ]
+                  },
+                  {
+                    dayBn: "বুধবার (Wednesday)",
+                    dayEn: "Wednesday",
+                    badge: language === 'bn' ? "আসন্ন" : "Upcoming",
+                    classes: [
+                      { subjectBn: "পদার্থবিজ্ঞান ২য় পত্র", topicBn: "স্থির তড়িৎ ও কুলম্বের সূত্র প্রবলেম সলভিং", instructor: "Engr. Tanvir Ahmed (BUET)", time: "07:30 PM - 09:30 PM", status: "upcoming" },
+                    ]
+                  }
+                ].map((dayItem, dIdx) => (
+                  <div key={dIdx} className="bg-card border border-border/80 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between border-b border-border/50 pb-2.5">
+                      <span className="font-bold text-sm sm:text-base text-foreground flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-primary" />
+                        <span>{dayItem.dayBn}</span>
+                      </span>
+                      <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                        dIdx === 0 
+                          ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 animate-pulse" 
+                          : "bg-muted text-muted-foreground"
+                      }`}>
+                        {dayItem.badge}
+                      </span>
+                    </div>
+
+                    <div className="grid gap-2.5">
+                      {dayItem.classes.map((cls, cIdx) => (
+                        <div key={cIdx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors border border-border/40">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                                {cls.subjectBn}
+                              </span>
+                              <span className="text-xs font-bold text-foreground">
+                                {cls.topicBn}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3 text-[11px] text-muted-foreground flex-wrap">
+                              <span className="flex items-center gap-1">
+                                <User className="w-3 h-3" />
+                                <span>{cls.instructor}</span>
+                              </span>
+                              <span className="flex items-center gap-1 font-medium">
+                                <Clock3 className="w-3 h-3 text-primary" />
+                                <span>{cls.time}</span>
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="shrink-0 flex items-center gap-2">
+                            <button
+                              onClick={() => setActiveTab('live')}
+                              className="h-8 px-3.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                            >
+                              <VideoIcon className="w-3.5 h-3.5" />
+                              <span>{language === 'bn' ? 'লাইভ ক্লাসে যান' : 'Go to Live'}</span>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tab: Exams & Results */}
+          {activeTab === 'exams' && (
+            <div className="space-y-5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: language === 'bn' ? 'অংশগ্রহণকৃত পরীক্ষা' : 'Tests Taken', value: '১২টি', icon: FileCheck, color: 'text-blue-600' },
+                  { label: language === 'bn' ? 'গড় স্কোর' : 'Avg Score', value: '৮৪%', icon: TrendingUp, color: 'text-emerald-600' },
+                  { label: language === 'bn' ? 'সর্বোচ্চ মেধা স্কোর' : 'Top Rank', value: '৭ম', icon: Award, color: 'text-amber-600' },
+                  { label: language === 'bn' ? 'সঠিক উত্তর হার' : 'Accuracy', value: '৮৯%', icon: CheckCircle2, color: 'text-primary' },
+                ].map((stat, sIdx) => (
+                  <div key={sIdx} className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-muted/60 flex items-center justify-center shrink-0">
+                      <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                    </div>
+                    <div>
+                      <p className="text-base font-extrabold text-foreground">{stat.value}</p>
+                      <p className="text-[11px] text-muted-foreground">{stat.label}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Upcoming Model Tests */}
+              <div className="bg-card border border-border/80 rounded-2xl p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-border/60 pb-3">
+                  <div>
+                    <h3 className="font-bold text-base text-foreground">
+                      {language === 'bn' ? 'আসন্ন মডেল টেস্ট ও উইকলি এক্সাম' : 'Upcoming Model Tests'}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">নির্ধারিত সময়ে পরীক্ষা শুরু হবে</p>
+                  </div>
+                  <Badge className="bg-primary/10 text-primary border-primary/20">Active Batch</Badge>
+                </div>
+
+                <div className="grid gap-3">
+                  {[
+                    { title: "HSC পদার্থ ১ম পত্র: গতিবিদ্যা ও বলবিদ্যা পূর্ণাঙ্গ মডেল টেস্ট", marks: "১০০ নম্বর", duration: "১ ঘণ্টা ১৫ মিনিট", date: "আগামীকাল রাত ০৮:০০" },
+                    { title: "মেডিকেল জীববিজ্ঞান উইকলি এক্সাম: কোষ ও মানব শারীরতত্ত্ব", marks: "৫০ নম্বর", duration: "৩০ মিনিট", date: "১৫ সেপ্টেম্বর রাত ০৯:০০" },
+                    { title: "বুয়েট স্ট্যান্ডার্ড অ্যাডভান্সড ম্যাথ টেস্ট: ক্যালকুলাস ও ভেক্টর", marks: "৬০ নম্বর (লিখিত)", duration: "১ ঘণ্টা ৩০ মিনিট", date: "১৮ সেপ্টেম্বর সকাল ১০:০০" },
+                  ].map((ex, exIdx) => (
+                    <div key={exIdx} className="p-3.5 rounded-xl bg-muted/40 border border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-bold text-foreground">{ex.title}</h4>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                          <span>পূর্ণমান: {ex.marks}</span>
+                          <span>সময়: {ex.duration}</span>
+                          <span className="font-semibold text-primary">তারিখ: {ex.date}</span>
+                        </div>
+                      </div>
+                      <Button size="sm" onClick={() => toast.info(language === 'bn' ? 'পরীক্ষার সময় শুরু হলে বাটন সক্রিয় হবে' : 'Exam will unlock at scheduled time')} className="h-8 px-4 rounded-xl text-xs font-bold shrink-0 bg-primary hover:bg-primary/90 text-white">
+                        {language === 'bn' ? 'পরীক্ষায় বসুন' : 'Start Exam'}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Past Exam Results */}
+              <div className="bg-card border border-border/80 rounded-2xl p-5 shadow-xs space-y-4">
+                <h3 className="font-bold text-base text-foreground">
+                  {language === 'bn' ? 'বিগত পরীক্ষার ফলাফল ও মূল্যায়ন' : 'Past Exam Results'}
+                </h3>
+                <div className="grid gap-3">
+                  {[
+                    { title: "HSC রসায়ন ১ম পত্র: পর্যায়বৃত্ত ধর্ম উইকলি টেস্ট", score: "৪৮/৫০", highest: "৫০", rank: "৩য়", status: "উত্তীর্ণ (A+)" },
+                    { title: "বুয়েট প্রিলি মডেল টেস্ট ১ (পদার্থ, রসায়ন, গণিত)", score: "৮২/১০০", highest: "৯৪", rank: "১২তম", status: "উত্তীর্ণ (A+)" },
+                    { title: "উচ্চতর গণিত ১ম পত্র: সরলরেখা ও বৃত্ত সাবজেক্টিভ টেস্ট", score: "৪২/৫০", highest: "৪৮", rank: "৮ম", status: "উত্তীর্ণ (A+)" },
+                  ].map((res, rIdx) => (
+                    <div key={rIdx} className="p-3.5 rounded-xl bg-muted/30 border border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <h4 className="text-sm font-bold text-foreground">{res.title}</h4>
+                        <p className="text-xs text-muted-foreground mt-0.5">ব্যাচে সর্বোচ্চ নম্বর: {res.highest} • মেধা স্থান: {res.rank}</p>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="text-sm font-extrabold text-primary">{res.score}</span>
+                        <span className="text-[11px] font-semibold px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                          {res.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab: Notes & Sheets */}
+          {activeTab === 'notes' && (
+            <div className="space-y-5">
+              <div className="bg-card border border-border/70 rounded-2xl p-4 sm:p-5 shadow-sm flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-base sm:text-lg text-foreground">
+                      {language === 'bn' ? 'ক্লাস লেকচার নোটস ও শিট' : 'Class Lecture Notes & Sheets'}
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      {language === 'bn' ? 'অধ্যায়ভিত্তিক সারসংক্ষেপ, টাইপভিত্তিক ম্যাথ ও বোর্ড প্রশ্ন সমাধান PDF' : 'Download chapter formula sheets, notes, and practice PDFs'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { title: "পদার্থবিজ্ঞান ১ম পত্র: গতিবিদ্যা পূর্ণাঙ্গ ফর্মুলা শিট ও শর্টকাট", chapter: "অধ্যায় ৩ • গতিবিদ্যা", size: "12.4 MB • PDF", instructor: "Engr. Tanvir Ahmed (BUET)" },
+                  { title: "রসায়ন ১ম পত্র: রাসায়নিক পরিবর্তন গাণিতিক সমস্যা সমাধান", chapter: "অধ্যায় ৪ • রাসায়নিক পরিবর্তন", size: "8.6 MB • PDF", instructor: "Dr. Sumaiya Farhana" },
+                  { title: "উচ্চতর গণিত ১ম পত্র: ত্রিকোণমিতি অল ফর্মুলা অ্যান্ড হ্যাকস বুকলেট", chapter: "অধ্যায় ৭ • ত্রিকোণমিতি", size: "15.1 MB • PDF", instructor: "Fahim Shahriar (DU)" },
+                  { title: "মেডিকেল স্পেশাল জীববিজ্ঞান নোট: রক্ত সংবহন ও হৃদপিণ্ড", chapter: "প্রাণিবিজ্ঞান অধ্যায় ৪", size: "9.8 MB • PDF", instructor: "Dr. Sajid Hasan (DMC)" },
+                  { title: "বুয়েট ও ইঞ্জিনিয়ারিং ফিজিক্স কোশ্চেন ব্যাংক সলিউশন নোট", chapter: "স্পেশাল ইঞ্জিনিয়ারিং বুক", size: "22.0 MB • PDF", instructor: "Engr. Tanvir Ahmed" },
+                  { title: "আইসিটি অধ্যায় ৩: সংখ্যা পদ্ধতি ও ডিজিটাল ডিভাইস কমপ্লিট শিট", chapter: "অধ্যায় ৩ • আইসিটি", size: "6.5 MB • PDF", instructor: "Tahmid Chowdhury" },
+                ].map((note, nIdx) => (
+                  <div key={nIdx} className="bg-card border border-border/80 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between gap-3 hover:border-primary/40 transition-colors">
+                    <div className="space-y-1.5">
+                      <span className="text-[11px] font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-md">
+                        {note.chapter}
+                      </span>
+                      <h4 className="text-sm font-bold text-foreground leading-snug">
+                        {note.title}
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        প্রস্তুতকারক: {note.instructor}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 border-t border-border/50 mt-auto">
+                      <span className="text-[11px] text-muted-foreground font-mono">{note.size}</span>
+                      <Button
+                        size="sm"
+                        onClick={() => toast.success(language === 'bn' ? 'নোট ডাউনলোড শুরু হয়েছে...' : 'Download started...')}
+                        className="h-8 px-3.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-bold flex items-center gap-1.5"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>{language === 'bn' ? 'ডাউনলোড' : 'Download'}</span>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tab: Payment History */}
+          {activeTab === 'payments' && (
+            <div className="space-y-5">
+              <div className="bg-card border border-border/70 rounded-2xl p-4 sm:p-5 shadow-sm flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <Receipt className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-base sm:text-lg text-foreground">
+                      {language === 'bn' ? 'পেমেন্ট ও লেনদেন হিস্ট্রি' : 'Payment & Transaction History'}
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      {language === 'bn' ? 'আপনার সকল কোর্স এনরোলমেন্ট ও পেমেন্টের বিবরণী' : 'Your enrollment requests and payment transactions'}
+                    </p>
+                  </div>
+                </div>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => fetchEnrollmentRequests()}
+                  className="text-xs h-8 gap-1.5 rounded-xl"
+                >
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  <span>{language === 'bn' ? 'রিফ্রেশ' : 'Refresh'}</span>
+                </Button>
+              </div>
+
+              {enrollmentRequests && enrollmentRequests.length > 0 ? (
+                <div className="grid gap-3">
+                  {enrollmentRequests.map((req: any) => (
+                    <div key={req.id} className="bg-card border border-border/80 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-sm text-foreground">
+                            {req.course?.title || courses.find(c => c.id === req.course_id)?.title || 'একাডেমিক কোর্স এনরোলমেন্ট'}
+                          </span>
+                          <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                            req.status === 'approved' 
+                              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
+                              : req.status === 'rejected'
+                              ? 'bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/20'
+                              : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                          }`}>
+                            {req.status === 'approved' ? 'অনুমোদিত (Approved)' : req.status === 'rejected' ? 'বাতিল' : 'যাচাই চলছে (Pending)'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap font-mono">
+                          {req.transaction_id && <span>TrxID: {req.transaction_id}</span>}
+                          {req.payment_method && <span>পদ্ধতি: {req.payment_method}</span>}
+                          {req.phone_number && <span>মোবাইল: {req.phone_number}</span>}
+                          <span>তারিখ: {new Date(req.created_at).toLocaleDateString('en-GB')}</span>
+                        </div>
+                      </div>
+
+                      <div className="shrink-0 flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => toast.info(language === 'bn' ? `রশিদ আইডি: ${req.id.slice(0, 8)}` : `Receipt ID: ${req.id.slice(0, 8)}`)}
+                          className="h-8 text-xs font-semibold rounded-xl"
+                        >
+                          {language === 'bn' ? 'রশিদ দেখুন' : 'View Receipt'}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-card border border-border/80 rounded-2xl p-8 text-center space-y-3">
+                  <Receipt className="w-10 h-10 text-muted-foreground mx-auto" />
+                  <p className="font-semibold text-sm text-foreground">
+                    {language === 'bn' ? 'কোনো পূর্ববর্তী পেমেন্ট রেকর্ড পাওয়া যায়নি' : 'No past payment records found'}
+                  </p>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                    {language === 'bn' ? 'নতুন কোর্সে এনরোল করলে আপনার ট্রানজ্যাকশন ও ভেরিফিকেশন স্ট্যাটাস এখানে দেখা যাবে।' : 'When you enroll in courses, transaction details will appear here.'}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Tab: Certificates */}
+          {activeTab === 'certificates' && (
+            <div className="space-y-5">
+              <div className="bg-card border border-border/70 rounded-2xl p-4 sm:p-5 shadow-sm flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <Award className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-base sm:text-lg text-foreground">
+                      {language === 'bn' ? 'অর্জিত সার্টিফিকেটসমূহ' : 'Earned Certificates'}
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      {language === 'bn' ? 'কোর্স সম্পূর্ণ করে ভেরিফাইড সনদপত্র ডাউনলোড করুন' : 'Official verified certificates upon course completion'}
+                    </p>
+                  </div>
+                </div>
+                <Link to="/my-certificates">
+                  <Button size="sm" className="h-8 text-xs font-bold rounded-xl bg-primary hover:bg-primary/90 text-white">
+                    {language === 'bn' ? 'সকল সনদপত্র' : 'All Certificates'}
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="grid gap-4">
+                {courses.filter(c => c.is_completed).length > 0 ? (
+                  courses.filter(c => c.is_completed).map((c) => (
+                    <div key={c.id} className="bg-card border border-border/80 rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <Award className="w-8 h-8 text-amber-500" />
+                        <div>
+                          <h4 className="font-bold text-sm text-foreground">{c.title}</h4>
+                          <p className="text-xs text-muted-foreground">সফলভাবে কোর্স সম্পন্ন হয়েছে</p>
+                        </div>
+                      </div>
+                      <Link to={`/my-certificates`}>
+                        <Button size="sm" className="h-8 text-xs rounded-xl bg-primary hover:bg-primary/90 text-white">
+                          সনদপত্র দেখুন
+                        </Button>
+                      </Link>
+                    </div>
+                  ))
+                ) : (
+                  <div className="bg-card border border-border/80 rounded-2xl p-8 text-center space-y-3">
+                    <Award className="w-10 h-10 text-muted-foreground mx-auto" />
+                    <p className="font-semibold text-sm text-foreground">
+                      {language === 'bn' ? 'এখনো কোনো কোর্স সম্পূর্ণ হয়নি' : 'No completed courses yet'}
+                    </p>
+                    <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                      {language === 'bn' ? 'আপনার এনরোল্ড কোর্সের সকল ক্লাস ও মডেল টেস্ট শেষ করে অফিসিয়াল সার্টিফিকেট অর্জন করুন।' : 'Complete your course lectures and tests to earn your verified certificate.'}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
