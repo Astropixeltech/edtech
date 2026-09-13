@@ -8,7 +8,7 @@ import {
   MessageSquare, User, LogOut, Home, Moon, Sun, Globe,
   TrendingUp, PlayCircle, Video, Gift, Wallet, ChevronRight,
   Clock, CheckCircle, AlertCircle, Plus, Menu, X, Sparkles,
-  FileCheck, BarChart3, UploadCloud, CheckCircle2, Star, Percent
+  FileCheck, BarChart3, UploadCloud, CheckCircle2, Star, Percent, Award
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,7 +40,7 @@ import TeacherNoticesTab from '@/components/teacher/TeacherNoticesTab';
 import TeacherChatTab from '@/components/teacher/TeacherChatTab';
 import TeacherLiveClassesTab from '@/components/teacher/TeacherLiveClassesTab';
 import TeacherLandingPagesTab from '@/components/teacher/TeacherLandingPagesTab';
-import { Sparkles } from 'lucide-react';
+import TeacherExamBuilderTab from '@/components/teacher/TeacherExamBuilderTab';
 
 const translations = {
   en: {
@@ -159,6 +159,7 @@ export default function TeacherDashboard() {
   const navItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: t.dashboard },
     { id: 'courses', icon: UploadCloud, label: language === 'bn' ? 'কোর্স ও ক্লাস আপলোড' : 'Course & Class Upload' },
+    { id: 'exams', icon: Award, label: language === 'bn' ? 'মডেল টেস্ট ও কুইজ' : 'Model Tests & Quizzes' },
     { id: 'assignments', icon: FileCheck, label: language === 'bn' ? 'অ্যাসাইনমেন্ট চেকিং' : 'Assignment Checking' },
     { id: 'analytics', icon: BarChart3, label: language === 'bn' ? 'ক্লাস অ্যানালিটিক্স' : 'Class Analytics' },
     { id: 'earnings', icon: DollarSign, label: language === 'bn' ? 'উপার্জন ও কমিশন' : 'Earnings & Commission' },
@@ -465,6 +466,13 @@ export default function TeacherDashboard() {
               courses={courses} 
               isLoading={coursesLoading} 
               refetch={refetchCourses}
+              language={language}
+            />
+          )}
+
+          {activeTab === 'exams' && (
+            <TeacherExamBuilderTab 
+              courses={courses}
               language={language}
             />
           )}

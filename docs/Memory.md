@@ -52,11 +52,19 @@ See [`FolderStructure.md`](./FolderStructure.md).
 - `useCourses` / `usePublicCourses` overlap — candidate for consolidation.
 - Duplicate `use-toast` in `src/hooks/` and `src/components/ui/` — historical shadcn split.
 
+## Recent Milestones Completed
+- **Interactive MCQ Exam Engine**: Full timer, negative marking (-0.25), anti-cheat tab-switch detection, automated merit ranking, and solution review sheets.
+- **Teacher MCQ Quiz / Model Test Builder**: Teachers can create, configure, and publish MCQ model tests directly to student dashboard catalogues (`TeacherExamBuilderTab.tsx`).
+- **Admin Central Notice Broadcaster**: Real-time announcement broadcasting to global or course-specific student/teacher dashboards (`AdminNoticeManagement.tsx`).
+- **Admin Teacher Withdrawal Approvals**: Instant approval/rejection of teacher earnings payout requests under Payments & Requests.
+- **Student Data Export**: Full UTF-8 BOM CSV export for Excel compatibility in Admin Students tab.
+- **PWA Support**: Full web manifest and install prompts for mobile learners.
+- **PDF Formula Notes Generator**: Client-side jsPDF formula revision sheet generator with dynamic student watermark.
+
 ## Pending / Future
-- Mobile app wrapper.
-- Analytics dashboard for admin (revenue, completion).
-- Bulk teacher onboarding tool.
-- Consolidate legacy tables (drop after backfill audit).
+- Mobile app wrapper (Capacitor / TWA).
+- Deep video analytics (heatmap of student replay hotspots).
+- Automated SMS notifications on enrollment approval.
 
 ## Developer Notes
 - Never touch `src/integrations/supabase/*` — auto-generated.

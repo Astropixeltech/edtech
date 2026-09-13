@@ -103,6 +103,21 @@ export default function StudentDashboard() {
     ];
   });
 
+  const [customExams, setCustomExams] = useState<ExamPackage[]>([]);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('ap_custom_exams');
+      if (stored) {
+        setCustomExams(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error('Failed to load custom exams:', e);
+    }
+  }, []);
+
+  const allExamPackages = [...customExams, ...EXAM_PACKAGES];
+
   const handleExamComplete = (result: ExamResult) => {
     setShowExamModal(false);
     setPastExamResults(prev => [result, ...prev]);
@@ -751,7 +766,7 @@ export default function StudentDashboard() {
                 </div>
 
                 <div className="grid gap-3">
-                  {EXAM_PACKAGES.map((pkg) => (
+                  {allExamPackages.map((pkg) => (
                     <div key={pkg.id} className="p-4 rounded-xl bg-muted/30 border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-primary/40 transition-colors">
                       <div className="space-y-1.5">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -759,6 +774,11 @@ export default function StudentDashboard() {
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                             {pkg.subject}
                           </span>
+                          {pkg.id.startsWith('teacher-exam') && (
+                            <Badge variant="outline" className="bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20 text-[10px] font-bold">
+                              শিক্ষক স্পেশাল
+                            </Badge>
+                          )}
                         </div>
                         <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap font-mono">
                           <span>প্রশ্ন: {pkg.totalQuestions}টি</span>
