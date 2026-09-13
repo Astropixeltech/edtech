@@ -312,7 +312,6 @@ const AllCoursesCatalogPage = () => {
                   key={c.id}
                   course={c}
                   className="min-w-0 max-w-none"
-                  onEnroll={handleEnrollClick}
                 />
               ))}
             </div>
@@ -347,7 +346,6 @@ const AllCoursesCatalogPage = () => {
                           key={c.id}
                           course={c}
                           className="min-w-0 max-w-none"
-                          onEnroll={handleEnrollClick}
                         />
                       ))}
                     </div>

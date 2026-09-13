@@ -16,7 +16,7 @@ const Layout = ({ children, flushTop = false, noLayout = false }: LayoutProps) =
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <CoursesNavbar />
-      <main className="flex-1 pt-20 sm:pt-24">
+      <main className="flex-1">
         {children}
       </main>
       <CoursesFooter />

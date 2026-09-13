@@ -5,7 +5,8 @@ import {
   CheckCircle2, Clock, Users, GraduationCap, Star,
   Sparkles, BookOpen, ArrowRight, AlertCircle, Target,
   ChevronRight, Calendar, Globe, Award, ShieldCheck, PlayCircle,
-  Smartphone, HelpCircle, FileText, Check, Lock, Play, Share2
+  Smartphone, HelpCircle, FileText, Check, Lock, Play, Share2,
+  Video, CheckSquare, MessageCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -553,16 +554,29 @@ export default function CourseLandingPage() {
   ];
 
   const tabs = [
-    { id: "all", labelBn: "সবকিছু", labelEn: "Overview" },
-    { id: "content", labelBn: "কোর্স কারিকুলাম", labelEn: "Curriculum" },
-    { id: "outline", labelBn: "কোর্স আউটলাইন", labelEn: "Outline" },
-    { id: "instructors", labelBn: "ইনস্ট্রাক্টরবৃন্দ", labelEn: "Instructors" },
-    { id: "exam", labelBn: "এক্সাম", labelEn: "Exam" },
-    { id: "materials", labelBn: "মেটেরিয়ালস", labelEn: "Materials" },
-    { id: "xfactor", labelBn: "স্পেশাল ফ্যাক্টরস", labelEn: "X Factors" },
-    { id: "faqs", labelBn: "সাধারণ জিজ্ঞাসা", labelEn: "FAQs" },
-    { id: "roadmap", labelBn: "রোডম্যাপ", labelEn: "Roadmap" },
+    { id: "instructor", labelBn: "কোর্স ইন্সট্রাক্টর", labelEn: "Instructor" },
+    { id: "structure", labelBn: "কোর্সটি যেভাবে সাজানো হয়েছে", labelEn: "Structure" },
+    { id: "learn", labelBn: "কোর্সটি করে যা শিখবেন", labelEn: "What you'll learn" },
+    { id: "details", labelBn: "কোর্স সম্পর্কে বিস্তারিত", labelEn: "Course Details" },
+    { id: "curriculum", labelBn: "কোর্স কারিকুলাম", labelEn: "Curriculum" },
+    { id: "faqs", labelBn: "সচরাচর জিজ্ঞাসা", labelEn: "FAQs" },
   ];
+
+  const handleTabClick = (tabId: string) => {
+    setActiveTab(tabId);
+    const element = document.getElementById(`section-${tabId}`);
+    if (element) {
+      const offset = 80;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   return (
     <Layout flushTop={false}>
@@ -570,7 +584,7 @@ export default function CourseLandingPage() {
         <title>{title} — Astropixel Learn</title>
       </Helmet>
 
-      {/* 1. FLOATING STICKY HEADER (Appears on Scroll) */}
+      {/* 1. FLOATING STICKY BAR (Appears on Scroll) */}
       <CourseStickyBar
         title={title || ""}
         price={c.price || 0}
@@ -580,652 +594,444 @@ export default function CourseLandingPage() {
         courseId={c.id}
       />
 
-      {/* 2. EDGECOURSEBD MAIN CONTAINER */}
-      <div className="bg-white dark:bg-background">
-        <div className="container max-w-7xl mx-auto py-4 md:py-8 px-4 sm:px-6">
-
-          {/* Breadcrumb Navigation */}
-          <nav className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 font-semibold mb-4 overflow-x-auto whitespace-nowrap">
-            <Link to="/" className="hover:text-brand-600 transition-colors">
-              {isBn ? "হোম" : "Home"}
-            </Link>
-            <ChevronRight className="h-3 w-3 shrink-0" />
-            <Link to="/courses" className="hover:text-brand-600 transition-colors">
-              {isBn ? "সকল কোর্স" : "All Courses"}
-            </Link>
-            <ChevronRight className="h-3 w-3 shrink-0" />
-            <span className="text-slate-900 dark:text-white font-bold truncate max-w-[200px] sm:max-w-none">
-              {title}
-            </span>
-          </nav>
-
-          <div className="flex flex-col-reverse gap-8 lg:flex-row items-start">
-
-            {/* ═══ LEFT CONTENT AREA (flex-[2]) ═══ */}
-            <div className="min-w-0 flex-1 lg:flex-[2] space-y-6">
-              
-              {/* Title & Stats Row */}
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950/60 text-[11px] font-bold text-brand-600 dark:text-brand-400 ring-1 ring-brand-200 dark:ring-brand-800/40">
-                    {c.category || (isBn ? "প্রফেশনাল কোর্স" : "Professional Course")}
-                  </span>
-                  {isEnrolled && (
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500 text-[11px] font-bold text-white shadow-xs">
-                      {isBn ? "✓ আপনি এনরোল্ড আছেন" : "✓ Enrolled"}
-                    </span>
-                  )}
-                </div>
-
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white leading-snug tracking-tight">
+      {/* 2. 10 MINUTE SCHOOL DARK NAVY HERO BANNER */}
+      <div className="bg-[#0B1120] text-white border-b border-slate-800/80">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12 lg:pb-20">
+          <div className="flex flex-col lg:flex-row items-start justify-between gap-8">
+            {/* Left Hero Content */}
+            <div className="w-full lg:max-w-[62%] space-y-4">
+              {/* Breadcrumbs */}
+              <nav className="flex items-center gap-2 text-xs text-slate-400 font-medium overflow-x-auto whitespace-nowrap">
+                <Link to="/" className="hover:text-emerald-400 transition-colors">
+                  {isBn ? "হোম" : "Home"}
+                </Link>
+                <ChevronRight className="h-3 w-3 shrink-0 text-slate-600" />
+                <Link to="/courses" className="hover:text-emerald-400 transition-colors">
+                  {isBn ? "সকল কোর্স" : "All Courses"}
+                </Link>
+                <ChevronRight className="h-3 w-3 shrink-0 text-slate-600" />
+                <span className="text-emerald-400 font-bold">
+                  {c.category || (isBn ? "স্কিলস" : "Skills")}
+                </span>
+                <ChevronRight className="h-3 w-3 shrink-0 text-slate-600" />
+                <span className="text-white font-bold truncate max-w-[200px] sm:max-w-none">
                   {title}
-                </h1>
+                </span>
+              </nav>
 
-                {shortDesc && (
-                  <p className="text-sm text-slate-700 dark:text-slate-200 font-medium leading-relaxed">
-                    {shortDesc}
-                  </p>
-                )}
+              {/* Title */}
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight">
+                {title}
+              </h1>
 
-                {/* Pill Stats Row */}
-                <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 dark:bg-brand-950/40 px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-slate-100 ring-1 ring-brand-100 dark:ring-brand-900/40">
-                    <Users className="h-3.5 w-3.5 text-brand-600 dark:text-brand-400 shrink-0" />
-                    <span>১,৪৫০+ {isBn ? "এনরোল্ড শিক্ষার্থী" : "Enrolled Students"}</span>
-                  </span>
+              {/* Rating block matching 10MS */}
+              <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm pt-1">
+                <div className="flex items-center text-amber-400">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-current" />
+                  ))}
+                </div>
+                <span className="text-slate-300 font-bold">
+                  {isBn ? "(৭১.৪% শিক্ষার্থী কোর্স শেষে ৫ রেটিং দিয়েছেন)" : "(71.4% students gave 5-star rating)"}
+                </span>
+              </div>
 
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 dark:bg-brand-950/40 px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-slate-100 ring-1 ring-brand-100 dark:ring-brand-900/40">
-                    <Clock className="h-3.5 w-3.5 text-brand-600 dark:text-brand-400 shrink-0" />
-                    <span>{c.duration || "১২+ ঘন্টা"}</span>
-                  </span>
+              {/* Short Description */}
+              {shortDesc && (
+                <p className="text-sm sm:text-base text-slate-300 font-normal leading-relaxed pt-1 max-w-2xl">
+                  {shortDesc}
+                </p>
+              )}
+            </div>
 
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 text-xs font-black text-brand-600 dark:text-brand-400 ring-1 ring-emerald-100 dark:ring-emerald-900/40">
-                    <Star className="h-3.5 w-3.5 fill-current text-amber-500 shrink-0" />
-                    <span>৪.৯ (১২০+ রিভিউ)</span>
-                  </span>
+            {/* Mobile-only StickyEnrollCard placeholder */}
+            <div className="w-full lg:hidden pt-2">
+              <StickyEnrollCard
+                price={c.price || 0}
+                thumbnailUrl={c.thumbnail_url}
+                videoId={videoId}
+                totalClasses={c.total_classes || "৩৯টি"}
+                duration={c.duration || "১০ ঘণ্টা"}
+                onEnroll={handleEnroll}
+                title={title || ""}
+                isEnrolled={isEnrolled}
+                courseId={c.id}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
 
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
-                    <Award className="h-3.5 w-3.5 text-brand-500 shrink-0" />
-                    <span>{isBn ? "ভেরিফায়েড সার্টিফিকেট" : "Verified Certificate"}</span>
-                  </span>
+      {/* 3. 10MS SUB-NAVIGATION STICKY TABS */}
+      <div className="sticky top-16 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-xs">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-2.5">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => handleTabClick(tab.id)}
+                className={`shrink-0 px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+                  activeTab === tab.id
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                {isBn ? tab.labelBn : tab.labelEn}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 4. MAIN TWO-COLUMN BODY */}
+      <div className="bg-slate-50 dark:bg-slate-950 min-h-screen py-8">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
+
+            {/* ═══ LEFT CONTENT COLUMN (w-full lg:w-[63%]) ═══ */}
+            <div className="w-full lg:w-[63%] space-y-8 min-w-0">
+
+              {/* Section 1: কোর্স ইন্সট্রাক্টর */}
+              <div id="section-instructor" className="scroll-mt-28 space-y-3">
+                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
+                  {isBn ? "কোর্স ইন্সট্রাক্টর" : "Course Instructor"}
+                </h3>
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="relative h-16 w-16 sm:h-20 sm:w-20 rounded-full overflow-hidden shrink-0 border-2 border-slate-200 dark:border-slate-700 bg-emerald-50 dark:bg-emerald-950/40">
+                      {instructors[0]?.image ? (
+                        <img src={instructors[0].image} alt={instructors[0].name} className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="flex h-full w-full items-center justify-center text-lg font-black text-emerald-600 dark:text-emerald-400">
+                          {instructors[0]?.initials || "AS"}
+                        </span>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-1 hover:text-emerald-600 transition-colors">
+                        {instructors[0]?.name || (isBn ? "মুনজেরিন শহীদ" : "Munzereen Shahid")}
+                        <ChevronRight className="h-4 w-4 text-slate-400" />
+                      </h4>
+                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-snug font-medium">
+                        {instructors[0]?.institution || instructors[0]?.designation || (isBn ? "এমএসসি (ইংলিশ), অক্সফোর্ড বিশ্ববিদ্যালয়; বিএ, এমএ (ইংরেজি), ঢাকা বিশ্ববিদ্যালয়; প্রধান শিক্ষক, ইংলিশ এডুকেশন, Astropixel Learn" : "Senior Lead Instructor, Astropixel Learn")}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Course Features / About Box (EdgeCourseBD "যা যা থাকছে") */}
-              {outcomes.length > 0 && (
-                <div className="space-y-3 rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card p-5 shadow-xs">
-                  <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-brand-500" />
-                    <span>{isBn ? "কোর্সে যা যা থাকছে:" : "What's Included in This Course:"}</span>
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-semibold">
-                    {outcomes.map((out, idx) => (
-                      <div key={idx} className="flex items-start gap-2">
-                        <span className="flex h-5 w-5 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 text-xs font-black items-center justify-center shrink-0 mt-0.5">
-                          {idx + 1}
+              {/* Section 2: কোর্সটি যেভাবে সাজানো হয়েছে (10MS Signature Dark Navy 2x2 Grid) */}
+              <div id="section-structure" className="scroll-mt-28">
+                <div className="rounded-2xl border border-slate-800 bg-[#0B1120] text-white p-6 sm:p-7 shadow-lg space-y-6">
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-extrabold text-white">
+                      {isBn ? "কোর্সটি যেভাবে সাজানো হয়েছে" : "How The Course Is Structured"}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                      {isBn ? "সব মিলিয়ে এই কোর্সে আপনি যা যা পাচ্ছেন" : "Everything included in this complete learning path"}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Item 1 */}
+                    <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                      <span className="grid h-10 w-10 place-items-center rounded-xl bg-rose-500/20 text-rose-400 shrink-0">
+                        <Video className="h-5 w-5" />
+                      </span>
+                      <div>
+                        <h5 className="text-sm font-extrabold text-white">
+                          {isBn ? "৩৯টি ভিডিও লেকচার" : "39 Video Lectures"}
+                        </h5>
+                        <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                          {isBn ? "কোর্সে রয়েছে দৈনন্দিন জীবনের সব পরিস্থিতির জন্য সাজানো স্পোকেন ভিডিও লেকচার।" : "Bite-sized high definition video lessons covering real scenarios."}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Item 2 */}
+                    <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                      <span className="grid h-10 w-10 place-items-center rounded-xl bg-blue-500/20 text-blue-400 shrink-0">
+                        <FileText className="h-5 w-5" />
+                      </span>
+                      <div>
+                        <h5 className="text-sm font-extrabold text-white">
+                          {isBn ? "১৪টি এক্সক্লুসিভ লেকচার শিট" : "14 Exclusive Lecture Sheets"}
+                        </h5>
+                        <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                          {isBn ? "প্রতিটি ক্লাসের সামারি ও প্র্যাক্টিস এক্সারসাইজ সহ পিডিএফ লেকচার শিট।" : "Downloadable lecture notes and summary practice sheets."}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Item 3 */}
+                    <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                      <span className="grid h-10 w-10 place-items-center rounded-xl bg-purple-500/20 text-purple-400 shrink-0">
+                        <CheckSquare className="h-5 w-5" />
+                      </span>
+                      <div>
+                        <h5 className="text-sm font-extrabold text-white">
+                          {isBn ? "চ্যাপ্টারভিত্তিক ৫ সেট কুইজ" : "5 Chapter-wise Quiz Sets"}
+                        </h5>
+                        <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                          {isBn ? "প্রতিটি চ্যাপ্টার শেষ করে নিজের অগ্রগতি যাচাই করতে কুইজ টেস্ট।" : "Interactive quizzes to evaluate understanding and retention."}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Item 4 */}
+                    <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                      <span className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-500/20 text-emerald-400 shrink-0">
+                        <Sparkles className="h-5 w-5" />
+                      </span>
+                      <div>
+                        <h5 className="text-sm font-extrabold text-white">
+                          {isBn ? "৬টি টেমপ্লেট ও রিসোর্স" : "6 Resource Templates"}
+                        </h5>
+                        <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                          {isBn ? "বাস্তব জীবনে ব্যবহারের জন্য রেডিমেড কনভারসেশন ও ইমেইল টেমপ্লেট।" : "Practical templates for ready use in work and daily conversations."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 3: কোর্সটি করে যা শিখবেন (2 Columns of Blue Checkmarks) */}
+              <div id="section-learn" className="scroll-mt-28 space-y-3">
+                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
+                  {isBn ? "কোর্সটি করে যা শিখবেন" : "What You Will Learn"}
+                </h3>
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {(outcomes.length > 0 ? outcomes : [
+                      isBn ? "দৈনন্দিন জীবনের বিভিন্ন পরিস্থিতিতে ফ্লুয়েন্টলি কথা বলা" : "Speak fluently in everyday personal & professional situations",
+                      isBn ? "সঠিক উচ্চারণ ও ব্যাকরণের সহজ প্রয়োগ আয়ত্ত করা" : "Master correct pronunciation and simplified grammar usage",
+                      isBn ? "চাকরির ইন্টারভিউ ও প্রেজেন্টেশনে আত্মবিশ্বাসের সাথে অংশ নেওয়া" : "Deliver confident job interview answers and workplace presentations",
+                      isBn ? "যেকোনো মানুষের সাথে কোনো জড়তা ছাড়া যোগাযোগ স্থাপন" : "Communicate without hesitation or fear of making mistakes",
+                      isBn ? "স্পোকেন রুলস ও বহুল ব্যবহৃত ভোকাবুলারি আয়ত্ত করা" : "Build practical vocabulary and essential spoken patterns",
+                      isBn ? "ইংরেজি শুনে দ্রুত বুঝতে পারা ও তৎক্ষণাৎ উত্তর দেওয়া" : "Improve listening comprehension and respond spontaneously",
+                    ]).map((outcome, idx) => (
+                      <div key={idx} className="flex items-start gap-3">
+                        <Check className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+                        <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 leading-snug">
+                          {outcome}
                         </span>
-                        <span className="leading-snug">{out}</span>
                       </div>
                     ))}
                   </div>
                 </div>
-              )}
-
-              {/* EdgeCourseBD "Course Instructor" Grid Box */}
-              <div className="relative my-6 space-y-4 rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card px-4 pb-6 pt-5 shadow-xs">
-                <h2 className="absolute -top-3 left-4 bg-white dark:bg-card px-2 text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
-                  {isBn ? "কোর্স ইনস্ট্রাক্টরবৃন্দ" : "Course Instructors"}
-                </h2>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 pt-1">
-                  {instructors.map((inst, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-3 rounded-xl border border-cus-gray-200 dark:border-border/40 bg-white dark:bg-slate-900/40 px-3 py-2.5 transition-colors hover:border-brand-300"
-                    >
-                      <div className="relative flex overflow-hidden rounded-full h-10 w-10 shrink-0 ring-1 ring-cus-gray-200 dark:ring-border">
-                        {inst.image ? (
-                          <img src={inst.image} alt={inst.name} className="h-full w-full object-cover" />
-                        ) : (
-                          <span className="flex h-full w-full items-center justify-center rounded-full bg-brand-50 text-xs font-black text-brand-600 dark:bg-brand-950 dark:text-brand-300">
-                            {inst.initials || "AS"}
-                          </span>
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="line-clamp-1 text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
-                          {inst.name}
-                        </p>
-                        <p className="truncate text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                          {inst.institution || inst.designation}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
 
-              {/* EdgeCourseBD Sticky Filter Tab Bar */}
-              <div className="sticky top-20 z-10 flex w-full items-center gap-1 rounded-xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card px-1.5 py-1.5 shadow-sm">
-                <div className="inline-flex flex-1 items-center gap-1.5 overflow-x-auto scrollbar-none">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold transition-all duration-200 ${
-                        activeTab === tab.id
-                          ? "bg-brand-500 text-white shadow-xs"
-                          : "text-slate-800 dark:text-slate-200 hover:bg-brand-50 dark:hover:bg-brand-950/40 hover:text-brand-600"
-                      }`}
-                    >
-                      {isBn ? tab.labelBn : tab.labelEn}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* EdgeCourseBD Tab Content Sections */}
-              <div className="flex flex-col gap-6">
-
-                {/* 1. Course Overview & About (when tab is 'all') */}
-                {activeTab === "all" && desc && (
-                  <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card p-5 space-y-4">
-                    <div className="flex items-center gap-2.5">
-                      <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                      <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
-                        {isBn ? "কোর্স পরিচিতি ও বিস্তারিত" : "About This Course"}
-                      </h2>
-                    </div>
-                    <div className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-medium leading-relaxed space-y-2 whitespace-pre-line">
-                      {desc}
-                    </div>
-
-                    {/* Why Learn this skill */}
-                    {whyLearn.length > 0 && (
-                      <div className="pt-3 border-t border-gray-100 dark:border-border/40 space-y-2">
-                        <h4 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                          <Target className="h-4 w-4 text-brand-500" />
-                          <span>{isBn ? "এই কোর্সটি আপনার জন্য কেন জরুরি?" : "Why should you take this course?"}</span>
-                        </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-800 dark:text-slate-200 font-semibold">
-                          {whyLearn.map((item, idx) => (
-                            <div key={idx} className="flex items-start gap-2">
-                              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-                              <span>{item}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Requirements & Target Audience */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-gray-100 dark:border-border/40">
-                      <div className="space-y-2">
-                        <h5 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider text-brand-600 dark:text-brand-400">
-                          {isBn ? "প্রয়োজনীয় যোগ্যতা ও প্রস্তুতি" : "Requirements"}
-                        </h5>
-                        <ul className="space-y-1 text-xs text-slate-800 dark:text-slate-200 font-semibold">
-                          {requirements.map((req, i) => (
-                            <li key={i} className="flex items-center gap-1.5">
-                              <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
-                              <span>{req}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div className="space-y-2">
-                        <h5 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider text-brand-600 dark:text-brand-400">
-                          {isBn ? "কাদের জন্য এই কোর্স?" : "Who is this course for?"}
-                        </h5>
-                        <ul className="space-y-1 text-xs text-slate-800 dark:text-slate-200 font-semibold">
-                          {whoFor.map((target, i) => (
-                            <li key={i} className="flex items-center gap-1.5">
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                              <span>{target}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </section>
-                )}
-                
-                {/* 2. Course Content (Modules & Lessons) Section */}
-                {(activeTab === "content" || activeTab === "all") && (
-                  <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card">
-                    <div className="flex items-center gap-3 border-b border-cus-gray-200 dark:border-border/40 bg-gray-50/50 dark:bg-slate-900/30 px-4 py-3">
-                      <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                      <h2 className="min-w-0 text-sm font-extrabold text-slate-900 dark:text-white sm:text-base">
-                        {isBn ? "কোর্স কারিকুলাম ও মডিউলসমূহ" : "Course Curriculum & Lessons"}
-                      </h2>
-                      <span className="ml-auto shrink-0 rounded-full bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] font-black text-brand-600 dark:text-brand-400 ring-1 ring-brand-100 dark:ring-brand-900/40">
-                        {data?.modules?.length || 4} {isBn ? "টি মডিউল" : "modules"}
-                      </span>
-                    </div>
-
-                    <Accordion type="multiple" defaultValue={["module-0"]} className="divide-y divide-cus-gray-200 dark:divide-border/40">
-                      {(data?.modules || []).map((m, idx) => (
-                        <AccordionItem key={m.id || idx} value={`module-${idx}`} className="px-4 border-0">
-                          <AccordionTrigger className="hover:no-underline py-3.5 text-left">
-                            <div className="flex items-center gap-3 min-w-0">
-                              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-50 dark:bg-brand-900/30 text-xs font-black text-brand-600 dark:text-brand-400 shrink-0">
-                                {idx + 1}
-                              </span>
-                              <div className="min-w-0">
-                                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white block truncate">
-                                  {m.title}
-                                </span>
-                                {m.duration && (
-                                  <span className="text-[11px] text-slate-600 dark:text-slate-400 font-semibold">
-                                    {m.duration} • {m.lessons?.length || 4} {isBn ? "টি লেকচার" : "lessons"}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </AccordionTrigger>
-                          <AccordionContent className="pb-3.5 pt-0 text-xs text-slate-700 dark:text-slate-300">
-                            {m.description && (
-                              <p className="leading-relaxed mb-3 text-slate-700 dark:text-slate-300 font-medium">{m.description}</p>
-                            )}
-
-                            {/* Detailed lesson list */}
-                            <div className="space-y-1.5 pl-2 sm:pl-4 border-l-2 border-brand-100 dark:border-brand-900/40">
-                              {(m.lessons || [
-                                { id: `${m.id}-l1`, title: isBn ? "লেকচার ১: ফান্ডামেন্টাল কনসেপ্ট ও রুলস" : "Lesson 1: Fundamental Concepts", duration: "২৫ মিনিট", is_free_preview: idx === 0 },
-                                { id: `${m.id}-l2`, title: isBn ? "লেকচার ২: হ্যান্ডস-অন প্র্যাকটিকাল সেশন" : "Lesson 2: Practical Implementation", duration: "৩৫ মিনিট", is_free_preview: false },
-                                { id: `${m.id}-l3`, title: isBn ? "লেকচার ৩: ইন্ডাস্ট্রি কেস স্টাডি ও কুইজ" : "Lesson 3: Case Study & Quiz", duration: "২০ মিনিট", is_free_preview: false },
-                              ]).map((lesson, lIdx) => (
-                                <div
-                                  key={lesson.id || lIdx}
-                                  className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
-                                >
-                                  <div className="flex items-center gap-2.5 min-w-0">
-                                    {lesson.is_free_preview ? (
-                                      <Play className="h-3.5 w-3.5 text-brand-500 fill-current shrink-0" />
-                                    ) : (
-                                      <Lock className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                                    )}
-                                    <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
-                                      {lesson.title}
-                                    </span>
-                                  </div>
-
-                                  <div className="flex items-center gap-2 shrink-0">
-                                    {lesson.duration && (
-                                      <span className="text-[11px] text-slate-600 dark:text-slate-400 font-bold">
-                                        {lesson.duration}
-                                      </span>
-                                    )}
-                                    {lesson.is_free_preview && (
-                                      <button
-                                        onClick={() => {
-                                          setPreviewLesson(lesson);
-                                          window.scrollTo({ top: 120, behavior: 'smooth' });
-                                        }}
-                                        className="text-[10px] font-black px-2 py-0.5 rounded-full bg-brand-50 text-brand-600 dark:bg-brand-950 dark:text-brand-400 hover:bg-brand-100 transition-colors cursor-pointer"
-                                      >
-                                        {isBn ? "প্রিভিউ" : "Preview"}
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                  </section>
-                )}
-
-                {/* 3. Course Outline Accordion Section */}
-                {(activeTab === "outline" || activeTab === "all") && (
-                  <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card">
-                    <div className="flex items-center gap-3 border-b border-cus-gray-200 dark:border-border/40 bg-gray-50/50 dark:bg-slate-900/30 px-4 py-3">
-                      <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                      <h2 className="min-w-0 text-sm font-extrabold text-slate-900 dark:text-white sm:text-base">
-                        {isBn ? "কোর্স আউটলাইন ও গাইডলাইন" : "Course Outline & Roadmap"}
-                      </h2>
-                      <span className="ml-auto shrink-0 rounded-full bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] font-black text-brand-600 dark:text-brand-400 ring-1 ring-brand-100 dark:ring-brand-900/40">
-                        {outlineItems.length}
-                      </span>
-                    </div>
-
-                    <div className="divide-y divide-cus-gray-200 dark:divide-border/40">
-                      {outlineItems.map((item, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-4 hover:bg-gray-50/50 dark:hover:bg-slate-900/30 transition-colors">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <span className="flex h-7 w-7 rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-950 dark:text-brand-300 text-xs font-black items-center justify-center shrink-0">
-                              {idx + 1}
-                            </span>
-                            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
-                              {item.title}
-                            </span>
-                          </div>
-                          <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold shrink-0">
-                            {item.count} {isBn ? "টি রুটিন লেকচার" : "item"}
-                          </span>
+              {/* Section 4: কোর্স সম্পর্কে বিস্তারিত */}
+              <div id="section-details" className="scroll-mt-28 space-y-3">
+                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
+                  {isBn ? "কোর্স সম্পর্কে বিস্তারিত" : "Course Details"}
+                </h3>
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-5">
+                  <div>
+                    <h4 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white mb-3">
+                      {isBn ? `'${title}' কোর্সটি যাদের জন্য:` : `Who this course is designed for:`}
+                    </h4>
+                    <div className="space-y-2.5">
+                      {(whoFor.length > 0 ? whoFor : [
+                        isBn ? "শিক্ষার্থী যারা পড়াশোনার পাশাপাশি স্কিল বাড়িয়ে ক্যারিয়ারে এগিয়ে থাকতে চান" : "Students wishing to boost practical skills alongside studies",
+                        isBn ? "চাকরিপ্রার্থী ও প্রফেশনাল যারা ক্যারিয়ারে প্রমোশন ও সাফল্য নিশ্চিত করতে চান" : "Job seekers and professionals looking for rapid career growth",
+                        isBn ? "ফ্রিল্যান্সার ও রিমোট ওয়ার্কার যারা আন্তর্জাতিক ক্লায়েন্টদের সাথে কাজ করতে চান" : "Freelancers and remote workers working with global clients",
+                        isBn ? "যেকোনো বয়সের শিক্ষার্থী যারা শূন্য থেকে সহজ ভাষায় শিখতে চান" : "Learners of any age wanting to start from scratch with simple lessons"
+                      ]).map((item, idx) => (
+                        <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-medium">
+                          <span className="h-2 w-2 rounded-full bg-emerald-600 mt-1.5 shrink-0" />
+                          <span className="leading-relaxed">{item}</span>
                         </div>
                       ))}
                     </div>
-                  </section>
-                )}
-
-                {/* 4. Instructors Detail Section */}
-                {(activeTab === "instructors" || activeTab === "all") && (
-                  <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card p-5 space-y-4">
-                    <div className="flex items-center gap-2.5">
-                      <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                      <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
-                        {isBn ? "অভিজ্ঞ ইনস্ট্রাক্টর ও মেন্টর প্যানেল" : "Our Expert Instructors & Mentors"}
-                      </h2>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {instructors.map((inst, i) => (
-                        <div
-                          key={i}
-                          className="flex items-start gap-3.5 p-4 rounded-xl border border-gray-100 dark:border-border/60 bg-slate-50/40 dark:bg-slate-900/30"
-                        >
-                          <div className="relative flex overflow-hidden rounded-full h-12 w-12 shrink-0 ring-2 ring-brand-500/20">
-                            {inst.image ? (
-                              <img src={inst.image} alt={inst.name} className="h-full w-full object-cover" />
-                            ) : (
-                              <span className="flex h-full w-full items-center justify-center rounded-full bg-brand-50 text-sm font-black text-brand-600 dark:bg-brand-950 dark:text-brand-300">
-                                {inst.initials || "AS"}
-                              </span>
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <h4 className="text-sm font-bold text-slate-900 dark:text-white">{inst.name}</h4>
-                            <p className="text-xs text-brand-600 dark:text-brand-400 font-bold">{inst.institution || inst.designation}</p>
-                            <p className="text-[11px] text-slate-700 dark:text-slate-300 font-medium mt-1 leading-snug">
-                              {inst.bio || (isBn ? "বাস্তব কাজের অভিজ্ঞতা ও বহু শিক্ষার্থীকে গাইড করার দক্ষতাসম্পন্ন প্রশিক্ষক।" : "Experienced mentor dedicated to hands-on practical skills.")}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                )}
-
-                {/* 5. Exam Section */}
-                {(activeTab === "exam" || activeTab === "all") && (
-                  <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card">
-                    <div className="flex items-center gap-3 border-b border-cus-gray-200 dark:border-border/40 bg-gray-50/50 dark:bg-slate-900/30 px-4 py-3">
-                      <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                      <h2 className="min-w-0 text-sm font-extrabold text-slate-900 dark:text-white sm:text-base">
-                        {isBn ? "মক টেস্ট ও লাইভ এক্সাম (Exam)" : "Exam & Assessment"}
-                      </h2>
-                      <span className="ml-auto shrink-0 rounded-full bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] font-black text-brand-600 dark:text-brand-400 ring-1 ring-brand-100 dark:ring-brand-900/40">
-                        {examItems.length}
-                      </span>
-                    </div>
-
-                    <div className="divide-y divide-cus-gray-200 dark:divide-border/40">
-                      {examItems.map((item, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-4 hover:bg-gray-50/50 dark:hover:bg-slate-900/30 transition-colors">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
-                            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
-                              {item.title}
-                            </span>
-                          </div>
-                          <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold shrink-0">
-                            {item.count} {isBn ? "টি টেস্ট" : "tests"}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                )}
-
-                {/* 6. Materials Section */}
-                {(activeTab === "materials" || activeTab === "all") && (
-                  <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card">
-                    <div className="flex items-center gap-3 border-b border-cus-gray-200 dark:border-border/40 bg-gray-50/50 dark:bg-slate-900/30 px-4 py-3">
-                      <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                      <h2 className="min-w-0 text-sm font-extrabold text-slate-900 dark:text-white sm:text-base">
-                        {isBn ? "বই ও স্টাডি মেটেরিয়ালস (Materials)" : "Study Materials & Books"}
-                      </h2>
-                      <span className="ml-auto shrink-0 rounded-full bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] font-black text-brand-600 dark:text-brand-400 ring-1 ring-brand-100 dark:ring-brand-900/40">
-                        {materialItems.length}
-                      </span>
-                    </div>
-
-                    <div className="divide-y divide-cus-gray-200 dark:divide-border/40">
-                      {materialItems.map((item, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-4 hover:bg-gray-50/50 dark:hover:bg-slate-900/30 transition-colors">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <BookOpen className="h-5 w-5 text-brand-500 shrink-0" />
-                            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
-                              {item.title}
-                            </span>
-                          </div>
-                          <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold shrink-0">
-                            {item.count} {isBn ? "টি ই-বুক / শিট" : "PDFs"}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                )}
-
-                {/* 7. Special X Factors Section */}
-                {(activeTab === "xfactor" || activeTab === "all") && (
-                  <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card">
-                    <div className="flex items-center gap-3 border-b border-cus-gray-200 dark:border-border/40 bg-gray-50/50 dark:bg-slate-900/30 px-4 py-3">
-                      <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                      <h2 className="min-w-0 text-sm font-extrabold text-slate-900 dark:text-white sm:text-base">
-                        {isBn ? "স্পেশাল ফ্যাক্টরস ও ফাইনাল প্রজেক্ট (X Factors)" : "X Factors & Special Topics"}
-                      </h2>
-                      <span className="ml-auto shrink-0 rounded-full bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] font-black text-brand-600 dark:text-brand-400 ring-1 ring-brand-100 dark:ring-brand-900/40">
-                        {xFactorItems.length}
-                      </span>
-                    </div>
-
-                    <div className="divide-y divide-cus-gray-200 dark:divide-border/40">
-                      {xFactorItems.map((item, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-4 hover:bg-gray-50/50 dark:hover:bg-slate-900/30 transition-colors">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <Sparkles className="h-5 w-5 text-amber-500 shrink-0" />
-                            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
-                              {item.title}
-                            </span>
-                          </div>
-                          <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold shrink-0">
-                            {item.count} {isBn ? "টি ক্লাস" : "classes"}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                )}
-
-                {/* 8. FAQs Section */}
-                {(activeTab === "faqs" || activeTab === "all") && faqs.length > 0 && (
-                  <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card">
-                    <div className="flex items-center gap-3 border-b border-cus-gray-200 dark:border-border/40 bg-gray-50/50 dark:bg-slate-900/30 px-4 py-3">
-                      <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                      <h2 className="min-w-0 text-sm font-extrabold text-slate-900 dark:text-white sm:text-base">
-                        {isBn ? "সাধারণ জিজ্ঞাসা (Frequently Asked Questions)" : "Frequently Asked Questions"}
-                      </h2>
-                    </div>
-
-                    <Accordion type="single" collapsible className="divide-y divide-cus-gray-200 dark:divide-border/40">
-                      {faqs.map((faq, idx) => (
-                        <AccordionItem key={idx} value={`faq-${idx}`} className="px-4 border-0">
-                          <AccordionTrigger className="hover:no-underline py-3.5 text-left text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
-                            <div className="flex items-center gap-2.5">
-                              <HelpCircle className="h-4 w-4 text-brand-500 shrink-0" />
-                              <span>{faq.question}</span>
-                            </div>
-                          </AccordionTrigger>
-                          <AccordionContent className="pb-3.5 pt-0 text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed pl-6">
-                            {faq.answer}
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                  </section>
-                )}
-
-                {/* 9. Roadmap Tab */}
-                {(activeTab === "roadmap" || activeTab === "all") && (
-                  <div className="pt-2">
-                    <CourseRoadmap />
                   </div>
-                )}
 
-                {/* 10. Student Reviews & Testimonials Section */}
-                {activeTab === "all" && (
-                  <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card p-5 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                        <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
-                          {isBn ? "শিক্ষার্থীদের প্রতিক্রিয়া ও মতামত" : "Student Reviews & Feedback"}
-                        </h2>
-                      </div>
-                      <div className="flex items-center gap-1 text-xs font-black text-amber-500">
-                        <Star className="h-4 w-4 fill-current" />
-                        <span>৪.৯ / ৫.০ (১২০+ রিভিউ)</span>
-                      </div>
+                  {desc && (
+                    <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                      <h4 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white mb-2">
+                        {isBn ? "কোর্স বিবরণ:" : "Description:"}
+                      </h4>
+                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line font-medium">
+                        {desc}
+                      </p>
                     </div>
+                  )}
+                </div>
+              </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                      {reviews.map((rev, idx) => (
-                        <div
-                          key={idx}
-                          className="flex flex-col justify-between p-3.5 rounded-xl border border-gray-100 dark:border-border/60 bg-slate-50/50 dark:bg-slate-900/30 space-y-3"
-                        >
+              {/* Section 5: কোর্স কারিকুলাম */}
+              <div id="section-curriculum" className="scroll-mt-28 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
+                    {isBn ? "কোর্স কারিকুলাম" : "Course Curriculum"}
+                  </h3>
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                    {(data?.modules?.length || 0)} {isBn ? "টি মডিউল" : "Modules"} • {data?.lesson_count || 39} {isBn ? "টি লেকচার" : "Lectures"}
+                  </span>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+                  <Accordion type="single" collapsible defaultValue="module-0" className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {(data?.modules || []).map((mod, mIdx) => (
+                      <AccordionItem key={mod.id} value={`module-${mIdx}`} className="border-b-0">
+                        <AccordionTrigger className="px-5 py-4 hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                          <div className="flex items-center gap-3 text-left">
+                            <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-md shrink-0">
+                              {isBn ? `মডিউল ${mIdx + 1}` : `Module ${mIdx + 1}`}
+                            </span>
+                            <div>
+                              <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-tight">
+                                {mod.title}
+                              </h4>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                                {mod.lessons?.length || 0} {isBn ? "টি ক্লাস" : "Lessons"} {mod.duration ? `• ${mod.duration}` : ''}
+                              </p>
+                            </div>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-5 pb-4 pt-1 bg-slate-50/60 dark:bg-slate-950/40">
                           <div className="space-y-2">
-                            <div className="flex items-center gap-1 text-amber-400">
-                              {[...Array(rev.rating)].map((_, rIdx) => (
-                                <Star key={rIdx} className="h-3 w-3 fill-current" />
-                              ))}
-                            </div>
-                            <p className="text-xs text-slate-800 dark:text-slate-200 leading-relaxed font-medium italic">
-                              &ldquo;{rev.comment}&rdquo;
-                            </p>
-                          </div>
+                            {(mod.lessons || []).map((les, lIdx) => (
+                              <div
+                                key={les.id}
+                                className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-xs sm:text-sm"
+                              >
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  {les.is_free_preview || lIdx === 0 ? (
+                                    <Play className="h-4 w-4 text-emerald-600 shrink-0 fill-current" />
+                                  ) : (
+                                    <Lock className="h-4 w-4 text-slate-400 shrink-0" />
+                                  )}
+                                  <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                    {les.title}
+                                  </span>
+                                </div>
 
-                          <div className="pt-2 border-t border-gray-100 dark:border-border/40">
-                            <p className="text-xs font-extrabold text-slate-900 dark:text-white">{rev.name}</p>
-                            <p className="text-[10px] text-slate-600 dark:text-slate-400 font-semibold">{rev.role} • {rev.batch}</p>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  {les.duration && (
+                                    <span className="text-xs text-slate-400 font-medium">{les.duration}</span>
+                                  )}
+                                  {(les.is_free_preview || lIdx === 0) && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setPreviewLesson(les)}
+                                      className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline px-2.5 py-1 rounded bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/20 cursor-pointer"
+                                    >
+                                      {isBn ? "ফ্রি প্রিভিউ" : "Preview"}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                )}
-
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </div>
               </div>
 
-              {/* EdgeCourseBD External Links Box: Books & Exam */}
-              <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card shadow-xs">
-                <div className="flex items-center gap-3 border-b border-cus-gray-200 dark:border-border/40 bg-gray-50/50 dark:bg-slate-900/30 px-4 py-3">
-                  <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                  <h2 className="min-w-0 text-sm font-extrabold text-slate-900 dark:text-white sm:text-base">
-                    {isBn ? "বই ও এক্সাম কোর্সের জন্য ভিজিট করো" : "Visit for Books & Exam Batches"}
-                  </h2>
+              {/* Section 6: সচরাচর জিজ্ঞাসা (FAQ) */}
+              <div id="section-faqs" className="scroll-mt-28 space-y-3">
+                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
+                  {isBn ? "সচরাচর জিজ্ঞাসা" : "Frequently Asked Questions"}
+                </h3>
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+                  <Accordion type="single" collapsible className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {(faqs.length > 0 ? faqs : [
+                      {
+                        question: isBn ? "কোর্সটি কীভাবে করব?" : "How will I take this course?",
+                        answer: isBn ? "ভর্তি হওয়ার পর যেকোনো সময় আপনার মোবাইল বা কম্পিউটার থেকে লগইন করে ফুল HD ভিডিও লেকচার দেখতে পারবেন এবং লেকচার শিট ডাউনলোড করতে পারবেন।" : "After enrollment, log in anytime from phone or computer to access HD video lessons and lecture notes."
+                      },
+                      {
+                        question: isBn ? "কোর্সের মেয়াদ কতদিন থাকবে?" : "What is the validity of the course?",
+                        answer: isBn ? "কোর্সের মেয়াদ আজীবন (Lifetime Access)। একবার ভর্তি হলে যেকোনো সময় পুনরায় ক্লাসগুলো দেখতে পারবেন।" : "Lifetime access. Once enrolled, you can re-watch classes whenever you need."
+                      },
+                      {
+                        question: isBn ? "কোর্স শেষে কি সার্টিফিকেট পাওয়া যাবে?" : "Will I receive a completion certificate?",
+                        answer: isBn ? "হ্যাঁ, সম্পূর্ণ কোর্স এবং প্রয়োজনীয় কুইজ সফলভাবে সম্পন্ন করার পর আপনি একটি ভেরিফায়েড সার্টিফিকেট পাবেন যা সরাসরি ডাউনলোড ও শেয়ার করা যাবে।" : "Yes, finishing the course lessons and quizzes unlocks a verifiable digital certificate."
+                      },
+                      {
+                        question: isBn ? "কোনো প্রশ্ন বা সমস্যায় মেন্টরদের সহায়তা পাব?" : "Is there student support available?",
+                        answer: isBn ? "অবশ্যই! আমাদের ডেডিকেটেড ডিসকাশন ফোরাম ও ১৬৯১০ হেল্পলাইন সার্বক্ষণিক শিক্ষার্থীদের যেকোনো প্রশ্নের সমাধানে সহায়তা করে।" : "Yes, our community forum and 16910 helpline assist learners whenever needed."
+                      }
+                    ]).map((faq, fIdx) => (
+                      <AccordionItem key={fIdx} value={`faq-${fIdx}`} className="border-b-0">
+                        <AccordionTrigger className="px-5 py-4 text-left text-sm sm:text-base font-bold text-slate-900 dark:text-white hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                          {faq.question}
+                        </AccordionTrigger>
+                        <AccordionContent className="px-5 pb-4 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+                          {faq.answer}
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
                 </div>
-                <div className="divide-y divide-cus-gray-200 dark:divide-border/40">
-                  <a
-                    href="https://qnapublication.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between px-4 py-3.5 transition-colors hover:bg-brand-50/40 dark:hover:bg-brand-950/20"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-900/40 dark:text-brand-400 flex items-center justify-center font-bold text-xs">
-                        QNA
-                      </div>
-                      <div>
-                        <p className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">
-                          {isBn ? "QNA Publication — বই কিনতে ভিজিট করো" : "QNA Publication — Buy Hardcopy Books"}
-                        </p>
-                        <p className="text-[11px] text-slate-600 dark:text-slate-400 font-semibold">
-                          {isBn ? "সকল অধ্যায়ভিত্তিক অ্যানালাইসিস ও প্রিন্টেড বুক" : "Chapter-wise analysis books"}
-                        </p>
-                      </div>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-brand-600" />
-                  </a>
+              </div>
 
-                  <a
-                    href="https://www.qztestexam.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between px-4 py-3.5 transition-colors hover:bg-brand-50/40 dark:hover:bg-brand-950/20"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400 flex items-center justify-center font-bold text-xs">
-                        QZ
+              {/* Student Testimonials */}
+              <div className="space-y-3 pt-2">
+                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
+                  {isBn ? "শিক্ষার্থীদের অভিজ্ঞতা ও রিভিউ" : "Student Reviews"}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {reviews.map((rev, rIdx) => (
+                    <div key={rIdx} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-3">
+                      <div className="flex items-center gap-1 text-amber-400">
+                        {[...Array(rev.rating)].map((_, i) => (
+                          <Star key={i} className="h-3.5 w-3.5 fill-current" />
+                        ))}
                       </div>
-                      <div>
-                        <p className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">
-                          {isBn ? "QZ Test Exam — অনলাইন টেস্ট ও এক্সাম ব্যাচ" : "QZ Test Exam — Online Exam Batches"}
-                        </p>
-                        <p className="text-[11px] text-slate-600 dark:text-slate-400 font-semibold">
-                          {isBn ? "হাজারো শিক্ষার্থীর সাথে রিয়েল-টাইম মেধা যাচাই" : "Real-time national ranking exams"}
-                        </p>
+                      <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-medium leading-relaxed italic">
+                        &quot;{rev.comment}&quot;
+                      </p>
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                        <span className="font-bold text-slate-900 dark:text-white">{rev.name}</span>
+                        <span className="text-slate-500 dark:text-slate-400 font-medium">{rev.role}</span>
                       </div>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-brand-600" />
-                  </a>
+                  ))}
                 </div>
-              </section>
+              </div>
 
-              {/* EdgeCourseBD Mobile App Banner Box */}
-              <div className="relative isolate overflow-hidden rounded-2xl bg-gradient-to-r from-[#020507] via-[#0C2417] to-[#04150D] p-6 sm:p-8 text-white shadow-xl">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-                  <div className="space-y-2 text-center sm:text-left">
-                    <h3 className="text-lg sm:text-2xl font-black leading-tight">
-                      <span className="text-[#22C55E]">বাংলাদেশের </span>
-                      <span className="text-[#F5B800]">১ নম্বর লার্নিং App</span>
-                    </h3>
-                    <p className="text-xs sm:text-sm text-gray-300 max-w-md">
-                      {isBn ? "অফলাইন মোড : নেট না থাকলেও চলবে ক্লাস! ক্লাস, বুক ও এক্সাম সহ সবকিছুই এক অ্যাপে।" : "Learn offline without internet on the Astropixel Mobile App."}
-                    </p>
-                    <div className="pt-2">
-                      <a
-                        href="https://play.google.com"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-white transition-colors"
-                      >
-                        <Smartphone className="h-4 w-4 text-[#22C55E]" />
-                        <span>{isBn ? "Google Play থেকে ডাউনলোড করুন" : "Download on Google Play"}</span>
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="w-32 sm:w-40 shrink-0">
-                    <img
-                      src="/images/mobileApp.png"
-                      alt="Astropixel Learning App"
-                      className="w-full h-auto object-contain drop-shadow-2xl"
-                      onError={(e) => {
-                        // fallback if image not found
-                        (e.target as any).style.display = 'none';
-                      }}
-                    />
+              {/* Mobile App Banner */}
+              <div className="rounded-2xl bg-gradient-to-r from-emerald-950 via-slate-900 to-[#0B1120] p-6 text-white border border-emerald-800/40 flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div className="space-y-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/30">
+                    {isBn ? "মোবাইল অ্যাপ" : "Mobile App"}
+                  </span>
+                  <h4 className="text-lg sm:text-xl font-black">
+                    {isBn ? "যেকোনো সময়, যেকোনো স্থান থেকে শিখুন" : "Learn anytime, anywhere"}
+                  </h4>
+                  <p className="text-xs sm:text-sm text-slate-300 font-medium">
+                    {isBn ? "ক্লাস, নোট ও কুইজ সহ সবকিছুই এক অ্যাপে।" : "Classes, lecture notes, and quizzes — all in one app."}
+                  </p>
+                  <div className="pt-2">
+                    <a
+                      href="https://play.google.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-white transition-colors"
+                    >
+                      <Smartphone className="h-4 w-4 text-emerald-400" />
+                      <span>{isBn ? "Google Play থেকে ডাউনলোড করুন" : "Download on Google Play"}</span>
+                    </a>
                   </div>
                 </div>
               </div>
 
             </div>
 
-            {/* ═══ RIGHT COLUMN: STICKY MEDIA & BUY CARD (lg:sticky lg:top-28) ═══ */}
-            <div className="w-full lg:w-[380px] shrink-0 lg:sticky lg:top-28">
+            {/* ═══ RIGHT COLUMN: 10MS FLOATING STICKY ENROLL CARD (lg:sticky lg:top-24) ═══ */}
+            <div className="hidden lg:block lg:w-[37%] xl:w-[380px] shrink-0 lg:-mt-36 xl:-mt-44 relative z-20 lg:sticky lg:top-24">
               <StickyEnrollCard
                 price={c.price || 0}
                 thumbnailUrl={c.thumbnail_url}
                 videoId={videoId}
-                totalClasses={c.total_classes}
-                duration={c.duration}
+                totalClasses={c.total_classes || "৩৯টি"}
+                duration={c.duration || "১০ ঘণ্টা"}
                 onEnroll={handleEnroll}
                 title={title || ""}
                 isEnrolled={isEnrolled}
@@ -1237,7 +1043,49 @@ export default function CourseLandingPage() {
         </div>
       </div>
 
-      {/* Direct Enrollment Modal */}
+      {/* 5. FLOATING WHATSAPP SUPPORT BUTTON */}
+      <a
+        href="https://wa.me/8801776965533?text=Hello%20Astropixel%20Learn%20Support"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all group cursor-pointer"
+        aria-label="WhatsApp Support"
+      >
+        <MessageCircle className="h-7 w-7 fill-current" />
+        <span className="absolute right-16 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-lg">
+          {isBn ? "সহায়তা প্রয়োজন? WhatsApp-এ নক দিন" : "Need help? Chat on WhatsApp"}
+        </span>
+      </a>
+
+      {/* 6. FREE LESSON PREVIEW VIDEO MODAL */}
+      {previewLesson && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="relative w-full max-w-3xl bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900/80">
+              <h4 className="text-sm font-bold text-white truncate pr-4">
+                {previewLesson.title}
+              </h4>
+              <button
+                onClick={() => setPreviewLesson(null)}
+                className="text-slate-400 hover:text-white text-sm font-bold p-1 rounded-md cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="relative aspect-video w-full">
+              <iframe
+                src={`https://www.youtube.com/embed/${getYouTubeId(previewLesson.video_url || c.intro_video_url) || videoId}?autoplay=1&rel=0`}
+                title={previewLesson.title}
+                className="h-full w-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 7. DIRECT ENROLLMENT CHECKOUT MODAL */}
       {c && (
         <CourseEnrollmentModal
           isOpen={isEnrollModalOpen}

@@ -35,7 +35,7 @@ export const CategoryCard = ({
       </h3>
 
       {count !== undefined && (
-        <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1 px-2.5 py-0.5 rounded-full bg-secondary/80 border border-border/60 group-hover:border-primary/40 transition-colors">
+        <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 mt-1 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
           {count} টি কোর্স
         </span>
       )}

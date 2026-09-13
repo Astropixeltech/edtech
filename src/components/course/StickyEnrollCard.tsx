@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { Play, PlayCircle, Clock, Award, Smartphone, FileDown, CheckCircle2, ShieldCheck, Share2, Sparkles, ArrowRight } from "lucide-react";
+import {
+  Play, Clock, Users, Video, FileText, CheckSquare,
+  Layout as LayoutIcon, Calendar, PhoneCall, Share2, ArrowRight
+} from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
-
 import { useNavigate } from "react-router-dom";
 
 interface StickyEnrollCardProps {
@@ -16,51 +18,39 @@ interface StickyEnrollCardProps {
   title: string;
   isEnrolled?: boolean;
   courseId?: string;
+  enrolledCount?: string | number;
+  videoCount?: string | number;
+  noteCount?: string | number;
+  quizCount?: string | number;
+  templateCount?: string | number;
 }
 
 export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
   price,
-  regularPrice = price ? Math.round(price * 1.5) : 3500,
+  regularPrice = price ? Math.round(price * 1.4) : 2500,
   thumbnailUrl,
   videoId,
-  totalClasses = "২৪+",
-  duration = "১২ ঘন্টা",
+  totalClasses = "৩৯টি",
+  duration = "১০ ঘণ্টা",
   onEnroll,
   title,
   isEnrolled = false,
   courseId,
+  enrolledCount = "৭৬,৫৪৭",
+  videoCount = "৩৯",
+  noteCount = "১৪",
+  quizCount = "৫",
+  templateCount = "৬",
 }) => {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const isBn = language === "bn";
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
-  const [includeBooks, setIncludeBooks] = useState(false);
-  const [couponCode, setCouponCode] = useState("");
-  const [couponApplied, setCouponApplied] = useState(false);
-  const [discountAmount, setDiscountAmount] = useState(0);
+  const [activeSlide, setActiveSlide] = useState(0);
 
   const discountPercent = regularPrice > price && price > 0
     ? Math.round(((regularPrice - price) / regularPrice) * 100)
     : null;
-
-  const handleApplyCoupon = () => {
-    const code = couponCode.trim().toUpperCase();
-    if (code === "ASTROPIXEL" || code === "HAPPYHULK" || code === "LEARN20" || code === "EDTECH") {
-      setCouponApplied(true);
-      const discount = Math.round(price * 0.2);
-      setDiscountAmount(discount);
-      toast.success(isBn ? `কুপন কোড সফলভাবে যোগ হয়েছে! ৳ ${discount.toLocaleString()} ছাড় পেয়েছেন।` : `Coupon applied! You saved ৳ ${discount.toLocaleString()}.`);
-    } else if (code === "SAVE500") {
-      setCouponApplied(true);
-      const discount = Math.min(500, price);
-      setDiscountAmount(discount);
-      toast.success(isBn ? `কুপন সফল! ৳ ${discount.toLocaleString()} ছাড় পেয়েছেন।` : `Coupon applied! ৳ ${discount.toLocaleString()} discount.`);
-    } else {
-      toast.error(isBn ? "ভুল কুপন কোড। অনুগ্রহ করে সঠিক কোড দিন (যেমন: ASTROPIXEL)" : "Invalid coupon code. Try: ASTROPIXEL");
-    }
-  };
-
-  const finalPrice = Math.max(0, price - discountAmount + (includeBooks ? 450 : 0));
 
   const handleShare = () => {
     if (navigator.share) {
@@ -72,9 +62,9 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
   };
 
   return (
-    <div className="w-full rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card shadow-lg overflow-hidden transition-all">
+    <div className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden transition-all">
       {/* 1. Video Preview / Thumbnail Area */}
-      <div className="relative aspect-video w-full overflow-hidden bg-gray-950 group">
+      <div className="relative aspect-video w-full overflow-hidden bg-slate-950 group">
         {isPlayingPreview && videoId ? (
           <iframe
             src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
@@ -92,192 +82,164 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
                 className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
             ) : (
-              <div className="h-full w-full bg-gradient-to-br from-brand-700 to-emerald-950 flex items-center justify-center p-4">
+              <div className="h-full w-full bg-gradient-to-br from-slate-900 to-[#0B1120] flex items-center justify-center p-4">
                 <span className="text-white font-bold text-center text-sm">{title}</span>
               </div>
             )}
 
-            {/* Dark overlay with glowing Play Button */}
+            {/* Dark overlay with Centered White 10MS Play Button */}
             <div
               onClick={() => setIsPlayingPreview(true)}
               className="absolute inset-0 bg-black/35 flex flex-col items-center justify-center cursor-pointer group-hover:bg-black/45 transition-colors"
             >
-              <div className="h-14 w-14 rounded-full bg-white text-brand-600 flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
-                <Play className="h-6 w-6 fill-current ml-0.5 text-brand-500" />
+              <div className="h-14 w-14 rounded-full bg-white text-emerald-600 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                <Play className="h-6 w-6 fill-current ml-0.5 text-emerald-600" />
               </div>
-              <span className="text-white text-xs font-bold mt-2.5 tracking-wide drop-shadow-md">
-                {isBn ? "কোর্স প্রিভিউ ভিডিও দেখুন" : "Preview this course"}
+              <span className="text-white text-xs font-bold mt-2.5 tracking-wide drop-shadow-md bg-black/40 px-3 py-1 rounded-full backdrop-blur-xs">
+                {isBn ? "কোর্স প্রিভিউ দেখুন" : "Watch Preview"}
               </span>
             </div>
           </>
         )}
       </div>
 
-      {/* 2. EdgeCourseBD 3-Col Stats Counter Block */}
-      <div className="flex items-stretch divide-x divide-gray-100 dark:divide-border/40 border-b border-gray-100 dark:border-border/40 bg-gray-50/50 dark:bg-slate-900/30">
-        <div className="flex flex-1 flex-col items-center justify-center py-3 px-2 text-center">
-          <div className="flex items-center gap-1.5 text-brand-600 dark:text-brand-400">
-            <PlayCircle className="h-4 w-4 shrink-0" />
-            <span className="text-base font-black leading-none text-slate-900 dark:text-white">
-              {totalClasses.replace(/[^0-9+]/g, '') || "২৪+"}
-            </span>
-          </div>
-          <span className="text-[11px] text-slate-700 dark:text-slate-300 font-bold mt-1">
-            {isBn ? "টোটাল ক্লাস" : "Total Class"}
-          </span>
-        </div>
-
-        <div className="flex flex-1 flex-col items-center justify-center py-3 px-2 text-center">
-          <div className="flex items-center gap-1.5 text-amber-600">
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
-            <span className="text-base font-black leading-none text-slate-900 dark:text-white">
-              ১০+
-            </span>
-          </div>
-          <span className="text-[11px] text-slate-700 dark:text-slate-300 font-bold mt-1">
-            {isBn ? "মক এক্সামস" : "Total Exam"}
-          </span>
-        </div>
-
-        <div className="flex flex-1 flex-col items-center justify-center py-3 px-2 text-center">
-          <div className="flex items-center gap-1.5 text-sky-600">
-            <FileDown className="h-4 w-4 shrink-0" />
-            <span className="text-base font-black leading-none text-slate-900 dark:text-white">
-              ৫+
-            </span>
-          </div>
-          <span className="text-[11px] text-slate-700 dark:text-slate-300 font-bold mt-1">
-            {isBn ? "রিসোর্স মেটেরিয়াল" : "Materials"}
-          </span>
-        </div>
+      {/* 10MS Slide Thumbnails / Indicators */}
+      <div className="flex items-center justify-center gap-2 py-2.5 px-4 bg-slate-50 dark:bg-slate-950/60 border-b border-slate-100 dark:border-slate-800/80">
+        {[0, 1, 2, 3].map((idx) => (
+          <button
+            key={idx}
+            type="button"
+            onClick={() => setActiveSlide(idx)}
+            className={`h-2 rounded-full transition-all ${
+              activeSlide === idx
+                ? "w-6 bg-emerald-600"
+                : "w-2 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400"
+            }`}
+            aria-label={`Slide ${idx + 1}`}
+          />
+        ))}
       </div>
 
-      {/* 3. EdgeCourseBD Book Addon Section with animated glow border */}
-      <div className="p-4 space-y-4">
-        <div className="relative overflow-hidden rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 p-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-start gap-2.5">
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300">
-                <Sparkles className="h-4 w-4" />
+      <div className="p-5 sm:p-6 space-y-5">
+        {/* Pricing Row */}
+        <div className="flex items-baseline justify-between">
+          <div className="space-y-0.5">
+            <div className="flex items-baseline gap-2.5">
+              <span className="text-3xl font-black text-slate-900 dark:text-white">
+                {price > 0 ? `৳ ${price.toLocaleString()}` : (isBn ? "সম্পূর্ণ ফ্রি" : "Free")}
               </span>
-              <div className="min-w-0">
-                <h4 className="text-xs sm:text-sm font-extrabold leading-tight text-slate-900 dark:text-white">
-                  {isBn ? "কোর্সের সাথে প্র্যাক্টিস বুক যুক্ত করো" : "Add Practice Books with Course"}
-                </h4>
-                <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 font-medium leading-snug">
-                  {isBn ? "কোর্সের হ্যান্ডনোট ও প্রিন্টেড বুক (+৳ ৪৫০)" : "Handwritten notes & printed materials (+৳ 450)"}
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setIncludeBooks(!includeBooks)}
-              className={`shrink-0 text-xs font-bold px-3 py-1.5 rounded-full border transition-all ${
-                includeBooks
-                  ? "bg-brand-500 text-white border-brand-500 shadow-sm"
-                  : "bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-gray-300 dark:border-border hover:border-brand-400"
-              }`}
-            >
-              {includeBooks ? (isBn ? "✓ যুক্ত হয়েছে" : "✓ Added") : (isBn ? "+ যুক্ত করুন" : "+ Add Books")}
-            </button>
-          </div>
-        </div>
-
-        {/* 4. EdgeCourseBD Promo Coupon Banner */}
-        <div className="rounded-xl border border-rose-100 dark:border-rose-900/40 bg-[#FFF7F6] dark:bg-rose-950/20 p-2.5 flex items-center justify-between text-xs">
-          <span className="text-slate-700 dark:text-slate-300 text-[11px] font-medium">
-            {isBn ? "কুপন কোড ব্যবহার করুন:" : "Use Coupon:"}{" "}
-            <span className="font-extrabold text-[#F04438]">&quot;ASTROPIXEL&quot;</span>
-          </span>
-          <span className="font-black text-[#F04438] text-[11px]">২০% ছাড়</span>
-        </div>
-
-        {/* Pricing Block */}
-        <div className="flex items-baseline justify-between pt-1">
-          <div>
-            <span className="text-xs text-slate-600 dark:text-slate-400 font-bold block mb-0.5">{isBn ? "টোটাল কোর্স ফি" : "Total Fee"}</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-black text-brand-600 dark:text-brand-400">
-                {finalPrice > 0 ? `৳ ${finalPrice.toLocaleString()}` : (isBn ? "সম্পূর্ণ ফ্রি" : "Free")}
-              </span>
-              {regularPrice > finalPrice && finalPrice > 0 && (
-                <span className="text-xs text-slate-400 line-through font-medium">
+              {regularPrice > price && price > 0 && (
+                <span className="text-sm text-slate-400 line-through font-medium">
                   ৳ {regularPrice.toLocaleString()}
                 </span>
               )}
             </div>
           </div>
-
-          {/* Promo code input toggle */}
-          {!couponApplied && (
-            <div className="flex items-center gap-1">
-              <input
-                type="text"
-                placeholder={isBn ? "প্রোমো কোড" : "Promo code"}
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value)}
-                className="w-24 h-7 text-[11px] px-2 rounded-lg border border-gray-300 dark:border-border bg-white dark:bg-slate-900 uppercase font-bold text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
-              />
-              <button
-                onClick={handleApplyCoupon}
-                className="h-7 px-2.5 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[11px] font-black hover:bg-black transition-colors"
-              >
-                {isBn ? "প্রয়োগ" : "Apply"}
-              </button>
-            </div>
+          {discountPercent && (
+            <span className="px-2.5 py-1 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-extrabold border border-rose-500/20">
+              {discountPercent}% {isBn ? "ছাড়" : "OFF"}
+            </span>
           )}
         </div>
 
-        {/* EdgeCourseBD Primary "Buy Now" / "Go to Class" Button */}
+        {/* 10MS Green CTA Button */}
         {isEnrolled ? (
           <button
             onClick={() => navigate(`/student/course/${courseId || ''}`)}
-            className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.99]"
+            className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-extrabold text-base flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg cursor-pointer"
           >
-            <span>{isBn ? "ক্লাসে প্রবেশ করুন (Go to Classroom)" : "Go to Classroom"}</span>
+            <span>{isBn ? "ক্লাস শুরু করুন" : "Go to Classroom"}</span>
             <ArrowRight className="h-4 w-4" />
           </button>
         ) : (
           <button
             onClick={onEnroll}
-            className="w-full h-12 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.99]"
+            className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-extrabold text-base flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg cursor-pointer"
           >
-            <span>{finalPrice > 0 ? (isBn ? "এখনই ভর্তি হন (Buy Now)" : "Buy Now") : (isBn ? "ফ্রি শুরু করুন" : "Start Free")}</span>
+            <span>{price > 0 ? (isBn ? "কোর্সটি কিনুন" : "Enroll Now") : (isBn ? "ফ্রি শুরু করুন" : "Start Free")}</span>
             <ArrowRight className="h-4 w-4" />
           </button>
         )}
 
-        {/* Guarantee Badge */}
-        <div className="flex items-center justify-center gap-2 text-xs text-slate-700 dark:text-slate-300 font-semibold">
-          <ShieldCheck className="h-4 w-4 text-brand-500 shrink-0" />
-          <span>{isBn ? "১০০% ভেরিফাইড কোর্স ও লাইফটাইম অ্যাক্সেস" : "100% Verified Course with Lifetime Access"}</span>
+        {/* 10MS "এই কোর্সে যা থাকছে" Checklist */}
+        <div className="pt-2 space-y-3.5">
+          <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">
+            {isBn ? "এই কোর্সে যা থাকছে" : "What's in this course"}
+          </h4>
+
+          <ul className="space-y-3 text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-medium">
+            <li className="flex items-center gap-3">
+              <span className="grid h-7 w-7 place-items-center rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 shrink-0">
+                <Users className="h-4 w-4" />
+              </span>
+              <span>{isBn ? `কোর্সটি করছেন ${enrolledCount} জন` : `${enrolledCount} students enrolled`}</span>
+            </li>
+
+            <li className="flex items-center gap-3">
+              <span className="grid h-7 w-7 place-items-center rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 shrink-0">
+                <Clock className="h-4 w-4" />
+              </span>
+              <span>{isBn ? `সময় লাগবে ${duration}` : `Duration: ${duration}`}</span>
+            </li>
+
+            <li className="flex items-center gap-3">
+              <span className="grid h-7 w-7 place-items-center rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 shrink-0">
+                <Video className="h-4 w-4" />
+              </span>
+              <span>{isBn ? `${videoCount}টি ভিডিও` : `${videoCount} Videos`}</span>
+            </li>
+
+            <li className="flex items-center gap-3">
+              <span className="grid h-7 w-7 place-items-center rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-600 shrink-0">
+                <FileText className="h-4 w-4" />
+              </span>
+              <span>{isBn ? `${noteCount}টি নোট` : `${noteCount} Notes & PDFs`}</span>
+            </li>
+
+            <li className="flex items-center gap-3">
+              <span className="grid h-7 w-7 place-items-center rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 shrink-0">
+                <CheckSquare className="h-4 w-4" />
+              </span>
+              <span>{isBn ? `${quizCount} সেট কুইজ` : `${quizCount} Quiz Sets`}</span>
+            </li>
+
+            <li className="flex items-center gap-3">
+              <span className="grid h-7 w-7 place-items-center rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-600 shrink-0">
+                <LayoutIcon className="h-4 w-4" />
+              </span>
+              <span>{isBn ? `${templateCount}টি টেমপ্লেট` : `${templateCount} Resource Templates`}</span>
+            </li>
+
+            <li className="flex items-center gap-3">
+              <span className="grid h-7 w-7 place-items-center rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 shrink-0">
+                <Calendar className="h-4 w-4" />
+              </span>
+              <span>{isBn ? "কোর্সের মেয়াদ আজীবন" : "Lifetime Course Validity"}</span>
+            </li>
+          </ul>
         </div>
 
-        {/* Feature List */}
-        <div className="pt-3 border-t border-gray-100 dark:border-border/40 space-y-2 text-xs text-slate-800 dark:text-slate-200 font-semibold">
-          <div className="flex items-center gap-2">
-            <Clock className="h-3.5 w-3.5 text-brand-500 shrink-0" />
-            <span>{duration} {isBn ? "অন-ডিমান্ড ফুল HD ক্লাস" : "on-demand HD video lessons"}</span>
+        {/* 10MS Helpline Section */}
+        <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+          <div className="space-y-0.5">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">
+              {isBn ? "কোর্সটি সম্পর্কে বিস্তারিত জানতে" : "For any queries about this course"}
+            </span>
+            <a
+              href="tel:16910"
+              className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-extrabold hover:underline"
+            >
+              <PhoneCall className="h-3.5 w-3.5" />
+              <span>{isBn ? "ফোন করুন ১৬৯১০" : "Call 16910"}</span>
+            </a>
           </div>
-          <div className="flex items-center gap-2">
-            <Award className="h-3.5 w-3.5 text-brand-500 shrink-0" />
-            <span>{isBn ? "কোর্স সম্পন্ন করে সার্টিফিকেট অর্জন" : "Official verified certificate"}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Smartphone className="h-3.5 w-3.5 text-brand-500 shrink-0" />
-            <span>{isBn ? "মোবাইল ও পিসি যেকোনো ডিভাইসে লাইফটাইম অ্যাক্সেস" : "Lifetime access on web & mobile"}</span>
-          </div>
-        </div>
 
-        {/* Share Button */}
-        <div className="pt-2 border-t border-gray-100 dark:border-border/40 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-bold">
           <button
             onClick={handleShare}
-            className="flex items-center gap-1.5 hover:text-brand-600 transition-colors"
+            className="p-2 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-emerald-600 hover:border-emerald-500/40 transition-colors"
+            title={isBn ? "শেয়ার করুন" : "Share"}
           >
-            <Share2 className="h-3.5 w-3.5" />
-            <span>{isBn ? "বন্ধুদের সাথে শেয়ার করুন" : "Share this course"}</span>
+            <Share2 className="h-4 w-4" />
           </button>
         </div>
       </div>

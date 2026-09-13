@@ -117,7 +117,7 @@ export const StatCard = ({
         <span className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight tabular-nums group-hover:text-primary transition-colors">
           {formattedCount}
         </span>
-        <span className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-bold truncate">
+        <span className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 font-bold truncate">
           {label}
         </span>
       </div>

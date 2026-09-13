@@ -37,8 +37,8 @@ export const CourseStickyBar: React.FC<CourseStickyBarProps> = ({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-40 bg-white/95 dark:bg-card/95 border-b border-gray-200 dark:border-border/60 shadow-md backdrop-blur-md transition-all duration-300 animate-in fade-in slide-in-from-top-4">
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+    <div className="fixed sm:top-16 bottom-0 sm:bottom-auto left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 border-t sm:border-t-0 sm:border-b border-slate-200 dark:border-slate-800 shadow-lg backdrop-blur-md transition-all duration-300 animate-in fade-in">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-4">
         {/* Course Info */}
         <div className="flex flex-col min-w-0">
           <h4 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate max-w-lg">

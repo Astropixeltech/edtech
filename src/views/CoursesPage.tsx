@@ -491,7 +491,7 @@ export default function CoursesPage() {
                   className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
                     activeCategory === cat.id
                       ? "bg-brand-500 text-white shadow-sm"
-                      : "bg-white dark:bg-card text-slate-900 dark:text-slate-100 border border-gray-300 dark:border-border hover:bg-gray-50 dark:hover:bg-accent"
+                      : "bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700"
                   }`}
                 >
                   {cat.label}
@@ -505,7 +505,6 @@ export default function CoursesPage() {
                 <EdgeCourseCard
                   key={course.id}
                   course={course}
-                  onEnroll={handleEnrollClick}
                 />
               ))}
             </HorizontalScroller>
@@ -618,7 +617,7 @@ export default function CoursesPage() {
                       <h4 className="text-sm font-extrabold text-slate-900 dark:text-white group-hover/inst:text-primary transition-colors">
                         {t.name}
                       </h4>
-                      <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-slate-700 dark:text-slate-200 font-semibold line-clamp-2 leading-relaxed">
                         {isBn ? t.qualificationBn : t.qualificationEn}
                       </p>
                     </div>
@@ -639,7 +638,7 @@ export default function CoursesPage() {
               <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
                 {isBn ? "শিক্ষার্থীদের সাফল্যের অভিজ্ঞতা" : "What Our Rankers Say"}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-semibold">
+              <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 font-semibold">
                 {isBn ? "বুয়েট, মেডিকেল ও ঢাবিতে চান্সপ্রাপ্ত শিক্ষার্থীদের বাস্তব প্রতিক্রিয়া" : "Verified testimonials from students admitted into premier universities"}
               </p>
             </div>
