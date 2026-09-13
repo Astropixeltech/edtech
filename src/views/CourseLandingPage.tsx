@@ -130,6 +130,15 @@ export default function CourseLandingPage() {
             const j = await res.json();
             if (j.success && j.course) {
               foundData = j;
+              if (foundData && foundData.modules) {
+                foundData.modules = foundData.modules.map((mod) => ({
+                  ...mod,
+                  lessons: (mod.lessons || []).map((les, lIdx) => ({
+                    ...les,
+                    video_url: les.video_url || (lIdx % 2 === 0 ? "https://www.youtube.com/watch?v=qz0aGYrrlhU" : "https://www.youtube.com/watch?v=1Rs2ND1ryYc"),
+                  }))
+                }));
+              }
             }
           }
         } catch (err) {
@@ -145,6 +154,114 @@ export default function CourseLandingPage() {
             .maybeSingle();
 
           if (dbCourse) {
+            // Also fetch lessons from Supabase videos table
+            const { data: dbVideos } = await supabase
+              .from('videos')
+              .select('*')
+              .eq('course_id', dbCourse.id)
+              .order('order_index', { ascending: true });
+
+            // Find matching seed course for rich default metadata/videos if needed
+            const matchingSeed = INITIAL_REAL_YOUTUBE_COURSES.find(
+              (c) => c.id === dbCourse.id ||
+                     (c as any).landing_slug === dbCourse.landing_slug ||
+                     c.category === (dbCourse as any).category ||
+                     c.title.toLowerCase().includes(dbCourse.title.toLowerCase())
+            ) || INITIAL_REAL_YOUTUBE_COURSES[0];
+
+            // Resolve lesson videos: dbVideos or matchingSeed videos or educational fallback
+            const resolvedVideos = (dbVideos && dbVideos.length > 0)
+              ? dbVideos
+              : (matchingSeed?.videos && matchingSeed.videos.length > 0)
+                ? matchingSeed.videos
+                : [
+                    {
+                      id: "vid-fallback-1",
+                      title: "লেকচার ১: কোর্স ওভারভিউ ও ফাউন্ডেশন পরিচিতি",
+                      duration_seconds: 1420,
+                      video_url: "https://www.youtube.com/watch?v=qz0aGYrrlhU",
+                    },
+                    {
+                      id: "vid-fallback-2",
+                      title: "লেকচার ২: এসেনশিয়াল সফটওয়্যার ও প্র্যাক্টিক্যাল সেটআপ",
+                      duration_seconds: 1750,
+                      video_url: "https://www.youtube.com/watch?v=1Rs2ND1ryYc",
+                    },
+                    {
+                      id: "vid-fallback-3",
+                      title: "লেকচার ৩: বেসিক টু অ্যাডভান্সড মেথডলজি ও প্রজেক্ট শুরু",
+                      duration_seconds: 2100,
+                      video_url: "https://www.youtube.com/watch?v=W6NZfCO5SIk",
+                    },
+                    {
+                      id: "vid-fallback-4",
+                      title: "লেকচার ৪: ইন্ডাস্ট্রি স্ট্যান্ডার্ড প্র্যাকটিস ও পোর্টফোলিও",
+                      duration_seconds: 1980,
+                      video_url: "https://www.youtube.com/watch?v=bMknfKXIFA8",
+                    }
+                  ];
+
+            const chunkSize = Math.max(1, Math.ceil(resolvedVideos.length / 4));
+
+            const resolvedModules: Module[] = [
+              {
+                id: "m1",
+                title: "মডিউল ০১: কোর্সের প্রাথমিক পরিচিতি ও প্রয়োজনীয় টুলস",
+                description: "টুলস সেটআপ ও মৌলিক ধারণাসমূহ হাতে-কলমে শেখা।",
+                order_index: 1,
+                duration: "২ ঘন্টা ৩০ মিনিট",
+                lessons: resolvedVideos.slice(0, chunkSize).map((v, i) => ({
+                  id: v.id || `l1-${i}`,
+                  title: v.title || `লেকচার ১.${i + 1}`,
+                  duration: `${Math.round((v.duration_seconds || 900) / 60)} মিনিট`,
+                  is_free_preview: i < 2,
+                  video_url: v.video_url || (i % 2 === 0 ? "https://www.youtube.com/watch?v=qz0aGYrrlhU" : "https://www.youtube.com/watch?v=1Rs2ND1ryYc"),
+                }))
+              },
+              {
+                id: "m2",
+                title: "মডিউল ০২: মূল কনসেপ্ট ও রিয়েল-লাইফ প্রজেক্ট শুরু",
+                description: "প্র্যাক্টিক্যাল প্রজেক্ট তৈরি ও ধাপে ধাপে জটিল সমস্যা সমাধান।",
+                order_index: 2,
+                duration: "৩ ঘন্টা ৪৫ মিনিট",
+                lessons: resolvedVideos.slice(chunkSize, chunkSize * 2).map((v, i) => ({
+                  id: v.id || `l2-${i}`,
+                  title: v.title || `লেকচার ২.${i + 1}`,
+                  duration: `${Math.round((v.duration_seconds || 1200) / 60)} মিনিট`,
+                  is_free_preview: false,
+                  video_url: v.video_url || "https://www.youtube.com/watch?v=W6NZfCO5SIk",
+                }))
+              },
+              {
+                id: "m3",
+                title: "মডিউল ০৩: অ্যাডভান্সড মেথডোলজি ও অপটিমাইজেশন",
+                description: "প্রোডাকশন-গ্রেড টেকনিক এবং প্রো টিপস।",
+                order_index: 3,
+                duration: "৩ ঘন্টা ২০ মিনিট",
+                lessons: resolvedVideos.slice(chunkSize * 2, chunkSize * 3).map((v, i) => ({
+                  id: v.id || `l3-${i}`,
+                  title: v.title || `লেকচার ৩.${i + 1}`,
+                  duration: `${Math.round((v.duration_seconds || 1100) / 60)} মিনিট`,
+                  is_free_preview: false,
+                  video_url: v.video_url || "https://www.youtube.com/watch?v=bMknfKXIFA8",
+                }))
+              },
+              {
+                id: "m4",
+                title: "মডিউল ০৪: ফাইনাল প্রজেক্ট, পোর্টফোলিও ও সার্টিফিকেট",
+                description: "সম্পূর্ণ প্রজেক্ট রিভিশন, রিভিউ ও সার্টিফিকেট অর্জন।",
+                order_index: 4,
+                duration: "২ ঘন্টা ১৫ মিনিট",
+                lessons: resolvedVideos.slice(chunkSize * 3).map((v, i) => ({
+                  id: v.id || `l4-${i}`,
+                  title: v.title || `লেকচার ৪.${i + 1}`,
+                  duration: `${Math.round((v.duration_seconds || 950) / 60)} মিনিট`,
+                  is_free_preview: false,
+                  video_url: v.video_url || "https://www.youtube.com/watch?v=w7ejDZ8SWv8",
+                }))
+              },
+            ];
+
             foundData = {
               course: {
                 id: dbCourse.id,
@@ -155,12 +272,12 @@ export default function CourseLandingPage() {
                 short_description: dbCourse.description ? dbCourse.description.slice(0, 150) + "..." : undefined,
                 thumbnail_url: dbCourse.thumbnail_url || undefined,
                 price: dbCourse.price || 0,
-                category: (dbCourse as any).category || "Professional Development",
-                trainer_name: dbCourse.trainer_name || "Astropixel Expert Mentors",
-                trainer_designation: dbCourse.trainer_designation || "Lead Instructor",
+                category: (dbCourse as any).category || matchingSeed?.category || "Professional Development",
+                trainer_name: dbCourse.trainer_name || matchingSeed?.trainer_name || "Astropixel Expert Mentors",
+                trainer_designation: dbCourse.trainer_designation || (matchingSeed as any)?.trainer_designation || "Lead Instructor",
                 trainer_image: dbCourse.trainer_image || undefined,
                 trainer_bio: "অভিজ্ঞ ইন্ডাস্ট্রি প্রফেশনাল ও প্রশিক্ষক। বাস্তব কাজের প্রজেক্টভিত্তিক নির্দেশনায় শিক্ষার্থীদের দক্ষ করে তোলার দীর্ঘ অভিজ্ঞতা।",
-                learning_outcomes: [
+                learning_outcomes: (dbCourse as any).learning_outcomes || matchingSeed?.learning_outcomes || [
                   "বাস্তব প্রজেক্ট তৈরির মাধ্যমে প্রতিটি ধারণার হাতে-কলমে প্রয়োগ",
                   "ইন্ডাস্ট্রি-স্ট্যান্ডার্ড কাজের নিয়মাবলী ও কোডিং/ডিজাইন বেস্ট প্র্যাকটিস",
                   "ক্যারিয়ার ও ফ্রিল্যান্সিংয়ে দ্রুত এগিয়ে যাওয়ার প্রয়োজনীয় দিকনির্দেশনা",
@@ -181,8 +298,9 @@ export default function CourseLandingPage() {
                   "কলেজ ও বিশ্ববিদ্যালয়ের শিক্ষার্থী এবং ফ্রেশ গ্র্যাজুয়েট",
                   "যাঁরা ফ্রিল্যান্সিং ও রিমোট জবের জন্য নিজেকে প্রস্তুত করতে চান",
                 ],
-                total_classes: "২০+ ক্লাস",
-                duration: "১০+ ঘন্টা",
+                total_classes: (dbCourse as any).total_classes || `${resolvedVideos.length}+ ক্লাস`,
+                duration: (dbCourse as any).duration || "১০+ ঘন্টা",
+                intro_video_url: (dbCourse as any).intro_video_url || resolvedVideos[0]?.video_url || "https://www.youtube.com/watch?v=qz0aGYrrlhU",
                 faqs: [
                   {
                     question: "কোর্সটি কিনলে কতদিন দেখতে পারব?",
@@ -202,58 +320,8 @@ export default function CourseLandingPage() {
                   }
                 ]
               },
-              modules: [
-                {
-                  id: "m1",
-                  title: "মডিউল ০১: কোর্সের প্রাথমিক পরিচিতি ও প্রয়োজনীয় টুলস",
-                  description: "টুলস সেটআপ ও মৌলিক ধারণাসমূহ হাতে-কলমে শেখা।",
-                  order_index: 1,
-                  duration: "২ ঘন্টা ৩০ মিনিট",
-                  lessons: [
-                    { id: "l1", title: "লেকচার ১.১: কোর্স ওভারভিউ ও ক্যারিয়ার স্কোপ", duration: "১৫ মিনিট", is_free_preview: true },
-                    { id: "l2", title: "লেকচার ১.২: এসেনশিয়াল সফটওয়্যার ও এনভায়রনমেন্ট সেটআপ", duration: "২৫ মিনিট", is_free_preview: true },
-                    { id: "l3", title: "লেকচার ১.৩: বেসিক ফাউন্ডেশন ও ফান্ডামেন্টাল কনসেপ্ট", duration: "৩৫ মিনিট", is_free_preview: false },
-                    { id: "l4", title: "লেকচার ১.৪: কুইজ ও সেলফ এসেসমেন্ট টেস্ট", duration: "১৫ মিনিট", is_free_preview: false }
-                  ]
-                },
-                {
-                  id: "m2",
-                  title: "মডিউল ০২: মূল কনসেপ্ট ও রিয়েল-লাইফ প্রজেক্ট শুরু",
-                  description: "প্র্যাক্টিক্যাল প্রজেক্ট তৈরি ও ধাপে ধাপে জটিল সমস্যা সমাধান।",
-                  order_index: 2,
-                  duration: "৩ ঘন্টা ৪৫ মিনিট",
-                  lessons: [
-                    { id: "l5", title: "লেকচার ২.১: কোর আর্কিটেকচার ও ওয়ার্কফ্লো", duration: "৪০ মিনিট", is_free_preview: false },
-                    { id: "l6", title: "লেকচার ২.২: রিয়েল-টাইম হ্যান্ডস-অন প্রজেক্ট ডেভেলপমেন্ট", duration: "৫৫ মিনিট", is_free_preview: false },
-                    { id: "l7", title: "লেকচার ২.৩: এরর হ্যান্ডলিং ও ডিবাগিং টেকনিকস", duration: "৩০ মিনিট", is_free_preview: false }
-                  ]
-                },
-                {
-                  id: "m3",
-                  title: "মডিউল ০৩: অ্যাডভান্সড মেথডোলজি ও অপটিমাইজেশন",
-                  description: "প্রোডাকশন-গ্রেড টেকনিক এবং প্রো টিপস।",
-                  order_index: 3,
-                  duration: "৩ ঘন্টা ২০ মিনিট",
-                  lessons: [
-                    { id: "l8", title: "লেকচার ৩.১: হাই-পারফরম্যান্স অপটিমাইজেশন", duration: "৪৫ মিনিট", is_free_preview: false },
-                    { id: "l9", title: "লেকচার ৩.২: ইন্ডাস্ট্রি বেস্ট প্র্যাকটিস ও সিকিউরিটি", duration: "৪০ মিনিট", is_free_preview: false },
-                    { id: "l10", title: "লেকচার ৩.৩: লাইভ কেস স্টাডি অ্যানালাইসিস", duration: "৩৫ মিনিট", is_free_preview: false }
-                  ]
-                },
-                {
-                  id: "m4",
-                  title: "মডিউল ০৪: ফাইনাল প্রজেক্ট, পোর্টফোলিও ও সার্টিফিকেট",
-                  description: "সম্পূর্ণ প্রজেক্ট রিভিশন, রিভিউ ও সার্টিফিকেট অর্জন।",
-                  order_index: 4,
-                  duration: "২ ঘন্টা ১৫ মিনিট",
-                  lessons: [
-                    { id: "l11", title: "লেকচার ৪.১: প্রজেক্ট ফাইনাল পলিশিং ও ডেপ্লয়মেন্ট", duration: "৩৫ মিনিট", is_free_preview: false },
-                    { id: "l12", title: "লেকচার ৪.২: আন্তর্জাতিক ক্লায়েন্ট ও মার্কেটপ্লেস গাইডলাইন", duration: "৪০ মিনিট", is_free_preview: false },
-                    { id: "l13", title: "লেকচার ৪.৩: ফাইনাল এক্সাম ও সার্টিফিকেট জেনারেশন", duration: "২০ মিনিট", is_free_preview: false }
-                  ]
-                },
-              ],
-              lesson_count: 24,
+              modules: resolvedModules,
+              lesson_count: resolvedVideos.length,
             };
           }
         }
@@ -405,8 +473,47 @@ export default function CourseLandingPage() {
     return () => { alive = false; };
   }, [slugParam]);
 
-  const [activeTab, setActiveTab] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<string>("instructor");
   const [previewLesson, setPreviewLesson] = useState<LessonItem | null>(null);
+
+  // Dynamic Scroll-Spy IntersectionObserver to highlight active tab on scroll
+  useEffect(() => {
+    if (loading || !data) return;
+
+    const sectionIds = [
+      "section-instructor",
+      "section-structure",
+      "section-learn",
+      "section-details",
+      "section-curriculum",
+      "section-faqs"
+    ];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const intersecting = entries.filter((e) => e.isIntersecting);
+        if (intersecting.length > 0) {
+          // Sort by distance to top offset threshold
+          intersecting.sort((a, b) => {
+            return Math.abs(a.boundingClientRect.top - 130) - Math.abs(b.boundingClientRect.top - 130);
+          });
+          const activeId = intersecting[0].target.id.replace("section-", "");
+          setActiveTab(activeId);
+        }
+      },
+      {
+        rootMargin: "-120px 0px -50% 0px",
+        threshold: [0, 0.2, 0.5]
+      }
+    );
+
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [loading, data]);
 
   const effectiveUserId = user?.id || 'demo-student-001';
 
@@ -484,7 +591,32 @@ export default function CourseLandingPage() {
     isBn ? "ফ্রিল্যান্সার ও জব প্রত্যাশীরা" : "Job seekers and freelancers"
   ];
   const faqs = c?.faqs ?? [];
-  const videoId = getYouTubeId(previewLesson?.video_url || c.intro_video_url) || (c as any).youtube_video_id || 'dQw4w9WgXcQ';
+
+  // Educational video fallbacks based on category (never Rick Astley)
+  const defaultFallbackVideoId = useMemo(() => {
+    const cat = (c?.category || '').toLowerCase();
+    if (cat.includes('graphic') || cat.includes('design')) return 'R9_uLILm0qg';
+    if (cat.includes('math') || cat.includes('গণিত')) return 'V7z7BAZdt2M';
+    if (cat.includes('chem') || cat.includes('রসায়ন')) return '3z_2H63b6kE';
+    if (cat.includes('physics') || cat.includes('পদার্থ')) return 'qz0aGYrrlhU';
+    return 'qz0aGYrrlhU';
+  }, [c?.category]);
+
+  const videoId = getYouTubeId(previewLesson?.video_url || c.intro_video_url) || (c as any).youtube_video_id || defaultFallbackVideoId;
+
+  // Resolve authentic sample demo class video (lesson 2 or first free preview)
+  const demoLesson = useMemo(() => {
+    for (const mod of data?.modules || []) {
+      for (const les of mod.lessons || []) {
+        if (les.video_url && (les.is_free_preview || les.id !== data?.modules?.[0]?.lessons?.[0]?.id)) {
+          return les;
+        }
+      }
+    }
+    return data?.modules?.[0]?.lessons?.[1] || data?.modules?.[0]?.lessons?.[0] || null;
+  }, [data?.modules]);
+
+  const demoVideoId = getYouTubeId(demoLesson?.video_url) || defaultFallbackVideoId;
 
   const handleEnroll = () => {
     if (isEnrolled) {
@@ -566,7 +698,7 @@ export default function CourseLandingPage() {
     setActiveTab(tabId);
     const element = document.getElementById(`section-${tabId}`);
     if (element) {
-      const offset = 80;
+      const offset = 130; // 64px main nav + 56px sticky tabs + 10px breathing room
       const bodyRect = document.body.getBoundingClientRect().top;
       const elementRect = element.getBoundingClientRect().top;
       const elementPosition = elementRect - bodyRect;
@@ -650,12 +782,15 @@ export default function CourseLandingPage() {
                 price={c.price || 0}
                 thumbnailUrl={c.thumbnail_url}
                 videoId={videoId}
-                totalClasses={c.total_classes || "৩৯টি"}
+                demoVideoId={demoVideoId}
+                totalClasses={c.total_classes || `${data?.lesson_count || 39}টি`}
                 duration={c.duration || "১০ ঘণ্টা"}
                 onEnroll={handleEnroll}
                 title={title || ""}
                 isEnrolled={isEnrolled}
                 courseId={c.id}
+                learningOutcomes={outcomes}
+                videoCount={data?.lesson_count || 39}
               />
             </div>
           </div>
@@ -741,10 +876,10 @@ export default function CourseLandingPage() {
                       </span>
                       <div>
                         <h5 className="text-sm font-extrabold text-white">
-                          {isBn ? "৩৯টি ভিডিও লেকচার" : "39 Video Lectures"}
+                          {data?.lesson_count || 24} {isBn ? "টি ভিডিও লেকচার" : "Video Lectures"}
                         </h5>
                         <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                          {isBn ? "কোর্সে রয়েছে দৈনন্দিন জীবনের সব পরিস্থিতির জন্য সাজানো স্পোকেন ভিডিও লেকচার।" : "Bite-sized high definition video lessons covering real scenarios."}
+                          {isBn ? "কোর্সে রয়েছে প্রতিটি বিষয়ের জন্য সাজানো ও এডিটেড হাই ডেফিনিশন ভিডিও লেকচার।" : "Bite-sized high definition video lessons covering real scenarios."}
                         </p>
                       </div>
                     </div>
@@ -756,7 +891,7 @@ export default function CourseLandingPage() {
                       </span>
                       <div>
                         <h5 className="text-sm font-extrabold text-white">
-                          {isBn ? "১৪টি এক্সক্লুসিভ লেকচার শিট" : "14 Exclusive Lecture Sheets"}
+                          {Math.max(6, Math.round((data?.lesson_count || 24) * 0.4))} {isBn ? "টি এক্সক্লুসিভ লেকচার শিট" : "Exclusive Lecture Sheets"}
                         </h5>
                         <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                           {isBn ? "প্রতিটি ক্লাসের সামারি ও প্র্যাক্টিস এক্সারসাইজ সহ পিডিএফ লেকচার শিট।" : "Downloadable lecture notes and summary practice sheets."}
@@ -771,7 +906,7 @@ export default function CourseLandingPage() {
                       </span>
                       <div>
                         <h5 className="text-sm font-extrabold text-white">
-                          {isBn ? "চ্যাপ্টারভিত্তিক ৫ সেট কুইজ" : "5 Chapter-wise Quiz Sets"}
+                          {Math.max(4, data?.modules?.length || 4)} {isBn ? "টি চ্যাপ্টারভিত্তিক কুইজ ও এসেসমেন্ট" : "Chapter-wise Quiz Sets"}
                         </h5>
                         <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                           {isBn ? "প্রতিটি চ্যাপ্টার শেষ করে নিজের অগ্রগতি যাচাই করতে কুইজ টেস্ট।" : "Interactive quizzes to evaluate understanding and retention."}
@@ -786,10 +921,10 @@ export default function CourseLandingPage() {
                       </span>
                       <div>
                         <h5 className="text-sm font-extrabold text-white">
-                          {isBn ? "৬টি টেমপ্লেট ও রিসোর্স" : "6 Resource Templates"}
+                          {isBn ? "৬টি প্র্যাক্টিক্যাল টেমপ্লেট ও রিসোর্স" : "6 Practical Templates & Resources"}
                         </h5>
                         <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                          {isBn ? "বাস্তব জীবনে ব্যবহারের জন্য রেডিমেড কনভারসেশন ও ইমেইল টেমপ্লেট।" : "Practical templates for ready use in work and daily conversations."}
+                          {isBn ? "বাস্তব জীবনে ব্যবহারের জন্য রেডিমেড কনভারসেশন ও প্রজেক্ট টেমপ্লেট।" : "Practical templates for ready use in work and daily workflows."}
                         </p>
                       </div>
                     </div>
@@ -1030,12 +1165,15 @@ export default function CourseLandingPage() {
                 price={c.price || 0}
                 thumbnailUrl={c.thumbnail_url}
                 videoId={videoId}
-                totalClasses={c.total_classes || "৩৯টি"}
+                demoVideoId={demoVideoId}
+                totalClasses={c.total_classes || `${data?.lesson_count || 39}টি`}
                 duration={c.duration || "১০ ঘণ্টা"}
                 onEnroll={handleEnroll}
                 title={title || ""}
                 isEnrolled={isEnrolled}
                 courseId={c.id}
+                learningOutcomes={outcomes}
+                videoCount={data?.lesson_count || 39}
               />
             </div>
 
@@ -1048,10 +1186,10 @@ export default function CourseLandingPage() {
         href="https://wa.me/8801776965533?text=Hello%20Astropixel%20Learn%20Support"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all group cursor-pointer"
+        className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40 h-13 w-13 sm:h-14 sm:w-14 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all group cursor-pointer"
         aria-label="WhatsApp Support"
       >
-        <MessageCircle className="h-7 w-7 fill-current" />
+        <MessageCircle className="h-6 w-6 sm:h-7 sm:w-7 fill-current" />
         <span className="absolute right-16 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-lg">
           {isBn ? "সহায়তা প্রয়োজন? WhatsApp-এ নক দিন" : "Need help? Chat on WhatsApp"}
         </span>
@@ -1062,17 +1200,22 @@ export default function CourseLandingPage() {
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="relative w-full max-w-3xl bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900/80">
-              <h4 className="text-sm font-bold text-white truncate pr-4">
-                {previewLesson.title}
-              </h4>
+              <div className="flex items-center gap-2 min-w-0 pr-4">
+                <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[11px] font-black shrink-0">
+                  {isBn ? "ফ্রি প্রিভিউ" : "Free Preview"}
+                </span>
+                <h4 className="text-sm font-bold text-white truncate">
+                  {previewLesson.title}
+                </h4>
+              </div>
               <button
                 onClick={() => setPreviewLesson(null)}
-                className="text-slate-400 hover:text-white text-sm font-bold p-1 rounded-md cursor-pointer"
+                className="text-slate-400 hover:text-white text-sm font-bold p-1 rounded-md cursor-pointer transition-colors"
               >
                 ✕
               </button>
             </div>
-            <div className="relative aspect-video w-full">
+            <div className="relative aspect-video w-full bg-black">
               <iframe
                 src={`https://www.youtube.com/embed/${getYouTubeId(previewLesson.video_url || c.intro_video_url) || videoId}?autoplay=1&rel=0`}
                 title={previewLesson.title}
@@ -1080,6 +1223,33 @@ export default function CourseLandingPage() {
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
+            </div>
+            {/* Quick-switch other free preview lessons */}
+            <div className="p-3 bg-slate-900/90 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto scrollbar-none py-1">
+                {(data?.modules || []).flatMap(m => m.lessons || []).filter(l => l.is_free_preview).map((les) => (
+                  <button
+                    key={les.id}
+                    onClick={() => setPreviewLesson(les)}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold shrink-0 transition-all cursor-pointer ${
+                      previewLesson.id === les.id
+                        ? "bg-emerald-600 text-white shadow-xs"
+                        : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white"
+                    }`}
+                  >
+                    ▶ {les.title.slice(0, 24)}...
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => {
+                  setPreviewLesson(null);
+                  handleEnroll();
+                }}
+                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shrink-0 transition-colors shadow-sm cursor-pointer"
+              >
+                {isBn ? "সম্পূর্ণ কোর্সে ভর্তি হন" : "Enroll Full Course"}
+              </button>
             </div>
           </div>
         </div>

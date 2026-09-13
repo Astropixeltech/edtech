@@ -60,7 +60,7 @@ export const CourseStickyBar: React.FC<CourseStickyBarProps> = ({
         {isEnrolled ? (
           <button
             onClick={() => navigate(`/student/course/${courseId || ''}`)}
-            className="h-10 px-5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-colors shadow-sm shrink-0"
+            className="h-10 px-5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-colors shadow-sm shrink-0 cursor-pointer"
           >
             <span>{isBn ? "ক্লাসে প্রবেশ করুন" : "Go to Class"}</span>
             <ArrowRight className="h-3.5 w-3.5" />
@@ -68,7 +68,7 @@ export const CourseStickyBar: React.FC<CourseStickyBarProps> = ({
         ) : (
           <button
             onClick={onEnroll}
-            className="h-10 px-5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-colors shadow-sm shrink-0"
+            className="h-10 px-5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-colors shadow-sm shrink-0 cursor-pointer"
           >
             <span>{price > 0 ? (isBn ? "এখনই ভর্তি হন" : "Enroll Now") : (isBn ? "ফ্রি শুরু করুন" : "Start Free")}</span>
             <ArrowRight className="h-3.5 w-3.5" />
