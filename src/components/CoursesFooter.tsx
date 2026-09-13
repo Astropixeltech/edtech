@@ -1,12 +1,14 @@
 import { ArrowUp, Facebook, Instagram, MessageCircle, Mail, Phone, Youtube, Smartphone } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import learnLogoAssetJson from "@/assets/learn-with-alphazero-logo.png.asset.json";
 const learnLogo = learnLogoAssetJson.url;
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const CoursesFooter = () => {
   const { language } = useLanguage();
+  const location = useLocation();
   const isBn = language === "bn";
+  const isHomepage = location.pathname === "/";
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -39,7 +41,13 @@ const CoursesFooter = () => {
   ];
 
   return (
-    <footer className="relative isolate overflow-hidden bg-[#0C2417] text-white pt-14 pb-8 container-fluid-2k">
+    <footer
+      className={`relative isolate overflow-hidden bg-[#0C2417] text-white pt-14 pb-8 container-fluid-2k ${
+        isHomepage
+          ? "rounded-t-[32px] sm:rounded-t-[48px] md:rounded-t-[56px] border-t border-emerald-800/40 shadow-[0_-8px_30px_rgba(0,0,0,0.12)]"
+          : ""
+      }`}
+    >
       {/* SVG Pattern Background */}
       <svg
         aria-hidden="true"

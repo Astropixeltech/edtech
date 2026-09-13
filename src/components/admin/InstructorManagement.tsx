@@ -30,8 +30,8 @@ const DEFAULT_INSTRUCTORS: InstructorItem[] = [
   {
     id: "sofiullah",
     name: "Sofiullah Ahammad",
-    qualificationEn: "Graphics Designer, Vibe Coding Expert",
-    qualificationBn: "গ্রাফিক্স ডিজাইনার, ভাইব কোডিং এক্সপার্ট",
+    qualificationEn: "Graphics Designer & Media Mentor",
+    qualificationBn: "গ্রাফিক্স ডিজাইনার ও মিডিয়া মেন্টর",
     image: instructorAtik.url,
     roleTag: "Lead Instructor"
   },
@@ -292,7 +292,7 @@ export default function InstructorManagement() {
               <Input
                 value={formData.qualificationEn}
                 onChange={(e) => setFormData({ ...formData, qualificationEn: e.target.value })}
-                placeholder="Graphic Designer, Vibe Coding Expert"
+                placeholder="Graphic Designer & Academic Mentor"
               />
             </div>
 

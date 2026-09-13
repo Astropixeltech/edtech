@@ -17,7 +17,7 @@ import instructorPapiya from "@/assets/instructors/papiya.png.asset.json";
 import instructorPrantik from "@/assets/instructors/prantik.png.asset.json";
 
 const STATIC_TRAINERS = [
-  { name: "Sofiullah Ahammad", roleEn: "Graphics Designer, Vibe Coding Expert", roleBn: "গ্রাফিক্স ডিজাইনার, ভাইব কোডিং এক্সপার্ট", image: instructorAtik.url },
+  { name: "Sofiullah Ahammad", roleEn: "Graphics Designer, Senior ICT Mentor", roleBn: "গ্রাফিক্স ডিজাইনার, সিনিয়র আইসিটি মেন্টর", image: instructorAtik.url },
   { name: "Adib Sarkar", roleEn: "Lead Designer, Entrepreneur", roleBn: "লিড ডিজাইনার, উদ্যোক্তা", image: instructorHH.url },
   { name: "Md Nayeem Ahmed", roleEn: "Digital Marketer", roleBn: "ডিজিটাল মার্কেটার", image: instructorNayeem.url },
   { name: "Md. Shafiul Haque", roleEn: "Video Editor, Cinematographer", roleBn: "ভিডিও এডিটর, সিনেমাটোগ্রাফার", image: instructorShafiul.url },
@@ -248,17 +248,17 @@ const LearnAboutPage = () => {
         <section className="bg-[#0b1d33] text-white py-12 px-4 sm:px-6 mt-8">
           <div className="container max-w-4xl mx-auto text-center space-y-4">
             <h2 className="text-2xl sm:text-3xl font-extrabold">
-              {t("আজই শুরু করুন আপনার স্কিল ডেভেলপমেন্টের যাত্রা", "Start Your Skill Development Journey Today")}
+              {t("আজই শুরু করুন আপনার একাডেমিক ও স্কিল যাত্রা", "Start Your Academic & Skill Journey Today")}
             </h2>
             <p className="text-xs sm:text-sm text-gray-300 max-w-xl mx-auto leading-relaxed">
               {t(
-                "হাজারো শিক্ষার্থীর সাথে যুক্ত হয়ে নিজের পছন্দমতো কোর্স বেছে নিন এবং ক্যারিয়ারকে নিয়ে যান নতুন উচ্চতায়।",
-                "Join thousands of students, pick your favorite course, and accelerate your digital career."
+                "হাজারো শিক্ষার্থীর সাথে যুক্ত হয়ে নিজের পছন্দমতো কোর্স বেছে নিন এবং বোর্ড ও এডমিশনে নিশ্চিত সফলতা অর্জন করুন।",
+                "Join thousands of students, choose your desired course, and achieve academic excellence."
               )}
             </p>
             <div className="pt-2">
               <Link
-                to="/courses"
+                to="/catalog"
                 className="inline-flex items-center gap-2 h-11 px-6 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm shadow-md transition-colors"
               >
                 <span>{t("সকল কোর্স এক্সপ্লোর করুন", "Explore All Courses")}</span>

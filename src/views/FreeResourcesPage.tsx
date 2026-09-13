@@ -8,14 +8,14 @@ import { toast } from "sonner";
 const mockResources = [
   {
     id: "1",
-    catId: "ai",
-    titleBn: "HSC 26 & 27 ভাইব কোডিং ও AI কমপ্লিট চিটশীট",
-    titleEn: "Complete Vibe Coding & AI Prompting Cheatsheet",
-    category: "AI & Coding",
+    catId: "ict",
+    titleBn: "এইচএসসি আইসিটি ও সি-প্রোগ্রামিং হ্যান্ডনোট ও চিটশীট",
+    titleEn: "Complete HSC ICT & C-Programming Cheatsheet",
+    category: "ICT & Coding",
     fileType: "PDF",
     size: "2.4 MB",
     downloads: 1420,
-    downloadContent: "# Complete Vibe Coding & AI Prompting Cheatsheet\n\nAstropixel Learn AI & Vibe Coding Study Material 2026.\n\n- Master Cursor, Claude, and Gemini workflows.\n- 50+ battle-tested prompt templates for full-stack developers.\n\nWebsite: https://astropixel.tech/vibe-coding",
+    downloadContent: "# Complete HSC ICT & C-Programming Cheatsheet\n\nAstropixel Learn Academic Study Material.\n\n- Number Systems, Boolean Algebra & Logic Gates.\n- C Programming Syntax, Loops, Arrays, Pointers, Functions.\n- HTML & Web Design Fundamentals for Board Exam CQ/MCQ.\n\nWebsite: https://astropixel.tech/catalog",
   },
   {
     id: "2",
@@ -82,7 +82,7 @@ export const FreeResourcesPage = () => {
 
   const categories = [
     { id: "all", label: isBn ? "সব রিসোর্স" : "All Resources" },
-    { id: "ai", label: isBn ? "AI ও কোডিং" : "AI & Coding" },
+    { id: "ict", label: isBn ? "আইসিটি ও কোডিং" : "ICT & Coding" },
     { id: "design", label: isBn ? "ডিজাইন" : "Design" },
     { id: "web", label: isBn ? "ওয়েব" : "Web Dev" },
     { id: "marketing", label: isBn ? "মার্কেটিং" : "Marketing" },

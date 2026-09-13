@@ -85,7 +85,6 @@ function AppContent() {
 
           {/* Course Landing Pages */}
           <Route path="/courses/:slug" element={<CourseLandingPage />} />
-          <Route path="/vibe-coding" element={<CourseLandingPage />} />
 
           {/* Payments & Checkout */}
           <Route path="/pay/:invoiceId" element={<CustomCheckoutPage />} />

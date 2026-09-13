@@ -72,6 +72,7 @@ type CourseData = {
     short_description?: string;
     short_description_en?: string;
     thumbnail_url?: string;
+    banner_url?: string | null;
     price: number;
     course_type?: string;
     category?: string;
@@ -103,7 +104,7 @@ export default function CourseLandingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const params = useParams<{ slug: string }>();
-  const slugParam = params.slug || 'vibe-coding';
+  const slugParam = params.slug || 'course-hsc-chemistry-mastery';
   const isBn = language === 'bn';
 
   const [data, setData] = useState<CourseData | null>(null);
@@ -271,6 +272,7 @@ export default function CourseLandingPage() {
                 description_en: dbCourse.description_en || undefined,
                 short_description: dbCourse.description ? dbCourse.description.slice(0, 150) + "..." : undefined,
                 thumbnail_url: dbCourse.thumbnail_url || undefined,
+                banner_url: (dbCourse as any).banner_url || (dbCourse as any).hero_banner_url || undefined,
                 price: dbCourse.price || 0,
                 category: (dbCourse as any).category || matchingSeed?.category || "Professional Development",
                 trainer_name: dbCourse.trainer_name || matchingSeed?.trainer_name || "Astropixel Expert Mentors",
@@ -406,6 +408,7 @@ export default function CourseLandingPage() {
                 description_en: seeded.description_en || undefined,
                 short_description: seeded.description?.slice(0, 140) + "...",
                 thumbnail_url: seeded.thumbnail_url || undefined,
+                banner_url: (seeded as any).banner_url || (seeded as any).hero_banner_url || undefined,
                 price: seeded.price || 0,
                 category: (seeded as any).category || "Digital Skills & Programming",
                 trainer_name: seeded.trainer_name || "Astropixel Lead Mentor",
@@ -597,9 +600,19 @@ export default function CourseLandingPage() {
     );
   }
 
-  const title = (isBn && (c as any).title_bn) ? (c as any).title_bn : (c.title_en || c.title || '');
-  const desc = isBn ? c?.description : (c?.description_en || c?.description);
-  const shortDesc = isBn ? c?.short_description : (c?.short_description_en || c?.short_description);
+  const title = isBn 
+    ? ((c as any).title_bn || c.title || c.title_en || '')
+    : (c.title_en || c.title || '');
+  const desc = isBn ? (c?.description || c?.description_en) : (c?.description_en || c?.description);
+  const shortDesc = isBn ? (c?.short_description || c?.short_description_en) : (c?.short_description_en || c?.short_description);
+
+  const dummyChemistryBanner = "https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?q=80&w=1600&auto=format&fit=crop";
+  const localBanner = typeof window !== 'undefined' && c?.id ? localStorage.getItem("course_banner_" + c.id) : null;
+  const activeBannerUrl = localBanner || c?.banner_url || (c as any)?.hero_banner_url || (
+    c?.id === 'course-hsc-chemistry-mastery' || c?.landing_slug?.includes('chemistry') 
+      ? dummyChemistryBanner 
+      : (c?.thumbnail_url || dummyChemistryBanner)
+  );
   const outcomes = c?.learning_outcomes ?? [];
   const whyLearn = c?.why_learn ?? [];
   const requirements = c?.requirements ?? [
@@ -749,6 +762,26 @@ export default function CourseLandingPage() {
                   {title}
                 </span>
               </nav>
+
+              {/* Course Hero Banner Image Showcase */}
+              {activeBannerUrl && (
+                <div className="relative w-full rounded-2xl overflow-hidden border border-slate-700/60 shadow-2xl group my-3 bg-slate-900 aspect-[16/7] sm:aspect-[21/8]">
+                  <img
+                    src={activeBannerUrl}
+                    alt={title}
+                    className="w-full h-full object-cover object-center transform transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/20 to-transparent pointer-events-none" />
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs pointer-events-none">
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-500 text-slate-950 font-bold tracking-wide shadow-md">
+                      {isBn ? "অ্যাকাডেমিক স্পেশাল ব্যাচ" : "Academic Special Batch"}
+                    </span>
+                    <span className="px-2.5 py-1 rounded-full bg-slate-900/80 text-emerald-400 border border-emerald-500/30 font-medium backdrop-blur-sm">
+                      {c.category || (isBn ? "এইচএসসি ও এডমিশন" : "HSC & Admission")}
+                    </span>
+                  </div>
+                </div>
+              )}
 
               {/* Title */}
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight">

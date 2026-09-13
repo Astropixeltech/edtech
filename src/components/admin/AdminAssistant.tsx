@@ -28,7 +28,7 @@ const capabilities = [
   { icon: Database, labelBn: "Services", labelEn: "Services", color: "from-amber-500 to-orange-500" },
   { icon: MessageSquare, labelBn: "Contact & Footer", labelEn: "Contact & Footer", color: "from-sky-500 to-blue-500" },
   { icon: Zap, labelBn: "Site Settings", labelEn: "Site Settings", color: "from-red-500 to-orange-500" },
-  { icon: Sparkles, labelBn: "Vibe Coding 🎨", labelEn: "Vibe Coding 🎨", color: "from-fuchsia-500 to-pink-500" },
+  { icon: Sparkles, labelBn: "Academic Prep 📚", labelEn: "Academic Prep 📚", color: "from-fuchsia-500 to-pink-500" },
 ];
 
 interface AdminAssistantProps {

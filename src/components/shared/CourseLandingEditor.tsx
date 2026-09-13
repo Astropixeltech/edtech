@@ -17,6 +17,7 @@ export type EditorCourse = {
   title_en: string | null;
   landing_slug: string | null;
   thumbnail_url: string | null;
+  banner_url?: string | null;
   description: string | null;
   description_en: string | null;
   short_description: string | null;
@@ -79,6 +80,7 @@ export default function CourseLandingEditor({ courses, singleCourse, learnScopeO
     if (c) {
       setForm({
         ...c,
+        banner_url: c.banner_url || (typeof window !== 'undefined' ? localStorage.getItem('course_banner_' + c.id) : null) || null,
         learning_outcomes: Array.isArray(c.learning_outcomes) ? c.learning_outcomes : [],
         why_learn: Array.isArray(c.why_learn) ? c.why_learn : [],
         faqs: Array.isArray(c.faqs) ? c.faqs : [],
@@ -119,6 +121,7 @@ export default function CourseLandingEditor({ courses, singleCourse, learnScopeO
           title_en: form.title_en || null,
           landing_slug: form.landing_slug || null,
           thumbnail_url: form.thumbnail_url || null,
+          banner_url: form.banner_url || null,
           intro_video_url: form.intro_video_url || null,
           description: form.description,
           description_en: form.description_en,
@@ -166,6 +169,14 @@ export default function CourseLandingEditor({ courses, singleCourse, learnScopeO
           })),
         );
         if (insMods.error) throw insMods.error;
+      }
+
+      if (typeof window !== 'undefined') {
+        if (form.banner_url) {
+          localStorage.setItem('course_banner_' + form.id, form.banner_url);
+        } else {
+          localStorage.removeItem('course_banner_' + form.id);
+        }
       }
 
       toast.success(isBn ? 'সেভ হয়েছে' : 'Saved');
@@ -304,13 +315,93 @@ export default function CourseLandingEditor({ courses, singleCourse, learnScopeO
           </div>
 
           <div>
-            <Label>{isBn ? 'ব্যানার/থাম্বনেইল' : 'Banner / Thumbnail'}</Label>
+            <Label>{isBn ? 'কোর্স থাম্বনেইল (কার্ড প্রিভিউ)' : 'Course Thumbnail (Card Preview)'}</Label>
             <ImageUploader
               value={form.thumbnail_url ?? ''}
               onChange={(url) => update({ thumbnail_url: url })}
               folder="course-thumbnails"
               aspectRatio="video"
             />
+          </div>
+
+          {/* Course Hero Banner Editor Section */}
+          <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-50/20 dark:bg-emerald-950/10 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                  <span>{isBn ? 'কোর্স হিরো ব্যানার (Course Hero Banner)' : 'Course Hero Banner'}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-semibold">
+                    {isBn ? 'হেডার ব্যানার' : 'Header Banner'}
+                  </span>
+                </Label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {isBn 
+                    ? 'কোর্স ডিটেইলস পেজের শীর্ষে বড় প্রিমিয়াম ব্যানার ইমেজ হিসেবে প্রদর্শিত হবে।' 
+                    : 'Displays prominently at the very top of the course details page.'}
+                </p>
+              </div>
+              {form.banner_url && (
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => update({ banner_url: null })}
+                  className="text-destructive hover:bg-destructive/10 h-7 px-2 text-xs"
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-1" />
+                  {isBn ? 'রিমুভ' : 'Remove'}
+                </Button>
+              )}
+            </div>
+
+            <ImageUploader
+              value={form.banner_url ?? ''}
+              onChange={(url) => update({ banner_url: url })}
+              folder="course-banners"
+              aspectRatio="video"
+            />
+
+            <div className="space-y-1.5 pt-1">
+              <Label className="text-xs text-slate-700 dark:text-slate-300">
+                {isBn ? 'অথবা সরাসরি ব্যানার ইমেজ URL দিন' : 'Or input direct Image URL'}
+              </Label>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Input
+                  value={form.banner_url ?? ''}
+                  onChange={(e) => update({ banner_url: e.target.value })}
+                  placeholder="https://images.unsplash.com/photo-..."
+                  className="text-xs font-mono flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => update({ 
+                    banner_url: "https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?q=80&w=1600&auto=format&fit=crop" 
+                  })}
+                  className="text-xs shrink-0 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400"
+                >
+                  {isBn ? 'রসায়ন ব্যানার প্রিসেট' : 'Chemistry Preset'}
+                </Button>
+              </div>
+            </div>
+
+            {form.banner_url && (
+              <div className="mt-3 rounded-xl overflow-hidden border border-slate-700/60 shadow-md relative aspect-[21/8] bg-slate-900">
+                <img
+                  src={form.banner_url}
+                  alt="Hero Banner Preview"
+                  className="w-full h-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[11px] text-white">
+                  <span className="font-semibold truncate max-w-[70%]">{form.title || 'Course Title'}</span>
+                  <span className="px-2 py-0.5 rounded bg-emerald-500 text-slate-950 font-bold text-[10px]">
+                    {isBn ? 'লাইভ ব্যানার প্রিভিউ' : 'Live Banner Preview'}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           <div>

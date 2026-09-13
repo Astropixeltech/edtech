@@ -35,7 +35,7 @@ const translations = {
     linkedTeamProfile: 'Your profile is linked to the Team page',
     loading: 'Loading...',
     roleTitle: 'Title / Role',
-    rolePlaceholder: 'e.g. Founder, Vibe Coding Expert',
+    rolePlaceholder: 'e.g. Senior Lecturer, Physics & Math',
   },
   bn: {
     title: 'আমার প্রোফাইল',
@@ -55,7 +55,7 @@ const translations = {
     linkedTeamProfile: 'আপনার প্রোফাইল টিম পেজের সাথে লিংক করা আছে',
     loading: 'লোড হচ্ছে...',
     roleTitle: 'টাইটেল / পদবি',
-    rolePlaceholder: 'যেমন: Founder, Vibe Coding Expert',
+    rolePlaceholder: 'যেমন: সিনিয়র প্রভাষক, পদার্থ ও গণিত',
   },
 };
 

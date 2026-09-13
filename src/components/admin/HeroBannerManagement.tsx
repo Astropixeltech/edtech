@@ -49,20 +49,20 @@ const DEFAULT_SLIDES: HeroSlide[] = [
   },
   {
     id: "2",
-    image: "https://nid.edu.bd/wp-content/uploads/2024/04/Diploma-course-web-slider-01-01-scaled.jpg",
-    eyebrowBn: "AI ও ভাইব কোডিং মাস্টারি",
-    eyebrowEn: "AI & Vibe Coding Mastery",
-    title1Bn: "কোডিং ছাড়া",
-    title1En: "Build apps",
-    title2Bn: "স্মার্ট ওয়েবসাইট বানান।",
-    title2En: "without coding.",
-    title3Bn: "প্রম্পট টু প্রফেশনাল ডেভেলপমেন্ট।",
-    title3En: "Prompt to Production.",
-    subtitleBn: "AI টুলস ব্যবহার করে খুব সহজে নো-কোড ও প্রম্পট ইঞ্জিনিয়ারিংয়ের মাধ্যমে রেসপন্সিভ ওয়েবসাইট ও প্রজেক্ট বিল্ড করা শিখুন।",
-    subtitleEn: "Learn to build responsive websites & web apps using cutting-edge AI tools, no-code platforms, and prompt engineering.",
-    ctaBn: "ভাইব কোডিং কোর্স",
-    ctaEn: "Vibe Coding Course",
-    ctaHref: "/vibe-coding"
+    image: "https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?q=80&w=1200&auto=format&fit=crop",
+    eyebrowBn: "এইচএসসি রসায়ন ও বিজ্ঞান মাস্টারি",
+    eyebrowEn: "HSC Chemistry & Science Prep",
+    title1Bn: "কনসেপ্ট ক্লিয়ার",
+    title1En: "Concept First",
+    title2Bn: "বোর্ড ও এডমিশন সিকিউ সলভিং।",
+    title2En: "Master Board & Admission.",
+    title3Bn: "টপ র‍্যাঙ্কারদের মেন্টরশিপ।",
+    title3En: "Mentorship by Top Rankers.",
+    subtitleBn: "গুণগত রসায়ন, মৌলের পর্যায়বৃত্ত ধর্ম, রাসায়নিক পরিবর্তন এবং সম্পূর্ণ জৈব রসায়নের ১০০% কনসেপ্ট ক্লিয়ারিং মাস্টারক্লাস।",
+    subtitleEn: "Master Qualitative Chemistry, Periodic Properties, Chemical Changes, and Organic Chemistry with top academic mentors.",
+    ctaBn: "রসায়ন কোর্স দেখুন",
+    ctaEn: "View Chemistry Course",
+    ctaHref: "/courses/course-hsc-chemistry-mastery"
   }
 ];
 
@@ -428,7 +428,7 @@ export default function HeroBannerManagement() {
                 <Input
                   value={formData.ctaHref}
                   onChange={(e) => setFormData({ ...formData, ctaHref: e.target.value })}
-                  placeholder="#courses বা /vibe-coding"
+                  placeholder="#courses বা /courses/course-hsc-chemistry-mastery"
                 />
               </div>
             </div>

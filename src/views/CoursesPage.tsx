@@ -16,6 +16,12 @@ import { usePublicCourses } from "@/hooks/usePublicCourses";
 import { usePageContent } from "@/hooks/usePageContent";
 import CourseEnrollmentModal from "@/components/student/CourseEnrollmentModal";
 import { Course } from "@/types/lms";
+import { supabase } from "@/integrations/supabase/client";
+
+const toBengaliDigits = (val: number | string): string => {
+  const bnDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+  return String(val).replace(/\d/g, (d) => bnDigits[parseInt(d, 10)]);
+};
 
 import StatCard from "@/components/StatCard";
 import CategoryCard from "@/components/CategoryCard";
@@ -206,6 +212,70 @@ export default function CoursesPage() {
   const [isEnrollModalOpen, setIsEnrollModalOpen] = useState<boolean>(false);
   const [currentSlide, setCurrentSlide] = useState<number>(0);
 
+  // Dynamic instructors and teacher count synchronization with Admin Panel
+  const defaultTrainersList = useMemo(() => Object.entries(trainers).map(([id, t]) => ({
+    id,
+    name: t.name,
+    qualificationEn: t.qualificationEn,
+    qualificationBn: t.qualificationBn,
+    image: t.image,
+  })), []);
+
+  const [instructorsList, setInstructorsList] = useState<any[]>(defaultTrainersList);
+  const [teacherCount, setTeacherCount] = useState<number>(defaultTrainersList.length);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        // 1. Fetch custom instructors from page_content (instructors_list_json) or localStorage
+        let customInstructors: any[] | null = null;
+        const { data: pageData } = await supabase
+          .from('page_content')
+          .select('content_en')
+          .eq('page_name', 'home')
+          .eq('content_key', 'instructors_list_json')
+          .maybeSingle();
+
+        if (pageData?.content_en) {
+          try {
+            const parsed = JSON.parse(pageData.content_en);
+            if (Array.isArray(parsed) && parsed.length > 0) customInstructors = parsed;
+          } catch {}
+        }
+
+        if (!customInstructors && typeof window !== 'undefined') {
+          const local = localStorage.getItem('instructors_list_json');
+          if (local) {
+            try {
+              const parsed = JSON.parse(local);
+              if (Array.isArray(parsed) && parsed.length > 0) customInstructors = parsed;
+            } catch {}
+          }
+        }
+
+        // 2. Query total teachers count from profiles (is_teacher = true) to match Admin Panel
+        const { count: dbTeacherCount } = await supabase
+          .from('profiles')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_teacher', true);
+
+        if (!alive) return;
+
+        if (customInstructors && customInstructors.length > 0) {
+          setInstructorsList(customInstructors);
+        }
+
+        // Synchronize count: matching the teachers registered/approved in Admin Panel or configured list
+        const total = Math.max(dbTeacherCount || 0, customInstructors?.length || defaultTrainersList.length);
+        setTeacherCount(total > 0 ? total : defaultTrainersList.length);
+      } catch (e) {
+        console.warn('Teacher sync info:', e);
+      }
+    })();
+    return () => { alive = false; };
+  }, [defaultTrainersList]);
+
   // Dynamic banner slides
   const bannerSlides = useMemo(() => {
     const cmsBanners = getContent("hero_banners_json");
@@ -290,11 +360,11 @@ export default function CoursesPage() {
 
       <div className="container-fluid-2k bg-white dark:bg-background overflow-hidden">
         
-        {/* 1. HERO BANNER SECTION (Recovered EdgeCourseBD responsive heights, aligned to max-w-6xl) */}
+        {/* 1. HERO BANNER SECTION (Recovered EdgeCourseBD responsive heights, aligned to max-w-6xl with rounded radius bottom) */}
         <section 
           onMouseEnter={() => setIsSliderPaused(true)}
           onMouseLeave={() => setIsSliderPaused(false)}
-          className="relative w-full h-[250px] sm:h-[400px] md:h-[550px] 4xl:h-[700px] overflow-hidden bg-black group"
+          className="relative w-full h-[250px] sm:h-[400px] md:h-[550px] 4xl:h-[700px] overflow-hidden bg-black group rounded-b-[32px] sm:rounded-b-[40px] md:rounded-b-[48px] shadow-sm"
         >
           <AnimatePresence mode="wait">
             <motion.div
@@ -374,7 +444,7 @@ export default function CoursesPage() {
             />
             <StatCard
               icon={GraduationCap}
-              value="১৫+"
+              value={isBn ? `${toBengaliDigits(teacherCount)}+` : `${teacherCount}+`}
               label={isBn ? "অভিজ্ঞ প্রশিক্ষক" : "Expert Instructors"}
               iconBgColor="bg-amber-50 dark:bg-amber-900/20"
               iconColor="text-amber-600 dark:text-amber-400"
@@ -521,10 +591,13 @@ export default function CoursesPage() {
           </div>
         </section>
 
-        {/* 5. DARK PROMO BANNER — Academic HSC & Admission Focus */}
-        <section className="bg-[#0b1d33] text-white py-12 md:py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-12">
+        {/* 5. DARK PROMO BANNER — Academic HSC & Admission Focus with Rounded Radius Edge */}
+        <section className="py-12 md:py-16 px-4 sm:px-6 lg:px-8 bg-background">
+          <div className="max-w-6xl mx-auto rounded-[32px] sm:rounded-[40px] bg-[#0b1d33] text-white p-8 sm:p-12 md:p-16 border border-slate-800/80 shadow-2xl overflow-hidden relative">
+            <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-12 relative z-10">
               
               {/* Text & CTA */}
               <div className="order-2 space-y-5 md:order-1">
@@ -543,15 +616,15 @@ export default function CoursesPage() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 pt-1">
                   <Link
-                    to="/courses?category=admission"
-                    className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-md bg-primary hover:bg-primary/90 text-white font-semibold text-sm transition-colors shadow-md"
+                    to="/catalog?category=admission"
+                    className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-sm transition-colors shadow-md"
                   >
                     <span>{isBn ? "এডমিশন কোর্স দেখুন" : "Explore Admission Courses"}</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link
-                    to="/courses"
-                    className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-md bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition-colors border border-white/20"
+                    to="/catalog"
+                    className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition-colors border border-white/20"
                   >
                     <span>{isBn ? "সব কোর্স দেখুন" : "Browse All Courses"}</span>
                   </Link>
@@ -566,7 +639,7 @@ export default function CoursesPage() {
                   { icon: Calculator, label: isBn ? "উচ্চতর গণিত" : "Higher Math", sub: isBn ? "বোর্ড ও ভর্তি" : "Board & Admission" },
                   { icon: Stethoscope, label: isBn ? "জীববিজ্ঞান" : "Biology", sub: isBn ? "মেডিকেল প্রস্তুতি" : "Medical Prep" },
                 ].map(({ icon: Icon, label, sub }) => (
-                  <div key={label} className="rounded-xl bg-white/5 border border-white/10 p-4 flex flex-col gap-2 hover:bg-white/10 transition-colors">
+                  <div key={label} className="rounded-2xl bg-white/5 border border-white/10 p-4 flex flex-col gap-2 hover:bg-white/10 transition-colors">
                     <div className="h-9 w-9 rounded-lg bg-primary/20 flex items-center justify-center text-emerald-300">
                       <Icon className="h-5 w-5" />
                     </div>
@@ -581,6 +654,7 @@ export default function CoursesPage() {
             </div>
           </div>
         </section>
+
         {/* 6. EXPERT INSTRUCTORS (Continuous Infinite Loop with Square Images) */}
         <section className="bg-background/50 py-12 md:py-14 px-4 sm:px-6 lg:px-8 border-t border-border/60">
           <div className="max-w-6xl mx-auto space-y-8">
@@ -599,15 +673,15 @@ export default function CoursesPage() {
             {/* Continuous Infinite Marquee Scroller */}
             <div className="relative w-full overflow-hidden group/scroller py-2">
               <div className="flex gap-4 sm:gap-6 animate-marquee-sideways hover:[animation-play-state:paused]">
-                {[...Object.entries(trainers), ...Object.entries(trainers)].map(([key, t], idx) => (
+                {[...instructorsList, ...instructorsList].map((t, idx) => (
                   <div
-                    key={`${key}-${idx}`}
+                    key={`${t.id || t.name}-${idx}`}
                     className="group/inst flex w-[240px] sm:w-[260px] shrink-0 flex-col items-center text-center gap-3.5 rounded-2xl bg-card dark:bg-card/95 border border-border/80 dark:border-border/60 p-5 shadow-xs hover:shadow-md hover:-translate-y-1 hover:border-primary/50 transition-all duration-200"
                   >
                     {/* Square Image with Rounded Corners */}
                     <div className="relative w-full aspect-square max-w-[180px] overflow-hidden rounded-xl border border-border/70 bg-muted/20 group-hover/inst:border-primary/50 transition-colors shadow-xs">
                       <img
-                        src={t.image}
+                        src={t.image || t.avatar_url || instructorAtik.url}
                         alt={t.name}
                         className="h-full w-full object-cover object-top transition-transform duration-300 group-hover/inst:scale-105"
                         loading="lazy"
@@ -618,7 +692,7 @@ export default function CoursesPage() {
                         {t.name}
                       </h4>
                       <p className="text-xs text-slate-700 dark:text-slate-200 font-semibold line-clamp-2 leading-relaxed">
-                        {isBn ? t.qualificationBn : t.qualificationEn}
+                        {isBn ? (t.qualificationBn || t.roleTag || t.role) : (t.qualificationEn || t.roleTag || t.role)}
                       </p>
                     </div>
                   </div>

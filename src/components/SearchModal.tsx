@@ -26,8 +26,8 @@ const teamMembers = [
   {
     name: "Sofiullah Ahammad",
     nameBn: "সফিউল্লাহ আহাম্মদ",
-    role: "Founder, Graphics Designer, Vibe Coding Expert, Freelance Photographer",
-    roleBn: "প্রতিষ্ঠাতা, গ্রাফিক ডিজাইনার, ভাইব কোডিং এক্সপার্ট",
+    role: "Founder, Senior Academic Mentor, Creative Lead, Freelance Photographer",
+    roleBn: "প্রতিষ্ঠাতা, সিনিয়র একাডেমি মেন্টর, ক্রিয়েটিভ লিড",
     keywords: ["sofiullah", "ahammad", "atik", "founder", "graphics", "designer", "photographer", "সফিউল্লাহ", "আতিক", "ফাউন্ডার", "ডিজাইনার"]
   },
   {

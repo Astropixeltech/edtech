@@ -95,8 +95,8 @@ const DEFAULT_ABOUT_DATA: AboutPageData = {
       name: "Sofiullah Ahammad",
       roleBn: "ফাভন্ডার ও সিইও",
       roleEn: "Founder & CEO",
-      bioBn: "গ্রাফিক্স ডিজাইনার ও ভাইব কোডিং প্রাকটিশনার",
-      bioEn: "Graphic Designer & Vibe Coding Practitioner",
+      bioBn: "গ্রাফিক্স ডিজাইনার ও একাডেমি মেন্টর",
+      bioEn: "Graphic Designer & Academic Mentor",
       image: "https://nid.edu.bd/wp-content/uploads/2024/05/BBA-web-slider-01-01-01-scaled-e1753431207269.jpg"
     }
   ]

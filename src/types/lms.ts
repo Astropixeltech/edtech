@@ -42,6 +42,7 @@ export interface Course {
   description: string | null;
   description_en: string | null;
   thumbnail_url: string | null;
+  banner_url?: string | null;
   is_published: boolean;
   price: number;
   category?: string | null;
