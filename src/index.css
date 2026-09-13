@@ -18,22 +18,22 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; width: 0; heig
     --sparkles-color: #10b981;
 
     --background: 40 20% 98%;          /* #FAF9F6 - Warm Editorial Alabaster */
-    --foreground: 155 30% 12%;          /* #132219 - Deep Charcoal Green */
+    --foreground: 222 47% 11%;          /* #0F172A - Deep Crisp Obsidian Slate Black */
 
     --card: 0 0% 100%;
-    --card-foreground: 155 30% 12%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 155 30% 12%;
+    --popover-foreground: 222 47% 11%;
 
     --primary: 154 65% 19%;             /* #115233 - Deep Academic Forest Green */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 150 20% 95%;           /* #EEF4F0 - Soft Sage Neutral */
-    --secondary-foreground: 154 65% 19%;
+    --secondary-foreground: 222 47% 11%;
 
     --muted: 150 15% 94%;
-    --muted-foreground: 155 12% 45%;    /* #65776C - Balanced body neutral */
+    --muted-foreground: 215 25% 27%;    /* #334155 - High-contrast prominent neutral */
 
     --accent: 38 90% 48%;               /* #E59009 - Academic Gold / Distinction */
     --accent-foreground: 0 0% 100%;
@@ -126,24 +126,39 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; width: 0; heig
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
+    font-weight: 700;
+    color: hsl(var(--foreground));
   }
 
-  /* Bengali font styles */
+  /* Bengali typography - Bold, crisp & prominent */
   html.font-bengali body {
     font-family: var(--font-body-bn);
-  }
-
-  html.font-bengali h1 {
-    font-family: var(--font-display-bn);
-    font-weight: 300;
+    font-weight: 500;
+    color: hsl(var(--foreground));
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  html.font-bengali h2,
+  html.font-bengali h1 {
+    font-family: var(--font-display-bn);
+    font-weight: 800;
+    color: hsl(var(--foreground));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html.font-bengali h2 {
+    font-family: var(--font-subtitle-bn);
+    font-weight: 700;
+    color: hsl(var(--foreground));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   html.font-bengali h3 {
     font-family: var(--font-subtitle-bn);
-    font-weight: normal;
+    font-weight: 700;
+    color: hsl(var(--foreground));
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -151,15 +166,15 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; width: 0; heig
   /* Hero main title uses the bold display Bangla font */
   html.font-bengali [data-hero-title] {
     font-family: var(--font-display-bn) !important;
-    font-weight: 400;
+    font-weight: 800 !important;
   }
-
 
   html.font-bengali h4,
   html.font-bengali h5,
   html.font-bengali h6 {
     font-family: var(--font-subtitle-bn);
-    font-weight: normal;
+    font-weight: 700;
+    color: hsl(var(--foreground));
   }
 }
 

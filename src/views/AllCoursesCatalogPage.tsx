@@ -152,13 +152,13 @@ const AllCoursesCatalogPage = () => {
         <section className="relative pt-8 pb-10 border-b border-gray-100 dark:border-border/40 bg-gradient-to-b from-brand-50/40 via-transparent to-transparent">
           <div className="container mx-auto px-4 sm:px-6 text-center max-w-4xl">
             
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-foreground leading-tight mb-3">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white leading-tight mb-3">
               {activeCategory === "admission"
                 ? (isBn ? "এইচএসসি ও বিশ্ববিদ্যালয় ভর্তি প্রস্তুতি" : "Admission & HSC Prep")
                 : (isBn ? "আমাদের সকল একাডেমিক ও ভর্তি কোর্সসমূহ" : "Explore All Academic & Admission Courses")}
             </h1>
 
-            <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed mb-6">
+            <p className="text-slate-700 dark:text-slate-300 font-semibold text-sm sm:text-base max-w-2xl mx-auto leading-relaxed mb-6">
               {activeCategory === "admission"
                 ? (isBn ? "স্বপ্নের ক্যাম্পাসে জায়গা করে নিতে বুয়েট, ঢাবি ও মেডিকেলের অভিজ্ঞ মেন্টরদের বিশেষ এডমিশন প্রোগ্রাম।" : "Specialized admission programs designed by BUET, DU & Medical mentors.")
                 : (isBn ? "এইচএসসি বিজ্ঞান, বুয়েট-মেডিকেল ভর্তি ও এসএসসি পরীক্ষার পূর্ণাঙ্গ প্রস্তুতি এক প্ল্যাটফর্মে।" : "Comprehensive preparation for HSC Science, BUET/Medical Admission, and SSC board exams.")}
@@ -166,13 +166,13 @@ const AllCoursesCatalogPage = () => {
 
             {/* Interactive Search Bar */}
             <div className="relative max-w-xl mx-auto mb-6">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <Input
                 type="text"
                 placeholder={isBn ? "কোর্সের নাম লিখে খুঁজুন..." : "Search courses by keyword..."}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-11 pr-10 h-12 rounded-full border-gray-300 dark:border-border bg-white dark:bg-card shadow-sm text-sm focus-visible:ring-brand-500"
+                className="pl-11 pr-10 h-12 rounded-full border-gray-300 dark:border-border bg-white dark:bg-card shadow-sm text-sm font-bold text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus-visible:ring-brand-500"
               />
               {searchQuery && (
                 <button
@@ -196,7 +196,7 @@ const AllCoursesCatalogPage = () => {
                     className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all duration-200 border ${
                       isActive
                         ? "bg-brand-500 text-white border-brand-500 shadow-sm"
-                        : "bg-white dark:bg-card hover:bg-gray-50 dark:hover:bg-accent text-foreground border-gray-200 dark:border-border"
+                        : "bg-white dark:bg-card hover:bg-gray-50 dark:hover:bg-accent text-slate-900 dark:text-slate-100 border-gray-300 dark:border-border"
                     }`}
                   >
                     <Icon className="h-3.5 w-3.5" />

@@ -41,16 +41,16 @@ export const CourseStickyBar: React.FC<CourseStickyBarProps> = ({
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Course Info */}
         <div className="flex flex-col min-w-0">
-          <h4 className="text-sm sm:text-base font-bold text-foreground truncate max-w-lg">
+          <h4 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate max-w-lg">
             {title}
           </h4>
-          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            <span className="flex items-center gap-1 text-amber-500 font-bold">
-              <Star className="h-3 w-3 fill-current" />
+          <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 font-bold">
+            <span className="flex items-center gap-1 text-amber-500 font-black">
+              <Star className="h-3.5 w-3.5 fill-current" />
               <span>{rating}</span>
             </span>
             <span>•</span>
-            <span className="font-semibold text-brand-600 dark:text-brand-400">
+            <span className="font-black text-brand-600 dark:text-brand-400">
               {price > 0 ? `৳ ${price.toLocaleString()}` : (isBn ? "ফ্রি" : "Free")}
             </span>
           </div>

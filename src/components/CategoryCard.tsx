@@ -30,12 +30,12 @@ export const CategoryCard = ({
         <Icon className="h-6 w-6 sm:h-7 sm:w-7" />
       </div>
 
-      <h3 className="mt-3.5 text-xs sm:text-sm md:text-base font-bold text-center text-foreground group-hover:text-primary transition-colors leading-snug">
+      <h3 className="mt-3.5 text-xs sm:text-sm md:text-base font-extrabold text-center text-slate-900 dark:text-white group-hover:text-primary transition-colors leading-snug">
         {title}
       </h3>
 
       {count !== undefined && (
-        <span className="text-[11px] font-medium text-muted-foreground mt-1 px-2.5 py-0.5 rounded-full bg-secondary/80 border border-border/40 group-hover:border-primary/30 transition-colors">
+        <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1 px-2.5 py-0.5 rounded-full bg-secondary/80 border border-border/60 group-hover:border-primary/40 transition-colors">
           {count} টি কোর্স
         </span>
       )}

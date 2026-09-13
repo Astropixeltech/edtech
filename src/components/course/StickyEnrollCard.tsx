@@ -118,11 +118,11 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
         <div className="flex flex-1 flex-col items-center justify-center py-3 px-2 text-center">
           <div className="flex items-center gap-1.5 text-brand-600 dark:text-brand-400">
             <PlayCircle className="h-4 w-4 shrink-0" />
-            <span className="text-base font-bold leading-none text-slate-900 dark:text-white">
+            <span className="text-base font-black leading-none text-slate-900 dark:text-white">
               {totalClasses.replace(/[^0-9+]/g, '') || "২৪+"}
             </span>
           </div>
-          <span className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+          <span className="text-[11px] text-slate-700 dark:text-slate-300 font-bold mt-1">
             {isBn ? "টোটাল ক্লাস" : "Total Class"}
           </span>
         </div>
@@ -130,11 +130,11 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
         <div className="flex flex-1 flex-col items-center justify-center py-3 px-2 text-center">
           <div className="flex items-center gap-1.5 text-amber-600">
             <CheckCircle2 className="h-4 w-4 shrink-0" />
-            <span className="text-base font-bold leading-none text-slate-900 dark:text-white">
+            <span className="text-base font-black leading-none text-slate-900 dark:text-white">
               ১০+
             </span>
           </div>
-          <span className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+          <span className="text-[11px] text-slate-700 dark:text-slate-300 font-bold mt-1">
             {isBn ? "মক এক্সামস" : "Total Exam"}
           </span>
         </div>
@@ -142,11 +142,11 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
         <div className="flex flex-1 flex-col items-center justify-center py-3 px-2 text-center">
           <div className="flex items-center gap-1.5 text-sky-600">
             <FileDown className="h-4 w-4 shrink-0" />
-            <span className="text-base font-bold leading-none text-slate-900 dark:text-white">
+            <span className="text-base font-black leading-none text-slate-900 dark:text-white">
               ৫+
             </span>
           </div>
-          <span className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+          <span className="text-[11px] text-slate-700 dark:text-slate-300 font-bold mt-1">
             {isBn ? "রিসোর্স মেটেরিয়াল" : "Materials"}
           </span>
         </div>
@@ -161,10 +161,10 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
                 <Sparkles className="h-4 w-4" />
               </span>
               <div className="min-w-0">
-                <h4 className="text-xs sm:text-sm font-bold leading-tight text-slate-900 dark:text-white">
+                <h4 className="text-xs sm:text-sm font-extrabold leading-tight text-slate-900 dark:text-white">
                   {isBn ? "কোর্সের সাথে প্র্যাক্টিস বুক যুক্ত করো" : "Add Practice Books with Course"}
                 </h4>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">
+                <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 font-medium leading-snug">
                   {isBn ? "কোর্সের হ্যান্ডনোট ও প্রিন্টেড বুক (+৳ ৪৫০)" : "Handwritten notes & printed materials (+৳ 450)"}
                 </p>
               </div>
@@ -173,10 +173,10 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
             <button
               type="button"
               onClick={() => setIncludeBooks(!includeBooks)}
-              className={`shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
+              className={`shrink-0 text-xs font-bold px-3 py-1.5 rounded-full border transition-all ${
                 includeBooks
                   ? "bg-brand-500 text-white border-brand-500 shadow-sm"
-                  : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-gray-200 dark:border-border hover:border-brand-400"
+                  : "bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-gray-300 dark:border-border hover:border-brand-400"
               }`}
             >
               {includeBooks ? (isBn ? "✓ যুক্ত হয়েছে" : "✓ Added") : (isBn ? "+ যুক্ত করুন" : "+ Add Books")}
@@ -186,23 +186,23 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
 
         {/* 4. EdgeCourseBD Promo Coupon Banner */}
         <div className="rounded-xl border border-rose-100 dark:border-rose-900/40 bg-[#FFF7F6] dark:bg-rose-950/20 p-2.5 flex items-center justify-between text-xs">
-          <span className="text-gray-600 dark:text-gray-300 text-[11px]">
+          <span className="text-slate-700 dark:text-slate-300 text-[11px] font-medium">
             {isBn ? "কুপন কোড ব্যবহার করুন:" : "Use Coupon:"}{" "}
-            <span className="font-bold text-[#F04438]">&quot;ASTROPIXEL&quot;</span>
+            <span className="font-extrabold text-[#F04438]">&quot;ASTROPIXEL&quot;</span>
           </span>
-          <span className="font-bold text-[#F04438] text-[11px]">২০% ছাড়</span>
+          <span className="font-black text-[#F04438] text-[11px]">২০% ছাড়</span>
         </div>
 
         {/* Pricing Block */}
         <div className="flex items-baseline justify-between pt-1">
           <div>
-            <span className="text-xs text-gray-400 block mb-0.5">{isBn ? "টোটাল কোর্স ফি" : "Total Fee"}</span>
+            <span className="text-xs text-slate-600 dark:text-slate-400 font-bold block mb-0.5">{isBn ? "টোটাল কোর্স ফি" : "Total Fee"}</span>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl sm:text-3xl font-black text-brand-600 dark:text-brand-400">
                 {finalPrice > 0 ? `৳ ${finalPrice.toLocaleString()}` : (isBn ? "সম্পূর্ণ ফ্রি" : "Free")}
               </span>
               {regularPrice > finalPrice && finalPrice > 0 && (
-                <span className="text-xs text-gray-400 line-through">
+                <span className="text-xs text-slate-400 line-through font-medium">
                   ৳ {regularPrice.toLocaleString()}
                 </span>
               )}
@@ -217,11 +217,11 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
                 placeholder={isBn ? "প্রোমো কোড" : "Promo code"}
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
-                className="w-24 h-7 text-[11px] px-2 rounded-lg border border-gray-200 dark:border-border bg-white dark:bg-slate-900 uppercase font-medium"
+                className="w-24 h-7 text-[11px] px-2 rounded-lg border border-gray-300 dark:border-border bg-white dark:bg-slate-900 uppercase font-bold text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
               />
               <button
                 onClick={handleApplyCoupon}
-                className="h-7 px-2.5 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[11px] font-bold"
+                className="h-7 px-2.5 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[11px] font-black hover:bg-black transition-colors"
               >
                 {isBn ? "প্রয়োগ" : "Apply"}
               </button>
@@ -233,7 +233,7 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
         {isEnrolled ? (
           <button
             onClick={() => navigate(`/student/course/${courseId || ''}`)}
-            className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.99]"
+            className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.99]"
           >
             <span>{isBn ? "ক্লাসে প্রবেশ করুন (Go to Classroom)" : "Go to Classroom"}</span>
             <ArrowRight className="h-4 w-4" />
@@ -241,7 +241,7 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
         ) : (
           <button
             onClick={onEnroll}
-            className="w-full h-12 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.99]"
+            className="w-full h-12 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.99]"
           >
             <span>{finalPrice > 0 ? (isBn ? "এখনই ভর্তি হন (Buy Now)" : "Buy Now") : (isBn ? "ফ্রি শুরু করুন" : "Start Free")}</span>
             <ArrowRight className="h-4 w-4" />
@@ -249,13 +249,13 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
         )}
 
         {/* Guarantee Badge */}
-        <div className="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex items-center justify-center gap-2 text-xs text-slate-700 dark:text-slate-300 font-semibold">
           <ShieldCheck className="h-4 w-4 text-brand-500 shrink-0" />
           <span>{isBn ? "১০০% ভেরিফাইড কোর্স ও লাইফটাইম অ্যাক্সেস" : "100% Verified Course with Lifetime Access"}</span>
         </div>
 
         {/* Feature List */}
-        <div className="pt-3 border-t border-gray-100 dark:border-border/40 space-y-2 text-xs text-slate-700 dark:text-slate-300">
+        <div className="pt-3 border-t border-gray-100 dark:border-border/40 space-y-2 text-xs text-slate-800 dark:text-slate-200 font-semibold">
           <div className="flex items-center gap-2">
             <Clock className="h-3.5 w-3.5 text-brand-500 shrink-0" />
             <span>{duration} {isBn ? "অন-ডিমান্ড ফুল HD ক্লাস" : "on-demand HD video lessons"}</span>
@@ -271,10 +271,10 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
         </div>
 
         {/* Share Button */}
-        <div className="pt-2 border-t border-gray-100 dark:border-border/40 flex items-center justify-between text-xs text-gray-500">
+        <div className="pt-2 border-t border-gray-100 dark:border-border/40 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-bold">
           <button
             onClick={handleShare}
-            className="flex items-center gap-1.5 hover:text-brand-600 transition-colors font-semibold"
+            className="flex items-center gap-1.5 hover:text-brand-600 transition-colors"
           >
             <Share2 className="h-3.5 w-3.5" />
             <span>{isBn ? "বন্ধুদের সাথে শেয়ার করুন" : "Share this course"}</span>

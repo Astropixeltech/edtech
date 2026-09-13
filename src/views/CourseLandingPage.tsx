@@ -585,7 +585,7 @@ export default function CourseLandingPage() {
         <div className="container max-w-7xl mx-auto py-4 md:py-8 px-4 sm:px-6">
 
           {/* Breadcrumb Navigation */}
-          <nav className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-4 overflow-x-auto whitespace-nowrap">
+          <nav className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 font-semibold mb-4 overflow-x-auto whitespace-nowrap">
             <Link to="/" className="hover:text-brand-600 transition-colors">
               {isBn ? "হোম" : "Home"}
             </Link>
@@ -594,7 +594,7 @@ export default function CourseLandingPage() {
               {isBn ? "সকল কোর্স" : "All Courses"}
             </Link>
             <ChevronRight className="h-3 w-3 shrink-0" />
-            <span className="text-slate-800 dark:text-slate-200 font-medium truncate max-w-[200px] sm:max-w-none">
+            <span className="text-slate-900 dark:text-white font-bold truncate max-w-[200px] sm:max-w-none">
               {title}
             </span>
           </nav>
@@ -622,29 +622,29 @@ export default function CourseLandingPage() {
                 </h1>
 
                 {shortDesc && (
-                  <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                  <p className="text-sm text-slate-700 dark:text-slate-200 font-medium leading-relaxed">
                     {shortDesc}
                   </p>
                 )}
 
                 {/* Pill Stats Row */}
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 dark:bg-brand-950/40 px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 ring-1 ring-brand-100 dark:ring-brand-900/40">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 dark:bg-brand-950/40 px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-slate-100 ring-1 ring-brand-100 dark:ring-brand-900/40">
                     <Users className="h-3.5 w-3.5 text-brand-600 dark:text-brand-400 shrink-0" />
                     <span>১,৪৫০+ {isBn ? "এনরোল্ড শিক্ষার্থী" : "Enrolled Students"}</span>
                   </span>
 
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 dark:bg-brand-950/40 px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 ring-1 ring-brand-100 dark:ring-brand-900/40">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 dark:bg-brand-950/40 px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-slate-100 ring-1 ring-brand-100 dark:ring-brand-900/40">
                     <Clock className="h-3.5 w-3.5 text-brand-600 dark:text-brand-400 shrink-0" />
                     <span>{c.duration || "১২+ ঘন্টা"}</span>
                   </span>
 
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 text-xs font-bold text-brand-600 dark:text-brand-400 ring-1 ring-emerald-100 dark:ring-emerald-900/40">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 text-xs font-black text-brand-600 dark:text-brand-400 ring-1 ring-emerald-100 dark:ring-emerald-900/40">
                     <Star className="h-3.5 w-3.5 fill-current text-amber-500 shrink-0" />
                     <span>৪.৯ (১২০+ রিভিউ)</span>
                   </span>
 
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
                     <Award className="h-3.5 w-3.5 text-brand-500 shrink-0" />
                     <span>{isBn ? "ভেরিফায়েড সার্টিফিকেট" : "Verified Certificate"}</span>
                   </span>
@@ -654,14 +654,14 @@ export default function CourseLandingPage() {
               {/* Course Features / About Box (EdgeCourseBD "যা যা থাকছে") */}
               {outcomes.length > 0 && (
                 <div className="space-y-3 rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card p-5 shadow-xs">
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-brand-500" />
                     <span>{isBn ? "কোর্সে যা যা থাকছে:" : "What's Included in This Course:"}</span>
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs sm:text-sm text-slate-700 dark:text-slate-300">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-semibold">
                     {outcomes.map((out, idx) => (
                       <div key={idx} className="flex items-start gap-2">
-                        <span className="flex h-5 w-5 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 text-xs font-bold items-center justify-center shrink-0 mt-0.5">
+                        <span className="flex h-5 w-5 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 text-xs font-black items-center justify-center shrink-0 mt-0.5">
                           {idx + 1}
                         </span>
                         <span className="leading-snug">{out}</span>
@@ -673,7 +673,7 @@ export default function CourseLandingPage() {
 
               {/* EdgeCourseBD "Course Instructor" Grid Box */}
               <div className="relative my-6 space-y-4 rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card px-4 pb-6 pt-5 shadow-xs">
-                <h2 className="absolute -top-3 left-4 bg-white dark:bg-card px-2 text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                <h2 className="absolute -top-3 left-4 bg-white dark:bg-card px-2 text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
                   {isBn ? "কোর্স ইনস্ট্রাক্টরবৃন্দ" : "Course Instructors"}
                 </h2>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 pt-1">
@@ -686,16 +686,16 @@ export default function CourseLandingPage() {
                         {inst.image ? (
                           <img src={inst.image} alt={inst.name} className="h-full w-full object-cover" />
                         ) : (
-                          <span className="flex h-full w-full items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand-600 dark:bg-brand-950 dark:text-brand-300">
+                          <span className="flex h-full w-full items-center justify-center rounded-full bg-brand-50 text-xs font-black text-brand-600 dark:bg-brand-950 dark:text-brand-300">
                             {inst.initials || "AS"}
                           </span>
                         )}
                       </div>
                       <div className="min-w-0">
-                        <p className="line-clamp-1 text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">
+                        <p className="line-clamp-1 text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                           {inst.name}
                         </p>
-                        <p className="truncate text-[11px] text-gray-500 dark:text-gray-400">
+                        <p className="truncate text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                           {inst.institution || inst.designation}
                         </p>
                       </div>
@@ -712,10 +712,10 @@ export default function CourseLandingPage() {
                       key={tab.id}
                       type="button"
                       onClick={() => setActiveTab(tab.id)}
-                      className={`inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
+                      className={`inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold transition-all duration-200 ${
                         activeTab === tab.id
                           ? "bg-brand-500 text-white shadow-xs"
-                          : "text-gray-600 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-brand-950/40 hover:text-brand-600"
+                          : "text-slate-800 dark:text-slate-200 hover:bg-brand-50 dark:hover:bg-brand-950/40 hover:text-brand-600"
                       }`}
                     >
                       {isBn ? tab.labelBn : tab.labelEn}
@@ -732,22 +732,22 @@ export default function CourseLandingPage() {
                   <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card p-5 space-y-4">
                     <div className="flex items-center gap-2.5">
                       <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                      <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                      <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
                         {isBn ? "কোর্স পরিচিতি ও বিস্তারিত" : "About This Course"}
                       </h2>
                     </div>
-                    <div className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed space-y-2 whitespace-pre-line">
+                    <div className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-medium leading-relaxed space-y-2 whitespace-pre-line">
                       {desc}
                     </div>
 
                     {/* Why Learn this skill */}
                     {whyLearn.length > 0 && (
                       <div className="pt-3 border-t border-gray-100 dark:border-border/40 space-y-2">
-                        <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <h4 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                           <Target className="h-4 w-4 text-brand-500" />
                           <span>{isBn ? "এই কোর্সটি আপনার জন্য কেন জরুরি?" : "Why should you take this course?"}</span>
                         </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-300">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-800 dark:text-slate-200 font-semibold">
                           {whyLearn.map((item, idx) => (
                             <div key={idx} className="flex items-start gap-2">
                               <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
@@ -761,10 +761,10 @@ export default function CourseLandingPage() {
                     {/* Requirements & Target Audience */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-gray-100 dark:border-border/40">
                       <div className="space-y-2">
-                        <h5 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider text-brand-600 dark:text-brand-400">
+                        <h5 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider text-brand-600 dark:text-brand-400">
                           {isBn ? "প্রয়োজনীয় যোগ্যতা ও প্রস্তুতি" : "Requirements"}
                         </h5>
-                        <ul className="space-y-1 text-xs text-slate-600 dark:text-slate-300">
+                        <ul className="space-y-1 text-xs text-slate-800 dark:text-slate-200 font-semibold">
                           {requirements.map((req, i) => (
                             <li key={i} className="flex items-center gap-1.5">
                               <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
@@ -775,10 +775,10 @@ export default function CourseLandingPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <h5 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider text-brand-600 dark:text-brand-400">
+                        <h5 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider text-brand-600 dark:text-brand-400">
                           {isBn ? "কাদের জন্য এই কোর্স?" : "Who is this course for?"}
                         </h5>
-                        <ul className="space-y-1 text-xs text-slate-600 dark:text-slate-300">
+                        <ul className="space-y-1 text-xs text-slate-800 dark:text-slate-200 font-semibold">
                           {whoFor.map((target, i) => (
                             <li key={i} className="flex items-center gap-1.5">
                               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -796,10 +796,10 @@ export default function CourseLandingPage() {
                   <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card">
                     <div className="flex items-center gap-3 border-b border-cus-gray-200 dark:border-border/40 bg-gray-50/50 dark:bg-slate-900/30 px-4 py-3">
                       <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                      <h2 className="min-w-0 text-sm font-bold text-slate-900 dark:text-white sm:text-base">
+                      <h2 className="min-w-0 text-sm font-extrabold text-slate-900 dark:text-white sm:text-base">
                         {isBn ? "কোর্স কারিকুলাম ও মডিউলসমূহ" : "Course Curriculum & Lessons"}
                       </h2>
-                      <span className="ml-auto shrink-0 rounded-full bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-brand-600 dark:text-brand-400 ring-1 ring-brand-100 dark:ring-brand-900/40">
+                      <span className="ml-auto shrink-0 rounded-full bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] font-black text-brand-600 dark:text-brand-400 ring-1 ring-brand-100 dark:ring-brand-900/40">
                         {data?.modules?.length || 4} {isBn ? "টি মডিউল" : "modules"}
                       </span>
                     </div>
@@ -809,24 +809,24 @@ export default function CourseLandingPage() {
                         <AccordionItem key={m.id || idx} value={`module-${idx}`} className="px-4 border-0">
                           <AccordionTrigger className="hover:no-underline py-3.5 text-left">
                             <div className="flex items-center gap-3 min-w-0">
-                              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-50 dark:bg-brand-900/30 text-xs font-bold text-brand-600 dark:text-brand-400 shrink-0">
+                              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-50 dark:bg-brand-900/30 text-xs font-black text-brand-600 dark:text-brand-400 shrink-0">
                                 {idx + 1}
                               </span>
                               <div className="min-w-0">
-                                <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white block truncate">
+                                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white block truncate">
                                   {m.title}
                                 </span>
                                 {m.duration && (
-                                  <span className="text-[11px] text-gray-500 font-normal">
+                                  <span className="text-[11px] text-slate-600 dark:text-slate-400 font-semibold">
                                     {m.duration} • {m.lessons?.length || 4} {isBn ? "টি লেকচার" : "lessons"}
                                   </span>
                                 )}
                               </div>
                             </div>
                           </AccordionTrigger>
-                          <AccordionContent className="pb-3.5 pt-0 text-xs text-gray-600 dark:text-gray-300">
+                          <AccordionContent className="pb-3.5 pt-0 text-xs text-slate-700 dark:text-slate-300">
                             {m.description && (
-                              <p className="leading-relaxed mb-3 text-slate-600 dark:text-slate-400">{m.description}</p>
+                              <p className="leading-relaxed mb-3 text-slate-700 dark:text-slate-300 font-medium">{m.description}</p>
                             )}
 
                             {/* Detailed lesson list */}
@@ -846,14 +846,14 @@ export default function CourseLandingPage() {
                                     ) : (
                                       <Lock className="h-3.5 w-3.5 text-gray-400 shrink-0" />
                                     )}
-                                    <span className="text-xs font-medium text-slate-800 dark:text-slate-200 truncate">
+                                    <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
                                       {lesson.title}
                                     </span>
                                   </div>
 
                                   <div className="flex items-center gap-2 shrink-0">
                                     {lesson.duration && (
-                                      <span className="text-[11px] text-gray-500">
+                                      <span className="text-[11px] text-slate-600 dark:text-slate-400 font-bold">
                                         {lesson.duration}
                                       </span>
                                     )}
@@ -863,7 +863,7 @@ export default function CourseLandingPage() {
                                           setPreviewLesson(lesson);
                                           window.scrollTo({ top: 120, behavior: 'smooth' });
                                         }}
-                                        className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-50 text-brand-600 dark:bg-brand-950 dark:text-brand-400 hover:bg-brand-100 transition-colors cursor-pointer"
+                                        className="text-[10px] font-black px-2 py-0.5 rounded-full bg-brand-50 text-brand-600 dark:bg-brand-950 dark:text-brand-400 hover:bg-brand-100 transition-colors cursor-pointer"
                                       >
                                         {isBn ? "প্রিভিউ" : "Preview"}
                                       </button>
@@ -884,10 +884,10 @@ export default function CourseLandingPage() {
                   <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card">
                     <div className="flex items-center gap-3 border-b border-cus-gray-200 dark:border-border/40 bg-gray-50/50 dark:bg-slate-900/30 px-4 py-3">
                       <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                      <h2 className="min-w-0 text-sm font-bold text-slate-900 dark:text-white sm:text-base">
+                      <h2 className="min-w-0 text-sm font-extrabold text-slate-900 dark:text-white sm:text-base">
                         {isBn ? "কোর্স আউটলাইন ও গাইডলাইন" : "Course Outline & Roadmap"}
                       </h2>
-                      <span className="ml-auto shrink-0 rounded-full bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-brand-600 dark:text-brand-400 ring-1 ring-brand-100 dark:ring-brand-900/40">
+                      <span className="ml-auto shrink-0 rounded-full bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] font-black text-brand-600 dark:text-brand-400 ring-1 ring-brand-100 dark:ring-brand-900/40">
                         {outlineItems.length}
                       </span>
                     </div>
@@ -896,14 +896,14 @@ export default function CourseLandingPage() {
                       {outlineItems.map((item, idx) => (
                         <div key={idx} className="flex items-center justify-between p-4 hover:bg-gray-50/50 dark:hover:bg-slate-900/30 transition-colors">
                           <div className="flex items-center gap-3 min-w-0">
-                            <span className="flex h-7 w-7 rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-950 dark:text-brand-300 text-xs font-bold items-center justify-center shrink-0">
+                            <span className="flex h-7 w-7 rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-950 dark:text-brand-300 text-xs font-black items-center justify-center shrink-0">
                               {idx + 1}
                             </span>
-                            <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate">
+                            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
                               {item.title}
                             </span>
                           </div>
-                          <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
+                          <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold shrink-0">
                             {item.count} {isBn ? "টি রুটিন লেকচার" : "item"}
                           </span>
                         </div>
@@ -917,7 +917,7 @@ export default function CourseLandingPage() {
                   <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card p-5 space-y-4">
                     <div className="flex items-center gap-2.5">
                       <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                      <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                      <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
                         {isBn ? "অভিজ্ঞ ইনস্ট্রাক্টর ও মেন্টর প্যানেল" : "Our Expert Instructors & Mentors"}
                       </h2>
                     </div>
@@ -932,15 +932,15 @@ export default function CourseLandingPage() {
                             {inst.image ? (
                               <img src={inst.image} alt={inst.name} className="h-full w-full object-cover" />
                             ) : (
-                              <span className="flex h-full w-full items-center justify-center rounded-full bg-brand-50 text-sm font-bold text-brand-600 dark:bg-brand-950 dark:text-brand-300">
+                              <span className="flex h-full w-full items-center justify-center rounded-full bg-brand-50 text-sm font-black text-brand-600 dark:bg-brand-950 dark:text-brand-300">
                                 {inst.initials || "AS"}
                               </span>
                             )}
                           </div>
                           <div className="min-w-0">
                             <h4 className="text-sm font-bold text-slate-900 dark:text-white">{inst.name}</h4>
-                            <p className="text-xs text-brand-600 dark:text-brand-400 font-medium">{inst.institution || inst.designation}</p>
-                            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-snug">
+                            <p className="text-xs text-brand-600 dark:text-brand-400 font-bold">{inst.institution || inst.designation}</p>
+                            <p className="text-[11px] text-slate-700 dark:text-slate-300 font-medium mt-1 leading-snug">
                               {inst.bio || (isBn ? "বাস্তব কাজের অভিজ্ঞতা ও বহু শিক্ষার্থীকে গাইড করার দক্ষতাসম্পন্ন প্রশিক্ষক।" : "Experienced mentor dedicated to hands-on practical skills.")}
                             </p>
                           </div>
@@ -955,10 +955,10 @@ export default function CourseLandingPage() {
                   <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card">
                     <div className="flex items-center gap-3 border-b border-cus-gray-200 dark:border-border/40 bg-gray-50/50 dark:bg-slate-900/30 px-4 py-3">
                       <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                      <h2 className="min-w-0 text-sm font-bold text-slate-900 dark:text-white sm:text-base">
+                      <h2 className="min-w-0 text-sm font-extrabold text-slate-900 dark:text-white sm:text-base">
                         {isBn ? "মক টেস্ট ও লাইভ এক্সাম (Exam)" : "Exam & Assessment"}
                       </h2>
-                      <span className="ml-auto shrink-0 rounded-full bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-brand-600 dark:text-brand-400 ring-1 ring-brand-100 dark:ring-brand-900/40">
+                      <span className="ml-auto shrink-0 rounded-full bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] font-black text-brand-600 dark:text-brand-400 ring-1 ring-brand-100 dark:ring-brand-900/40">
                         {examItems.length}
                       </span>
                     </div>
@@ -968,11 +968,11 @@ export default function CourseLandingPage() {
                         <div key={idx} className="flex items-center justify-between p-4 hover:bg-gray-50/50 dark:hover:bg-slate-900/30 transition-colors">
                           <div className="flex items-center gap-3 min-w-0">
                             <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
-                            <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate">
+                            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
                               {item.title}
                             </span>
                           </div>
-                          <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
+                          <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold shrink-0">
                             {item.count} {isBn ? "টি টেস্ট" : "tests"}
                           </span>
                         </div>
@@ -986,10 +986,10 @@ export default function CourseLandingPage() {
                   <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card">
                     <div className="flex items-center gap-3 border-b border-cus-gray-200 dark:border-border/40 bg-gray-50/50 dark:bg-slate-900/30 px-4 py-3">
                       <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                      <h2 className="min-w-0 text-sm font-bold text-slate-900 dark:text-white sm:text-base">
+                      <h2 className="min-w-0 text-sm font-extrabold text-slate-900 dark:text-white sm:text-base">
                         {isBn ? "বই ও স্টাডি মেটেরিয়ালস (Materials)" : "Study Materials & Books"}
                       </h2>
-                      <span className="ml-auto shrink-0 rounded-full bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-brand-600 dark:text-brand-400 ring-1 ring-brand-100 dark:ring-brand-900/40">
+                      <span className="ml-auto shrink-0 rounded-full bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] font-black text-brand-600 dark:text-brand-400 ring-1 ring-brand-100 dark:ring-brand-900/40">
                         {materialItems.length}
                       </span>
                     </div>
@@ -999,11 +999,11 @@ export default function CourseLandingPage() {
                         <div key={idx} className="flex items-center justify-between p-4 hover:bg-gray-50/50 dark:hover:bg-slate-900/30 transition-colors">
                           <div className="flex items-center gap-3 min-w-0">
                             <BookOpen className="h-5 w-5 text-brand-500 shrink-0" />
-                            <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate">
+                            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
                               {item.title}
                             </span>
                           </div>
-                          <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
+                          <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold shrink-0">
                             {item.count} {isBn ? "টি ই-বুক / শিট" : "PDFs"}
                           </span>
                         </div>
@@ -1017,10 +1017,10 @@ export default function CourseLandingPage() {
                   <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card">
                     <div className="flex items-center gap-3 border-b border-cus-gray-200 dark:border-border/40 bg-gray-50/50 dark:bg-slate-900/30 px-4 py-3">
                       <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                      <h2 className="min-w-0 text-sm font-bold text-slate-900 dark:text-white sm:text-base">
+                      <h2 className="min-w-0 text-sm font-extrabold text-slate-900 dark:text-white sm:text-base">
                         {isBn ? "স্পেশাল ফ্যাক্টরস ও ফাইনাল প্রজেক্ট (X Factors)" : "X Factors & Special Topics"}
                       </h2>
-                      <span className="ml-auto shrink-0 rounded-full bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-brand-600 dark:text-brand-400 ring-1 ring-brand-100 dark:ring-brand-900/40">
+                      <span className="ml-auto shrink-0 rounded-full bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] font-black text-brand-600 dark:text-brand-400 ring-1 ring-brand-100 dark:ring-brand-900/40">
                         {xFactorItems.length}
                       </span>
                     </div>
@@ -1030,11 +1030,11 @@ export default function CourseLandingPage() {
                         <div key={idx} className="flex items-center justify-between p-4 hover:bg-gray-50/50 dark:hover:bg-slate-900/30 transition-colors">
                           <div className="flex items-center gap-3 min-w-0">
                             <Sparkles className="h-5 w-5 text-amber-500 shrink-0" />
-                            <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate">
+                            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
                               {item.title}
                             </span>
                           </div>
-                          <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
+                          <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold shrink-0">
                             {item.count} {isBn ? "টি ক্লাস" : "classes"}
                           </span>
                         </div>
@@ -1048,7 +1048,7 @@ export default function CourseLandingPage() {
                   <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card">
                     <div className="flex items-center gap-3 border-b border-cus-gray-200 dark:border-border/40 bg-gray-50/50 dark:bg-slate-900/30 px-4 py-3">
                       <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                      <h2 className="min-w-0 text-sm font-bold text-slate-900 dark:text-white sm:text-base">
+                      <h2 className="min-w-0 text-sm font-extrabold text-slate-900 dark:text-white sm:text-base">
                         {isBn ? "সাধারণ জিজ্ঞাসা (Frequently Asked Questions)" : "Frequently Asked Questions"}
                       </h2>
                     </div>
@@ -1056,13 +1056,13 @@ export default function CourseLandingPage() {
                     <Accordion type="single" collapsible className="divide-y divide-cus-gray-200 dark:divide-border/40">
                       {faqs.map((faq, idx) => (
                         <AccordionItem key={idx} value={`faq-${idx}`} className="px-4 border-0">
-                          <AccordionTrigger className="hover:no-underline py-3.5 text-left text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">
+                          <AccordionTrigger className="hover:no-underline py-3.5 text-left text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                             <div className="flex items-center gap-2.5">
                               <HelpCircle className="h-4 w-4 text-brand-500 shrink-0" />
                               <span>{faq.question}</span>
                             </div>
                           </AccordionTrigger>
-                          <AccordionContent className="pb-3.5 pt-0 text-xs text-gray-600 dark:text-gray-300 leading-relaxed pl-6">
+                          <AccordionContent className="pb-3.5 pt-0 text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed pl-6">
                             {faq.answer}
                           </AccordionContent>
                         </AccordionItem>
@@ -1084,11 +1084,11 @@ export default function CourseLandingPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
                         <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                        <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
                           {isBn ? "শিক্ষার্থীদের প্রতিক্রিয়া ও মতামত" : "Student Reviews & Feedback"}
                         </h2>
                       </div>
-                      <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
+                      <div className="flex items-center gap-1 text-xs font-black text-amber-500">
                         <Star className="h-4 w-4 fill-current" />
                         <span>৪.৯ / ৫.০ (১২০+ রিভিউ)</span>
                       </div>
@@ -1106,14 +1106,14 @@ export default function CourseLandingPage() {
                                 <Star key={rIdx} className="h-3 w-3 fill-current" />
                               ))}
                             </div>
-                            <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed italic">
+                            <p className="text-xs text-slate-800 dark:text-slate-200 leading-relaxed font-medium italic">
                               &ldquo;{rev.comment}&rdquo;
                             </p>
                           </div>
 
                           <div className="pt-2 border-t border-gray-100 dark:border-border/40">
-                            <p className="text-xs font-bold text-slate-900 dark:text-white">{rev.name}</p>
-                            <p className="text-[10px] text-gray-500">{rev.role} • {rev.batch}</p>
+                            <p className="text-xs font-extrabold text-slate-900 dark:text-white">{rev.name}</p>
+                            <p className="text-[10px] text-slate-600 dark:text-slate-400 font-semibold">{rev.role} • {rev.batch}</p>
                           </div>
                         </div>
                       ))}
@@ -1127,7 +1127,7 @@ export default function CourseLandingPage() {
               <section className="overflow-hidden rounded-2xl border border-cus-gray-200 dark:border-border/60 bg-white dark:bg-card shadow-xs">
                 <div className="flex items-center gap-3 border-b border-cus-gray-200 dark:border-border/40 bg-gray-50/50 dark:bg-slate-900/30 px-4 py-3">
                   <span aria-hidden="true" className="h-5 w-1 shrink-0 rounded-full bg-brand-500"></span>
-                  <h2 className="min-w-0 text-sm font-bold text-slate-900 dark:text-white sm:text-base">
+                  <h2 className="min-w-0 text-sm font-extrabold text-slate-900 dark:text-white sm:text-base">
                     {isBn ? "বই ও এক্সাম কোর্সের জন্য ভিজিট করো" : "Visit for Books & Exam Batches"}
                   </h2>
                 </div>
@@ -1143,10 +1143,10 @@ export default function CourseLandingPage() {
                         QNA
                       </div>
                       <div>
-                        <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                        <p className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">
                           {isBn ? "QNA Publication — বই কিনতে ভিজিট করো" : "QNA Publication — Buy Hardcopy Books"}
                         </p>
-                        <p className="text-[11px] text-gray-500">
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 font-semibold">
                           {isBn ? "সকল অধ্যায়ভিত্তিক অ্যানালাইসিস ও প্রিন্টেড বুক" : "Chapter-wise analysis books"}
                         </p>
                       </div>
@@ -1165,10 +1165,10 @@ export default function CourseLandingPage() {
                         QZ
                       </div>
                       <div>
-                        <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                        <p className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">
                           {isBn ? "QZ Test Exam — অনলাইন টেস্ট ও এক্সাম ব্যাচ" : "QZ Test Exam — Online Exam Batches"}
                         </p>
-                        <p className="text-[11px] text-gray-500">
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 font-semibold">
                           {isBn ? "হাজারো শিক্ষার্থীর সাথে রিয়েল-টাইম মেধা যাচাই" : "Real-time national ranking exams"}
                         </p>
                       </div>

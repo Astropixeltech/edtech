@@ -393,10 +393,10 @@ export default function CoursesPage() {
         <section className="bg-white dark:bg-background py-12 md:py-14 px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col items-center gap-2 text-center mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
                 {isBn ? "কোর্স ক্যাটাগরি বেছে নিন" : "Explore Course Categories"}
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md">
+              <p className="text-sm text-slate-700 dark:text-slate-300 font-semibold max-w-md">
                 {isBn ? "এইচএসসি, ভর্তি ও মাধ্যমিকের সেরা একাডেমিক প্রস্তুতি" : "Top academic preparation for HSC, Admissions & Board Exams"}
               </p>
             </div>
@@ -474,10 +474,10 @@ export default function CoursesPage() {
         <section id="courses" className="py-12 md:py-14 bg-background/50 border-t border-gray-100 dark:border-border/40 px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto space-y-6">
             <div className="flex flex-col items-center gap-2 text-center">
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
                 {isBn ? "জনপ্রিয় কোর্সসমূহ" : "Popular Courses"}
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-slate-700 dark:text-slate-300 font-semibold">
                 {isBn ? "হাতে-কলমে প্রজেক্ট করে শেখার সেরা মাধ্যম" : "Hands-on, practical skill-building courses"}
               </p>
             </div>
@@ -488,10 +488,10 @@ export default function CoursesPage() {
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
                     activeCategory === cat.id
                       ? "bg-brand-500 text-white shadow-sm"
-                      : "bg-white dark:bg-card text-foreground border border-gray-200 dark:border-border hover:bg-gray-50 dark:hover:bg-accent"
+                      : "bg-white dark:bg-card text-slate-900 dark:text-slate-100 border border-gray-300 dark:border-border hover:bg-gray-50 dark:hover:bg-accent"
                   }`}
                 >
                   {cat.label}
@@ -586,13 +586,13 @@ export default function CoursesPage() {
         <section className="bg-background/50 py-12 md:py-14 px-4 sm:px-6 lg:px-8 border-t border-border/60">
           <div className="max-w-6xl mx-auto space-y-8">
             <div className="flex flex-col items-center gap-2 text-center max-w-xl mx-auto">
-              <span className="text-xs font-bold uppercase tracking-wider text-primary">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-primary">
                 {isBn ? "শীর্ষ ফ্যাকাল্টি" : "Top Faculty"}
               </span>
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
                 {isBn ? "দেশসেরা প্রশিক্ষকদের প্যানেল" : "Expert Instructors"}
               </h2>
-              <p className="text-xs sm:text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-semibold">
                 {isBn ? "বুয়েট, মেডিকেল ও শীর্ষ বিশ্ববিদ্যালয়ের অভিজ্ঞ মেন্টরদের সাথে সরাসরি প্রস্তুতি" : "Learn directly from top engineering & medical mentors"}
               </p>
             </div>
@@ -615,10 +615,10 @@ export default function CoursesPage() {
                       />
                     </div>
                     <div className="w-full space-y-1">
-                      <h4 className="text-sm font-bold text-foreground group-hover/inst:text-primary transition-colors">
+                      <h4 className="text-sm font-extrabold text-slate-900 dark:text-white group-hover/inst:text-primary transition-colors">
                         {t.name}
                       </h4>
-                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold line-clamp-2 leading-relaxed">
                         {isBn ? t.qualificationBn : t.qualificationEn}
                       </p>
                     </div>
@@ -633,13 +633,13 @@ export default function CoursesPage() {
         <section className="bg-background py-12 md:py-14 px-4 sm:px-6 lg:px-8 border-t border-border/60">
           <div className="max-w-6xl mx-auto space-y-8">
             <div className="flex flex-col items-center gap-2 text-center max-w-xl mx-auto">
-              <span className="text-xs font-bold uppercase tracking-wider text-primary">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-primary">
                 {isBn ? "সফলতার গল্প" : "Success Stories"}
               </span>
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
                 {isBn ? "শিক্ষার্থীদের সাফল্যের অভিজ্ঞতা" : "What Our Rankers Say"}
               </h2>
-              <p className="text-xs sm:text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-semibold">
                 {isBn ? "বুয়েট, মেডিকেল ও ঢাবিতে চান্সপ্রাপ্ত শিক্ষার্থীদের বাস্তব প্রতিক্রিয়া" : "Verified testimonials from students admitted into premier universities"}
               </p>
             </div>
@@ -652,20 +652,20 @@ export default function CoursesPage() {
                   className="space-y-4 rounded-2xl bg-card dark:bg-card/95 border border-border/80 dark:border-border/60 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/40 transition-all duration-200 flex flex-col justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-11 w-11 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-sm shrink-0 shadow-none">
+                    <div className="h-11 w-11 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-black text-sm shrink-0 shadow-none">
                       {(isBn ? rev.nameBn : rev.nameEn)[0]}
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-foreground">
+                      <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">
                         {isBn ? rev.nameBn : rev.nameEn}
                       </h4>
-                      <p className="text-xs text-muted-foreground font-medium">
+                      <p className="text-xs text-slate-700 dark:text-slate-300 font-bold">
                         {isBn ? rev.roleBn : rev.roleEn}
                       </p>
                     </div>
                   </div>
 
-                  <p className="text-xs sm:text-sm text-foreground/80 leading-relaxed italic flex-1">
+                  <p className="text-xs sm:text-sm text-slate-900 dark:text-slate-100 font-medium leading-relaxed italic flex-1">
                     "{isBn ? rev.quoteBn : rev.quoteEn}"
                   </p>
 

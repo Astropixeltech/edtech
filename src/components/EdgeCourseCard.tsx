@@ -63,19 +63,19 @@ export const EdgeCourseCard = ({ course, onEnroll, className }: EdgeCourseCardPr
       <div className="flex flex-col flex-1 justify-between p-5 space-y-4">
         <div className="space-y-2.5">
           <Link to={targetLink} className="block group-hover:text-primary transition-colors">
-            <h4 className="text-sm sm:text-[15px] font-bold text-foreground line-clamp-2 min-h-[2.5rem] leading-snug">
+            <h4 className="text-sm sm:text-[15px] font-extrabold text-slate-900 dark:text-white line-clamp-2 min-h-[2.5rem] leading-snug">
               {displayTitle}
             </h4>
           </Link>
 
           {course.instructor_name && (
-            <p className="text-xs text-muted-foreground truncate">
+            <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
               {isBn ? "প্রশিক্ষক: " : "Instructor: "}
-              <span className="font-semibold text-foreground/90">{course.instructor_name}</span>
+              <span className="font-bold text-slate-900 dark:text-slate-100">{course.instructor_name}</span>
             </p>
           )}
 
-          <div className="flex items-center gap-3 text-[11px] text-muted-foreground font-medium pt-1">
+          <div className="flex items-center gap-3 text-[11px] text-slate-700 dark:text-slate-300 font-bold pt-1">
             {course.total_enrolled !== undefined && (
               <span className="flex items-center gap-1">
                 <Users className="h-3.5 w-3.5 text-primary" />
@@ -94,15 +94,15 @@ export const EdgeCourseCard = ({ course, onEnroll, className }: EdgeCourseCardPr
         {/* Footer Row: Price and Enroll CTA */}
         <div className="flex items-center justify-between pt-3.5 border-t border-border/70 mt-auto gap-2">
           <div className="flex flex-col min-w-0">
-            <span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">
+            <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 tracking-wider">
               {isBn ? "কোর্স ফি" : "Course Fee"}
             </span>
             <div className="flex items-baseline gap-1.5 flex-wrap">
-              <span className="text-base font-extrabold text-primary">
+              <span className="text-base sm:text-lg font-black text-primary">
                 {price > 0 ? `৳ ${price.toLocaleString()}` : (isBn ? "ফ্রি" : "Free")}
               </span>
               {course.sale_price !== undefined && course.sale_price !== null && course.price && course.price > course.sale_price && (
-                <span className="text-xs text-muted-foreground line-through">
+                <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold line-through">
                   ৳ {course.price.toLocaleString()}
                 </span>
               )}

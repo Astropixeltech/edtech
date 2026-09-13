@@ -92,10 +92,10 @@ const CoursesNavbar = () => {
             {/* Home */}
             <Link
               to="/"
-              className={`relative px-3.5 py-1.5 text-xs lg:text-sm font-bold rounded-full transition-colors ${
+              className={`relative px-3.5 py-1.5 text-xs lg:text-sm font-extrabold rounded-full transition-colors ${
                 location.pathname === "/"
-                  ? "text-brand-600 dark:text-brand-400 bg-brand-50/70 dark:bg-brand-900/30"
-                  : "text-foreground/80 hover:text-brand-600 hover:bg-black/5 dark:hover:bg-white/5"
+                  ? "text-brand-600 dark:text-brand-400 bg-brand-50/80 dark:bg-brand-900/30"
+                  : "text-slate-900 dark:text-slate-100 hover:text-brand-600 hover:bg-black/5 dark:hover:bg-white/5"
               }`}
             >
               {isBn ? "হোম" : "Home"}
@@ -104,10 +104,10 @@ const CoursesNavbar = () => {
             {/* Courses */}
             <Link
               to="/courses"
-              className={`relative px-3.5 py-1.5 text-xs lg:text-sm font-bold rounded-full transition-colors ${
+              className={`relative px-3.5 py-1.5 text-xs lg:text-sm font-extrabold rounded-full transition-colors ${
                 isCoursesActive
-                  ? "text-brand-600 dark:text-brand-400 bg-brand-50/70 dark:bg-brand-900/30"
-                  : "text-foreground/80 hover:text-brand-600 hover:bg-black/5 dark:hover:bg-white/5"
+                  ? "text-brand-600 dark:text-brand-400 bg-brand-50/80 dark:bg-brand-900/30"
+                  : "text-slate-900 dark:text-slate-100 hover:text-brand-600 hover:bg-black/5 dark:hover:bg-white/5"
               }`}
             >
               {isBn ? "কোর্সসমূহ" : "Courses"}
@@ -116,10 +116,10 @@ const CoursesNavbar = () => {
             {/* Admission */}
             <Link
               to="/courses?category=admission"
-              className={`relative px-3.5 py-1.5 text-xs lg:text-sm font-bold rounded-full transition-colors ${
+              className={`relative px-3.5 py-1.5 text-xs lg:text-sm font-extrabold rounded-full transition-colors ${
                 isAdmissionActive
-                  ? "text-brand-600 dark:text-brand-400 bg-brand-50/70 dark:bg-brand-900/30"
-                  : "text-foreground/80 hover:text-brand-600 hover:bg-black/5 dark:hover:bg-white/5"
+                  ? "text-brand-600 dark:text-brand-400 bg-brand-50/80 dark:bg-brand-900/30"
+                  : "text-slate-900 dark:text-slate-100 hover:text-brand-600 hover:bg-black/5 dark:hover:bg-white/5"
               }`}
             >
               <span className="flex items-center gap-1">
@@ -133,10 +133,10 @@ const CoursesNavbar = () => {
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className={`group relative flex items-center gap-1 px-3.5 py-1.5 text-xs lg:text-sm font-bold rounded-full outline-none transition-colors ${
+                  className={`group relative flex items-center gap-1 px-3.5 py-1.5 text-xs lg:text-sm font-extrabold rounded-full outline-none transition-colors ${
                     isToolsActive
-                      ? "text-brand-600 dark:text-brand-400 bg-brand-50/70 dark:bg-brand-900/30"
-                      : "text-foreground/80 hover:text-brand-600 hover:bg-black/5 dark:hover:bg-white/5"
+                      ? "text-brand-600 dark:text-brand-400 bg-brand-50/80 dark:bg-brand-900/30"
+                      : "text-slate-900 dark:text-slate-100 hover:text-brand-600 hover:bg-black/5 dark:hover:bg-white/5"
                   }`}
                 >
                   <span>{isBn ? "টুলস ও রিসোর্স" : "Tools & Free"}</span>
@@ -145,19 +145,19 @@ const CoursesNavbar = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="center" className="w-56 bg-white/95 dark:bg-card/95 backdrop-blur-xl shadow-xl border border-border/50 rounded-2xl p-1.5 animate-in fade-in-50 zoom-in-95">
                 <DropdownMenuItem asChild>
-                  <Link to="/free-resources" className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-xl hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-900/20 cursor-pointer">
+                  <Link to="/free-resources" className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-slate-900 dark:text-slate-100 rounded-xl hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-900/20 cursor-pointer">
                     <BookOpen className="h-4 w-4 text-brand-500" />
                     <span>{isBn ? "ফ্রি রিসোর্স ও নোটস" : "Free Resources & Notes"}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/eligibility-calculator" className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-xl hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-900/20 cursor-pointer">
+                  <Link to="/eligibility-calculator" className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-slate-900 dark:text-slate-100 rounded-xl hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-900/20 cursor-pointer">
                     <BadgeCheck className="h-4 w-4 text-brand-500" />
                     <span>{isBn ? "যোগ্যতা যাচাই ক্যালকুলেটর" : "Eligibility Calculator"}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/syllabus-calculator" className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-xl hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-900/20 cursor-pointer">
+                  <Link to="/syllabus-calculator" className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-slate-900 dark:text-slate-100 rounded-xl hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-900/20 cursor-pointer">
                     <ListChecks className="h-4 w-4 text-brand-500" />
                     <span>{isBn ? "সিলেবাস শেষ হইসে ট্র্যাকার" : "Syllabus Tracker"}</span>
                   </Link>
@@ -170,10 +170,10 @@ const CoursesNavbar = () => {
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className={`group relative flex items-center gap-1 px-3.5 py-1.5 text-xs lg:text-sm font-bold rounded-full outline-none transition-colors ${
+                  className={`group relative flex items-center gap-1 px-3.5 py-1.5 text-xs lg:text-sm font-extrabold rounded-full outline-none transition-colors ${
                     isCompanyActive
-                      ? "text-brand-600 dark:text-brand-400 bg-brand-50/70 dark:bg-brand-900/30"
-                      : "text-foreground/80 hover:text-brand-600 hover:bg-black/5 dark:hover:bg-white/5"
+                      ? "text-brand-600 dark:text-brand-400 bg-brand-50/80 dark:bg-brand-900/30"
+                      : "text-slate-900 dark:text-slate-100 hover:text-brand-600 hover:bg-black/5 dark:hover:bg-white/5"
                   }`}
                 >
                   <span>{isBn ? "কোম্পানি" : "Company"}</span>
@@ -204,10 +204,10 @@ const CoursesNavbar = () => {
             {mounted && (
               <button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="hidden sm:flex items-center justify-center h-8 w-8 rounded-full border border-border/60 text-foreground/80 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                className="hidden sm:flex items-center justify-center h-8 w-8 rounded-full border border-border/60 text-slate-900 dark:text-slate-100 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                 aria-label="Toggle Theme"
               >
-                {theme === "dark" ? <Sun className="h-3.5 w-3.5 text-amber-400" /> : <Moon className="h-3.5 w-3.5 text-slate-600" />}
+                {theme === "dark" ? <Sun className="h-3.5 w-3.5 text-amber-400" /> : <Moon className="h-3.5 w-3.5 text-slate-900" />}
               </button>
             )}
 
@@ -225,10 +225,10 @@ const CoursesNavbar = () => {
                         {(profile?.full_name || user.email || "U").charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="hidden sm:inline-block max-w-[90px] truncate text-xs font-bold text-foreground">
+                    <span className="hidden sm:inline-block max-w-[90px] truncate text-xs font-extrabold text-slate-900 dark:text-slate-100">
                       {profile?.full_name || user.email?.split("@")[0]}
                     </span>
-                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                    <ChevronDown className="h-3 w-3 text-slate-700 dark:text-slate-300" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 bg-white/95 dark:bg-card/95 backdrop-blur-xl shadow-xl border border-border/50 rounded-2xl p-2 animate-in fade-in-50 zoom-in-95">
@@ -301,7 +301,7 @@ const CoursesNavbar = () => {
               type="button"
               aria-label="Menu"
               onClick={() => setIsMobileOpen(true)}
-              className="block cursor-pointer lg:hidden text-foreground/80 hover:text-brand-600 p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5"
+              className="block cursor-pointer lg:hidden text-slate-900 dark:text-slate-100 hover:text-brand-600 p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5"
             >
               <Menu className="h-5 w-5" />
             </button>
