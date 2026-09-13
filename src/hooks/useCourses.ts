@@ -226,30 +226,14 @@ export function useStudentCourses() {
           ? dbVideos.filter((v: Video) => v.course_id === course.id)
           : (fallbackCourse?.videos || []);
 
-        let lastCompletedIndex = -1;
-        const videosWithProgress: VideoWithProgress[] = courseVideos.map((video: Video, index: number) => {
+        const videosWithProgress: VideoWithProgress[] = courseVideos.map((video: Video) => {
           const progress = progressMap.get(video.id);
-          const isCompleted = progress?.is_completed || false;
-          if (isCompleted) lastCompletedIndex = index;
-
-          const isLocked = index > 0 && lastCompletedIndex < index - 1;
           return {
             ...video,
             progress,
-            is_locked: isLocked,
+            is_locked: false,
           };
         });
-
-        // First video is always unlocked
-        if (videosWithProgress.length > 0) {
-          videosWithProgress[0].is_locked = false;
-        }
-
-        // Recalculate locks sequentially
-        for (let i = 1; i < videosWithProgress.length; i++) {
-          const prevVideo = videosWithProgress[i - 1];
-          videosWithProgress[i].is_locked = !prevVideo.progress?.is_completed;
-        }
 
         const completedCount = videosWithProgress.filter(v => v.progress?.is_completed).length;
         const totalVideos = videosWithProgress.length;
@@ -275,7 +259,7 @@ export function useStudentCourses() {
         progress_percent: 0,
         is_completed: false,
         total_videos: c.videos.length,
-        videos: c.videos.map((v, i) => ({ ...v, is_locked: i > 0 })),
+        videos: c.videos.map((v) => ({ ...v, is_locked: false })),
       }));
       setCourses(fallbackList);
     } finally {

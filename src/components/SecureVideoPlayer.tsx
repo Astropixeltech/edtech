@@ -5,8 +5,12 @@ import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
 import {
   Play, Pause, Volume2, VolumeX, Maximize, Minimize,
-  SkipBack, CheckCircle, Loader2, Settings
+  SkipBack, CheckCircle, Loader2, Settings,
+  RotateCcw, RotateCw, PictureInPicture2, Keyboard, HelpCircle, Check
 } from 'lucide-react';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
+} from '@/components/ui/dialog';
 import { getLocalVideoProgress, saveLocalVideoProgress } from '@/lib/localStorageData';
 
 // Declare global YT types
@@ -82,6 +86,22 @@ function YouTubeCustomPlayer({
   const [showIntro, setShowIntro] = useState(autoPlay);
   const [thresholdNotified, setThresholdNotified] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
+
+  // Advanced Player UX states
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [hoverTime, setHoverTime] = useState<number | null>(null);
+  const [hoverPercent, setHoverPercent] = useState<number>(0);
+  const [rippleSide, setRippleSide] = useState<'left' | 'right' | null>(null);
+  const rippleTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const lastClickTimeRef = useRef(0);
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const triggerRipple = (side: 'left' | 'right') => {
+    setRippleSide(side);
+    if (rippleTimerRef.current) clearTimeout(rippleTimerRef.current);
+    rippleTimerRef.current = setTimeout(() => setRippleSide(null), 500);
+  };
 
   const hideControlsTimer = useRef<ReturnType<typeof setTimeout>>();
 
@@ -289,21 +309,34 @@ function YouTubeCustomPlayer({
   const handleSeek = (value: number[]) => {
     const p = playerRef.current;
     if (!p) return;
-    const seekTo = value[0];
-    if (isCompleted) { p.seekTo(seekTo, true); setCurrentTime(seekTo); return; }
-    if (seekTo > highestWatched + 2) {
-      toast.error('আপনি এখনো এই অংশ পর্যন্ত দেখেননি');
-      p.seekTo(highestWatched, true);
-      return;
-    }
+    const seekTo = Math.max(0, Math.min(value[0], duration || Infinity));
     p.seekTo(seekTo, true);
     setCurrentTime(seekTo);
+    if (seekTo > highestWatched) setHighestWatched(seekTo);
+    saveProgress(seekTo, isCompleted);
   };
 
   const skipBack = () => {
     const p = playerRef.current;
     if (!p) return;
-    p.seekTo(Math.max(0, (p.getCurrentTime() || 0) - 10), true);
+    const ct = p.getCurrentTime?.() || currentTime || 0;
+    const target = Math.max(0, ct - 10);
+    p.seekTo(target, true);
+    setCurrentTime(target);
+    triggerRipple('left');
+    showHud('-10s');
+  };
+
+  const skipForward = () => {
+    const p = playerRef.current;
+    if (!p) return;
+    const ct = p.getCurrentTime?.() || currentTime || 0;
+    const target = Math.min(duration || Infinity, ct + 10);
+    p.seekTo(target, true);
+    setCurrentTime(target);
+    if (target > highestWatched) setHighestWatched(target);
+    triggerRipple('right');
+    showHud('+10s');
   };
 
   const toggleMute = () => {
@@ -320,14 +353,24 @@ function YouTubeCustomPlayer({
     setIsMuted(value[0] === 0);
   };
 
+  const setSpecificSpeed = (rate: number) => {
+    const p = playerRef.current;
+    if (!p) return;
+    p.setPlaybackRate(rate);
+    setPlaybackRate(rate);
+    setShowSpeedMenu(false);
+    showHud(`${rate}x`);
+  };
+
   const changePlaybackRate = () => {
     const p = playerRef.current;
     if (!p) return;
-    const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+    const rates = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
     const idx = rates.indexOf(playbackRate);
     const next = rates[(idx + 1) % rates.length];
     p.setPlaybackRate(next);
     setPlaybackRate(next);
+    showHud(`${next}x`);
   };
 
   const toggleFullscreen = async () => {
@@ -378,21 +421,11 @@ function YouTubeCustomPlayer({
       }
       else if (e.key === 'ArrowLeft' || key === 'j') {
         e.preventDefault();
-        const ct = p.getCurrentTime() || 0;
-        p.seekTo(Math.max(0, ct - 10), true);
-        showHud('-10s');
+        skipBack();
       }
       else if (e.key === 'ArrowRight' || key === 'l') {
         e.preventDefault();
-        const ct = p.getCurrentTime() || 0;
-        const target = ct + 10;
-        if (!isCompleted && target > highestWatched + 2) {
-          toast.error('আপনি এখনো এই অংশ পর্যন্ত দেখেননি');
-          p.seekTo(highestWatched, true);
-        } else {
-          p.seekTo(target, true);
-          showHud('+10s');
-        }
+        skipForward();
       }
       else if (key === 'm') {
         e.preventDefault();
@@ -491,8 +524,22 @@ function YouTubeCustomPlayer({
       {/* YouTube Player (hidden controls) */}
       <div ref={iframeHolderRef} className="w-full h-full absolute inset-0 pointer-events-none" />
 
-      {/* Overlay to capture clicks (prevents YouTube controls) */}
-      <div className="absolute inset-0 z-10" onClick={togglePlay} />
+      {/* Overlay to capture clicks (double click to seek, single click to play/pause) */}
+      <div className="absolute inset-0 z-10" onClick={handlePlayerAreaClick} />
+
+      {/* Skip Ripples */}
+      {rippleSide === 'left' && (
+        <div className="absolute left-8 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-1 bg-black/75 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/20 pointer-events-none animate-in fade-in zoom-in-90 duration-200">
+          <RotateCcw className="w-6 h-6 text-white" />
+          <span className="text-xs font-extrabold text-white">-10s</span>
+        </div>
+      )}
+      {rippleSide === 'right' && (
+        <div className="absolute right-8 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-1 bg-black/75 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/20 pointer-events-none animate-in fade-in zoom-in-90 duration-200">
+          <RotateCw className="w-6 h-6 text-white" />
+          <span className="text-xs font-extrabold text-white">+10s</span>
+        </div>
+      )}
 
       {/* Center Play Button */}
       {!isPlaying && !isLoading && !showIntro && playerReady && (
@@ -512,28 +559,74 @@ function YouTubeCustomPlayer({
 
       {/* Controls */}
       <div className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-3 md:p-4 transition-opacity duration-300 z-30 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <div className="mb-2 md:mb-3">
-          <Slider value={[currentTime]} max={duration || 100} step={0.1} onValueChange={handleSeek} className="cursor-pointer" />
-          {!isCompleted && highestWatched > 0 && duration > 0 && (
-            <div className="relative h-0.5 -mt-2 mb-2 pointer-events-none">
-              <div className="absolute h-full bg-emerald-500/40 rounded" style={{ width: `${(highestWatched / duration) * 100}%` }} />
+        <div 
+          className="mb-2 md:mb-3 relative group/slider"
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+            setHoverPercent(pct * 100);
+            setHoverTime(pct * (duration || 0));
+          }}
+          onMouseLeave={() => setHoverTime(null)}
+        >
+          {hoverTime !== null && (
+            <div 
+              className="absolute -top-7 px-2 py-0.5 rounded bg-black/90 border border-white/20 text-[10px] text-white font-mono pointer-events-none -translate-x-1/2 shadow-lg z-50"
+              style={{ left: `${hoverPercent}%` }}
+            >
+              {formatTime(hoverTime)}
             </div>
           )}
+          <Slider value={[currentTime]} max={duration || 100} step={0.1} onValueChange={handleSeek} className="cursor-pointer" />
         </div>
 
         <div className="flex items-center gap-1 md:gap-2 text-white">
-          <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 text-white hover:bg-white/20" onClick={togglePlay}>
+          <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 text-white hover:bg-white/20" onClick={togglePlay} title={isPlaying ? "Pause (Space/K)" : "Play (Space/K)"}>
             {isPlaying ? <Pause className="w-3.5 h-3.5 md:w-4 md:h-4" /> : <Play className="w-3.5 h-3.5 md:w-4 md:h-4" />}
           </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 text-white hover:bg-white/20" onClick={skipBack}>
-            <SkipBack className="w-3.5 h-3.5 md:w-4 md:h-4" />
+
+          <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 text-white hover:bg-white/20 relative group" onClick={skipBack} title="Rewind 10s (J/←)">
+            <RotateCcw className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            <span className="absolute -bottom-1 text-[8px] font-bold text-white/70">10</span>
           </Button>
-          <span className="text-[10px] md:text-xs tabular-nums">{formatTime(currentTime)} / {formatTime(duration)}</span>
+
+          <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 text-white hover:bg-white/20 relative group" onClick={skipForward} title="Forward 10s (L/→)">
+            <RotateCw className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            <span className="absolute -bottom-1 text-[8px] font-bold text-white/70">10</span>
+          </Button>
+
+          <span className="text-[10px] md:text-xs tabular-nums ml-1">{formatTime(currentTime)} / {formatTime(duration)}</span>
           <div className="flex-1" />
 
-          <Button variant="ghost" size="sm" className="h-6 md:h-7 text-[10px] md:text-xs text-white hover:bg-white/20 px-1.5 md:px-2" onClick={changePlaybackRate}>
-            {playbackRate}x
-          </Button>
+          {/* Speed Selector Menu */}
+          <div className="relative">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 md:h-7 text-[10px] md:text-xs text-white hover:bg-white/20 px-1.5 md:px-2 font-bold" 
+              onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+              title="Playback Speed"
+            >
+              {playbackRate}x
+            </Button>
+            {showSpeedMenu && (
+              <div className="absolute bottom-full right-0 mb-2 bg-black/95 backdrop-blur-md border border-white/20 rounded-xl py-1 min-w-[110px] z-50 shadow-2xl overflow-hidden">
+                <p className="px-3 py-1 text-[10px] text-white/50 font-bold uppercase tracking-wider">Speed</p>
+                {[0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map(rate => (
+                  <button
+                    key={rate}
+                    onClick={() => setSpecificSpeed(rate)}
+                    className={`w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-white/15 transition-colors ${
+                      playbackRate === rate ? 'text-primary font-bold bg-primary/10' : 'text-white/80'
+                    }`}
+                  >
+                    <span>{rate === 1 ? '1x (Normal)' : `${rate}x`}</span>
+                    {playbackRate === rate && <Check className="w-3 h-3 text-primary" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 text-white hover:bg-white/20" onClick={toggleMute}>
@@ -544,7 +637,18 @@ function YouTubeCustomPlayer({
             </div>
           </div>
 
-          <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 text-white hover:bg-white/20" onClick={toggleFullscreen}>
+          {/* Keyboard Shortcuts Help */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-7 w-7 md:h-8 md:w-8 text-white/80 hover:text-white hover:bg-white/20" 
+            onClick={() => setShowShortcuts(true)}
+            title="Keyboard Shortcuts"
+          >
+            <Keyboard className="w-3.5 h-3.5 md:w-4 md:h-4" />
+          </Button>
+
+          <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 text-white hover:bg-white/20" onClick={toggleFullscreen} title="Fullscreen (F)">
             {isFullscreen ? <Minimize className="w-3.5 h-3.5 md:w-4 md:h-4" /> : <Maximize className="w-3.5 h-3.5 md:w-4 md:h-4" />}
           </Button>
         </div>
@@ -568,6 +672,55 @@ function YouTubeCustomPlayer({
           <CheckCircle className="w-3 h-3" /> Completed
         </div>
       )}
+
+      {/* Keyboard Shortcuts Dialog */}
+      <Dialog open={showShortcuts} onOpenChange={setShowShortcuts}>
+        <DialogContent className="sm:max-w-md bg-slate-950 border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base font-bold text-foreground">
+              <Keyboard className="w-5 h-5 text-primary" />
+              ভিডিও প্লেয়ার কীবোর্ড শর্টকাট
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              ক্লাস দেখার অভিজ্ঞতা দ্রুত ও সুবিধাজনক করতে নিচের শর্টকাটগুলো ব্যবহার করুন:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2 text-xs">
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+              <span>প্লে / পজ</span>
+              <kbd className="px-2 py-0.5 rounded bg-white/10 font-mono text-[11px] text-primary">Space / K</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+              <span>১০ সেকেন্ড পেছনে যান (Rewind)</span>
+              <kbd className="px-2 py-0.5 rounded bg-white/10 font-mono text-[11px] text-primary">← বা J</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+              <span>১০ সেকেন্ড সামনে যান (Forward)</span>
+              <kbd className="px-2 py-0.5 rounded bg-white/10 font-mono text-[11px] text-primary">→ বা L</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+              <span>সাউন্ড বাড়ানো / কমানো</span>
+              <kbd className="px-2 py-0.5 rounded bg-white/10 font-mono text-[11px] text-primary">↑ / ↓</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+              <span>স্পিড বাড়ানো / কমানো</span>
+              <kbd className="px-2 py-0.5 rounded bg-white/10 font-mono text-[11px] text-primary">&gt; / &lt;</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+              <span>মিউট / আনমিউট</span>
+              <kbd className="px-2 py-0.5 rounded bg-white/10 font-mono text-[11px] text-primary">M</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+              <span>ফুলস্ক্রিন টগল</span>
+              <kbd className="px-2 py-0.5 rounded bg-white/10 font-mono text-[11px] text-primary">F</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+              <span>স্ক্রিনে ডাবল ক্লিক</span>
+              <span className="text-white/60 font-semibold">বামে (-10s) ও ডানে (+10s)</span>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -621,6 +774,22 @@ export default function SecureVideoPlayer({
   const [selectedRes, setSelectedRes] = useState('auto');
   const hideControlsTimer = useRef<ReturnType<typeof setTimeout>>();
   const progressSaveTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  // Advanced Player UX states
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [hoverTime, setHoverTime] = useState<number | null>(null);
+  const [hoverPercent, setHoverPercent] = useState<number>(0);
+  const [rippleSide, setRippleSide] = useState<'left' | 'right' | null>(null);
+  const rippleTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const lastClickTimeRef = useRef(0);
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const triggerRipple = (side: 'left' | 'right') => {
+    setRippleSide(side);
+    if (rippleTimerRef.current) clearTimeout(rippleTimerRef.current);
+    rippleTimerRef.current = setTimeout(() => setRippleSide(null), 500);
+  };
 
   // Disable right-click
   useEffect(() => {
@@ -732,22 +901,11 @@ export default function SecureVideoPlayer({
     }, PROGRESS_SAVE_INTERVAL);
   };
 
+  // Unrestricted seek - students can navigate freely
   const handleSeek = (value: number[]) => {
     const video = videoRef.current;
     if (!video) return;
     const seekTo = value[0];
-    // For completed lessons: allow full seeking
-    if (isCompleted) {
-      video.currentTime = seekTo;
-      setCurrentTime(seekTo);
-      return;
-    }
-    // For new lessons: can't seek beyond maxWatchedTime
-    if (seekTo > highestWatched + 2) {
-      toast.error('আপনি এখনো এই অংশ পর্যন্ত দেখেননি');
-      video.currentTime = highestWatched;
-      return;
-    }
     video.currentTime = seekTo;
     setCurrentTime(seekTo);
   };
@@ -765,9 +923,11 @@ export default function SecureVideoPlayer({
     if (video.paused) {
       video.play();
       setIsPlaying(true);
+      showHud('Playing');
     } else {
       video.pause();
       setIsPlaying(false);
+      showHud('Paused');
     }
   };
 
@@ -785,6 +945,7 @@ export default function SecureVideoPlayer({
     if (!video) return;
     video.muted = !video.muted;
     setIsMuted(video.muted);
+    showHud(video.muted ? 'Muted' : 'Unmuted');
   };
 
   const changeVolume = (value: number[]) => {
@@ -798,11 +959,21 @@ export default function SecureVideoPlayer({
   const changePlaybackRate = () => {
     const video = videoRef.current;
     if (!video) return;
-    const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+    const rates = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
     const idx = rates.indexOf(playbackRate);
     const next = rates[(idx + 1) % rates.length];
     video.playbackRate = next;
     setPlaybackRate(next);
+    showHud(`Speed ${next}x`);
+  };
+
+  const setSpecificSpeed = (rate: number) => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.playbackRate = rate;
+    setPlaybackRate(rate);
+    setShowSpeedMenu(false);
+    showHud(`Speed ${rate}x`);
   };
 
   const toggleFullscreen = async () => {
@@ -816,25 +987,95 @@ export default function SecureVideoPlayer({
     }
   };
 
+  const togglePiP = async () => {
+    const video = videoRef.current;
+    if (!video) return;
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else if (document.pictureInPictureEnabled) {
+        await video.requestPictureInPicture();
+      }
+    } catch (err) {
+      console.warn('PiP error:', err);
+    }
+  };
+
   const skipBack = () => {
     const video = videoRef.current;
     if (!video) return;
-    video.currentTime = Math.max(0, video.currentTime - 10);
+    const target = Math.max(0, video.currentTime - 10);
+    video.currentTime = target;
+    setCurrentTime(target);
+    triggerRipple('left');
+    showHud('-10s');
+  };
+
+  const skipForward = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    const target = Math.min(duration || video.duration || 99999, video.currentTime + 10);
+    video.currentTime = target;
+    setCurrentTime(target);
+    triggerRipple('right');
+    showHud('+10s');
   };
 
   const [hudMessage, setHudMessage] = useState<string | null>(null);
   const hudTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const stateRef = useRef({ isPlaying, isCompleted, highestWatched, volume, playbackRate });
+  const stateRef = useRef({ isPlaying, isCompleted, highestWatched, volume, playbackRate, duration });
   useEffect(() => {
-    stateRef.current = { isPlaying, isCompleted, highestWatched, volume, playbackRate };
-  }, [isPlaying, isCompleted, highestWatched, volume, playbackRate]);
+    stateRef.current = { isPlaying, isCompleted, highestWatched, volume, playbackRate, duration };
+  }, [isPlaying, isCompleted, highestWatched, volume, playbackRate, duration]);
 
   const showHud = useCallback((msg: string) => {
     setHudMessage(msg);
     if (hudTimerRef.current) clearTimeout(hudTimerRef.current);
     hudTimerRef.current = setTimeout(() => setHudMessage(null), 1000);
   }, []);
+
+  // Screen click handler for single click (play/pause) vs double click (skip -10s / +10s)
+  const handleScreenClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest('.player-controls-bar')) return;
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const clickX = e.clientX - rect.left;
+    const width = rect.width;
+    const now = Date.now();
+    const timeSinceLast = now - lastClickTimeRef.current;
+    lastClickTimeRef.current = now;
+
+    if (timeSinceLast < 300) {
+      if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+      if (clickX < width * 0.35) {
+        skipBack();
+      } else if (clickX > width * 0.65) {
+        skipForward();
+      } else {
+        togglePlay();
+      }
+    } else {
+      clickTimerRef.current = setTimeout(() => {
+        togglePlay();
+      }, 250);
+    }
+  };
+
+  // Timeline hover preview
+  const handleTimelineHover = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    const pct = (x / rect.width) * 100;
+    const previewTime = (x / rect.width) * duration;
+    setHoverTime(previewTime);
+    setHoverPercent(pct);
+  };
+
+  const handleTimelineMouseLeave = () => {
+    setHoverTime(null);
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -849,7 +1090,7 @@ export default function SecureVideoPlayer({
       const video = videoRef.current;
       if (!video) return;
 
-      const { isPlaying, isCompleted, highestWatched, volume, playbackRate } = stateRef.current;
+      const { isPlaying, volume, playbackRate, duration } = stateRef.current;
       const key = e.key.toLowerCase();
 
       if (e.key === ' ' || key === 'k') {
@@ -859,19 +1100,19 @@ export default function SecureVideoPlayer({
       }
       else if (e.key === 'ArrowLeft' || key === 'j') {
         e.preventDefault();
-        video.currentTime = Math.max(0, video.currentTime - 10);
+        const target = Math.max(0, video.currentTime - 10);
+        video.currentTime = target;
+        setCurrentTime(target);
+        triggerRipple('left');
         showHud('-10s');
       }
       else if (e.key === 'ArrowRight' || key === 'l') {
         e.preventDefault();
-        const target = video.currentTime + 10;
-        if (!isCompleted && target > highestWatched + 2) {
-          toast.error('আপনি এখনো এই অংশ পর্যন্ত দেখেননি');
-          video.currentTime = highestWatched;
-        } else {
-          video.currentTime = target;
-          showHud('+10s');
-        }
+        const target = Math.min(duration || video.duration || 99999, video.currentTime + 10);
+        video.currentTime = target;
+        setCurrentTime(target);
+        triggerRipple('right');
+        showHud('+10s');
       }
       else if (key === 'm') {
         e.preventDefault();
@@ -901,7 +1142,7 @@ export default function SecureVideoPlayer({
       }
       else if (e.key === '>' || (e.shiftKey && e.key === '.')) {
         e.preventDefault();
-        const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+        const rates = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
         const idx = rates.indexOf(playbackRate);
         if (idx < rates.length - 1) {
           const next = rates[idx + 1];
@@ -912,7 +1153,7 @@ export default function SecureVideoPlayer({
       }
       else if (e.key === '<' || (e.shiftKey && e.key === ',')) {
         e.preventDefault();
-        const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+        const rates = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
         const idx = rates.indexOf(playbackRate);
         if (idx > 0) {
           const next = rates[idx - 1];
@@ -967,7 +1208,6 @@ export default function SecureVideoPlayer({
       }
     }, 100);
   };
-
 
   // YouTube custom player using IFrame API
   if (videoType === 'youtube') {
@@ -1024,11 +1264,12 @@ export default function SecureVideoPlayer({
       ref={containerRef}
       className="relative aspect-video bg-black rounded-lg overflow-hidden select-none"
       onMouseMove={handleMouseMove}
+      onClick={handleScreenClick}
       onContextMenu={e => e.preventDefault()}
     >
       {/* Logo Intro Splash */}
       {showIntro && (
-        <div className="absolute inset-0 z-50 bg-black flex items-center justify-center">
+        <div className="absolute inset-0 z-50 bg-black flex items-center justify-center pointer-events-none">
           <div className="text-center animate-pulse">
             <img src="/logo.png" alt="Logo" className="w-20 h-20 mx-auto mb-3 dark:invert" />
             <p className="text-white/80 text-sm font-medium">Astropixel Academy</p>
@@ -1050,50 +1291,103 @@ export default function SecureVideoPlayer({
         onEnded={handleEnded}
         onWaiting={() => setIsLoading(true)}
         onCanPlay={() => setIsLoading(false)}
-        onClick={togglePlay}
         controlsList="nodownload"
-        disablePictureInPicture
         playsInline
       />
 
-      {/* Center Play Button */}
+      {/* Double Tap / Double Click Ripples */}
+      {rippleSide === 'left' && (
+        <div className="absolute inset-y-0 left-0 w-1/3 bg-white/10 flex items-center justify-center pointer-events-none z-30 animate-in fade-in duration-150">
+          <div className="flex flex-col items-center gap-1 text-white bg-black/60 px-4 py-3 rounded-full backdrop-blur-sm">
+            <RotateCcw className="w-6 h-6 animate-pulse" />
+            <span className="text-xs font-bold font-mono">-10s</span>
+          </div>
+        </div>
+      )}
+      {rippleSide === 'right' && (
+        <div className="absolute inset-y-0 right-0 w-1/3 bg-white/10 flex items-center justify-center pointer-events-none z-30 animate-in fade-in duration-150">
+          <div className="flex flex-col items-center gap-1 text-white bg-black/60 px-4 py-3 rounded-full backdrop-blur-sm">
+            <RotateCw className="w-6 h-6 animate-pulse" />
+            <span className="text-xs font-bold font-mono">+10s</span>
+          </div>
+        </div>
+      )}
+
+      {/* Center Play Button (When Paused) */}
       {!isPlaying && !isLoading && !showIntro && (
-        <button onClick={togglePlay} className="absolute inset-0 flex items-center justify-center z-10 group">
+        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
           <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/30 group-hover:scale-110 transition-all">
             <Play className="w-8 h-8 md:w-10 md:h-10 text-white fill-white ml-1" />
           </div>
-        </button>
+        </div>
       )}
 
-      {/* Loading */}
+      {/* Loading Spinner */}
       {isLoading && !showIntro && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-20">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-20 pointer-events-none">
           <Loader2 className="w-10 h-10 text-white animate-spin" />
         </div>
       )}
 
-      {/* Controls */}
-      <div className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-3 md:p-4 transition-opacity duration-300 z-30 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <div className="mb-2 md:mb-3">
-          <Slider value={[currentTime]} max={duration || 100} step={0.1} onValueChange={handleSeek} className="cursor-pointer" />
-          {!isCompleted && highestWatched > 0 && duration > 0 && (
-            <div className="relative h-0.5 -mt-2 mb-2 pointer-events-none">
-              <div className="absolute h-full bg-emerald-500/40 rounded" style={{ width: `${(highestWatched / duration) * 100}%` }} />
+      {/* Controls Bar */}
+      <div className={`player-controls-bar absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-3 md:p-4 transition-opacity duration-300 z-30 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        {/* Seekbar with Hover Timestamp Preview */}
+        <div 
+          className="mb-2 md:mb-3 relative group/slider"
+          onMouseMove={handleTimelineHover}
+          onMouseLeave={handleTimelineMouseLeave}
+        >
+          {hoverTime !== null && (
+            <div 
+              className="absolute -top-7 px-2 py-0.5 rounded bg-black/90 text-white border border-white/20 text-[10px] font-mono pointer-events-none transform -translate-x-1/2 z-40 whitespace-nowrap shadow-lg"
+              style={{ left: `${hoverPercent}%` }}
+            >
+              {formatTime(hoverTime)}
             </div>
           )}
+          <Slider 
+            value={[currentTime]} 
+            max={duration || 100} 
+            step={0.1} 
+            onValueChange={handleSeek} 
+            className="cursor-pointer" 
+          />
         </div>
 
         <div className="flex items-center gap-1 md:gap-2 text-white">
-          <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 text-white hover:bg-white/20" onClick={togglePlay}>
+          <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 text-white hover:bg-white/20" onClick={togglePlay} title="Play/Pause (Space)">
             {isPlaying ? <Pause className="w-3.5 h-3.5 md:w-4 md:h-4" /> : <Play className="w-3.5 h-3.5 md:w-4 md:h-4" />}
           </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 text-white hover:bg-white/20" onClick={skipBack}>
-            <SkipBack className="w-3.5 h-3.5 md:w-4 md:h-4" />
+
+          {/* Dedicated Rewind & Forward 10s */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-7 w-7 md:h-8 md:w-8 text-white hover:bg-white/20 relative" 
+            onClick={skipBack}
+            title="Rewind 10s (← বা J)"
+          >
+            <RotateCcw className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            <span className="absolute text-[8px] font-bold bottom-1">10</span>
           </Button>
-          <span className="text-[10px] md:text-xs tabular-nums">{formatTime(currentTime)} / {formatTime(duration)}</span>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-7 w-7 md:h-8 md:w-8 text-white hover:bg-white/20 relative" 
+            onClick={skipForward}
+            title="Forward 10s (→ বা L)"
+          >
+            <RotateCw className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            <span className="absolute text-[8px] font-bold bottom-1">10</span>
+          </Button>
+
+          <span className="text-[10px] md:text-xs tabular-nums text-white/90">
+            {formatTime(currentTime)} / {formatTime(duration)}
+          </span>
+          
           <div className="flex-1" />
 
-          {/* Resolution */}
+          {/* Resolution Selector */}
           <div className="relative">
             <Button variant="ghost" size="sm" className="h-6 md:h-7 text-[10px] md:text-xs text-white hover:bg-white/20 px-1.5 md:px-2 gap-1" onClick={() => setShowResMenu(!showResMenu)}>
               <Settings className="w-3 h-3" />
@@ -1111,10 +1405,37 @@ export default function SecureVideoPlayer({
             )}
           </div>
 
-          <Button variant="ghost" size="sm" className="h-6 md:h-7 text-[10px] md:text-xs text-white hover:bg-white/20 px-1.5 md:px-2" onClick={changePlaybackRate}>
-            {playbackRate}x
-          </Button>
+          {/* Playback Speed Popover Menu */}
+          <div className="relative">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 md:h-7 text-[10px] md:text-xs text-white hover:bg-white/20 px-1.5 md:px-2 font-bold" 
+              onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+              title="Playback Speed"
+            >
+              {playbackRate}x
+            </Button>
+            {showSpeedMenu && (
+              <div className="absolute bottom-full right-0 mb-2 bg-black/95 backdrop-blur-md border border-white/20 rounded-xl py-1 min-w-[110px] z-50 shadow-2xl overflow-hidden">
+                <p className="px-3 py-1 text-[10px] text-white/50 font-bold uppercase tracking-wider">Speed</p>
+                {[0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map(rate => (
+                  <button
+                    key={rate}
+                    onClick={() => setSpecificSpeed(rate)}
+                    className={`w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-white/15 transition-colors ${
+                      playbackRate === rate ? 'text-primary font-bold bg-primary/10' : 'text-white/80'
+                    }`}
+                  >
+                    <span>{rate === 1 ? '1x (Normal)' : `${rate}x`}</span>
+                    {playbackRate === rate && <Check className="w-3 h-3 text-primary" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
+          {/* Volume Control */}
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 text-white hover:bg-white/20" onClick={toggleMute}>
               {isMuted || volume === 0 ? <VolumeX className="w-3.5 h-3.5 md:w-4 md:h-4" /> : <Volume2 className="w-3.5 h-3.5 md:w-4 md:h-4" />}
@@ -1124,11 +1445,41 @@ export default function SecureVideoPlayer({
             </div>
           </div>
 
-          <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 text-white hover:bg-white/20" onClick={toggleFullscreen}>
+          {/* Picture-in-Picture */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-7 w-7 md:h-8 md:w-8 text-white/80 hover:text-white hover:bg-white/20" 
+            onClick={togglePiP}
+            title="Picture in Picture"
+          >
+            <PictureInPicture2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+          </Button>
+
+          {/* Keyboard Shortcuts Help */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-7 w-7 md:h-8 md:w-8 text-white/80 hover:text-white hover:bg-white/20" 
+            onClick={() => setShowShortcuts(true)}
+            title="Keyboard Shortcuts"
+          >
+            <Keyboard className="w-3.5 h-3.5 md:w-4 md:h-4" />
+          </Button>
+
+          {/* Fullscreen */}
+          <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 text-white hover:bg-white/20" onClick={toggleFullscreen} title="Fullscreen (F)">
             {isFullscreen ? <Minimize className="w-3.5 h-3.5 md:w-4 md:h-4" /> : <Maximize className="w-3.5 h-3.5 md:w-4 md:h-4" />}
           </Button>
         </div>
       </div>
+
+      {/* HUD Message */}
+      {hudMessage && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/70 text-white px-4 py-2 rounded-lg text-lg font-medium z-40 pointer-events-none animate-in fade-in zoom-in duration-200">
+          {hudMessage}
+        </div>
+      )}
 
       {/* Threshold Indicator */}
       {thresholdNotified && !isCompleted && (
@@ -1142,6 +1493,55 @@ export default function SecureVideoPlayer({
           <CheckCircle className="w-3 h-3" /> Completed
         </div>
       )}
+
+      {/* Keyboard Shortcuts Dialog */}
+      <Dialog open={showShortcuts} onOpenChange={setShowShortcuts}>
+        <DialogContent className="sm:max-w-md bg-slate-950 border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base font-bold text-foreground">
+              <Keyboard className="w-5 h-5 text-primary" />
+              ভিডিও প্লেয়ার কীবোর্ড শর্টকাট
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              ক্লাস দেখার অভিজ্ঞতা দ্রুত ও সুবিধাজনক করতে নিচের শর্টকাটগুলো ব্যবহার করুন:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2 text-xs">
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+              <span>প্লে / পজ</span>
+              <kbd className="px-2 py-0.5 rounded bg-white/10 font-mono text-[11px] text-primary">Space / K</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+              <span>১০ সেকেন্ড পেছনে যান (Rewind)</span>
+              <kbd className="px-2 py-0.5 rounded bg-white/10 font-mono text-[11px] text-primary">← বা J</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+              <span>১০ সেকেন্ড সামনে যান (Forward)</span>
+              <kbd className="px-2 py-0.5 rounded bg-white/10 font-mono text-[11px] text-primary">→ বা L</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+              <span>সাউন্ড বাড়ানো / কমানো</span>
+              <kbd className="px-2 py-0.5 rounded bg-white/10 font-mono text-[11px] text-primary">↑ / ↓</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+              <span>স্পিড বাড়ানো / কমানো</span>
+              <kbd className="px-2 py-0.5 rounded bg-white/10 font-mono text-[11px] text-primary">&gt; / &lt;</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+              <span>মিউট / আনমিউট</span>
+              <kbd className="px-2 py-0.5 rounded bg-white/10 font-mono text-[11px] text-primary">M</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+              <span>ফুলস্ক্রিন টগল</span>
+              <kbd className="px-2 py-0.5 rounded bg-white/10 font-mono text-[11px] text-primary">F</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+              <span>স্ক্রিনে ডাবল ক্লিক</span>
+              <span className="text-white/60 font-semibold">বামে (-10s) ও ডানে (+10s)</span>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

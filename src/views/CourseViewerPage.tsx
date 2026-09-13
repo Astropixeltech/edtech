@@ -91,7 +91,7 @@ export default function CourseViewerPage() {
               created_at: lp.last_watched_at,
               last_watched_at: lp.last_watched_at,
             } : undefined,
-            is_locked: i === 0 ? false : !localProgress[fallback.videos[i - 1]?.id]?.is_completed,
+            is_locked: false,
           };
         });
 
@@ -110,7 +110,7 @@ export default function CourseViewerPage() {
     if (found) {
       setCourse(found);
       if (!selectedVideo || selectedVideo.course_id !== found.id) {
-        const firstUnwatched = found.videos.find(v => !v.progress?.is_completed && !v.is_locked);
+        const firstUnwatched = found.videos.find(v => !v.progress?.is_completed);
         setSelectedVideo(firstUnwatched || found.videos[0] || null);
       }
     }
@@ -267,18 +267,12 @@ export default function CourseViewerPage() {
     const currentIdx = course.videos.findIndex(v => v.id === selectedVideo.id);
     if (currentIdx < course.videos.length - 1) {
       const nextVid = course.videos[currentIdx + 1];
-      if (!nextVid.is_locked) {
-        setAutoAdvanceTarget(nextVid);
-        setAutoAdvanceCountdown(5);
-      }
+      setAutoAdvanceTarget(nextVid);
+      setAutoAdvanceCountdown(5);
     }
   };
 
   const goToVideo = (video: VideoWithProgress) => {
-    if (video.is_locked) {
-      toast.error('আগের ক্লাসটি সম্পন্ন করুন');
-      return;
-    }
     setSelectedVideo(video);
   };
 
@@ -453,7 +447,7 @@ export default function CourseViewerPage() {
                 <Button
                   variant="ghost" size="icon"
                   className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10 disabled:opacity-30"
-                  disabled={!nextVideo || nextVideo.is_locked} onClick={() => nextVideo && goToVideo(nextVideo)}
+                  disabled={!nextVideo} onClick={() => nextVideo && goToVideo(nextVideo)}
                   title={nextVideo ? `Next: ${nextVideo.title}` : 'No next class'}
                 >
                   <ArrowRight className="w-4 h-4" />

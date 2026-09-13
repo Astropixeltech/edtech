@@ -42,7 +42,7 @@ Hard rules. Violating any of these breaks the product, security, or theming.
 
 ## LMS
 - Course Viewer layout locked (video fixed, sidebar scrolls).
-- Video: VideoJS + YouTube plugin only, anti-forward-seek, 90 % completion.
+- Video: VideoJS + YouTube custom player with full forward/backward seek freedom (+10s/-10s buttons, speed popover, hover timeline preview, double-click gestures, PiP, shortcuts dialog), 90% completion threshold.
 - Chat: single room per teacher-student pair; teacher sees student profile name.
 - Pass-code enrollment permanently removed — do not re-introduce.
 - No floating AIChatbot inside student area.

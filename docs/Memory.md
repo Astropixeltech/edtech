@@ -8,7 +8,7 @@ Consolidated persistent decisions. Mirrors `mem://index.md`. Update whenever a d
 - **Decoupled architecture:** React SPA hostable anywhere; Supabase backend outlives Lovable subscription.
 - **Auth hierarchy:** Admin > Teacher > Student. Phone-mandatory signup, email OTP, Turnstile.
 - **LMS:** direct DB enrollment (pass-code system removed). Courses → Modules → Videos.
-- **Video security:** VideoJS + YouTube plugin only, anti-forward seek, 90 % completion threshold.
+- **Video player UX:** VideoJS + YouTube custom player with full forward/backward seek freedom (+10s/-10s buttons, speed popover, hover timeline preview, double-click gestures, PiP, shortcuts dialog), 90 % completion threshold.
 - **Media upload:** `ImageUploader` → `media-uploads` bucket, or Cloudinary signed uploads for large.
 - **Source of truth:** `docs/*.md` — read before non-trivial change; update when decisions shift.
 
@@ -60,6 +60,7 @@ See [`FolderStructure.md`](./FolderStructure.md).
 - **Student Data Export**: Full UTF-8 BOM CSV export for Excel compatibility in Admin Students tab.
 - **PWA Support**: Full web manifest and install prompts for mobile learners.
 - **PDF Formula Notes Generator**: Client-side jsPDF formula revision sheet generator with dynamic student watermark.
+- **Enhanced Video Player & Open Walkthrough**: Completely removed 10s/forward seeking restriction and sequential lesson locks for enrolled students. Added dedicated +10s/-10s buttons, speed popover, hover timeline preview, double-click gestures with HUD ripple, PiP, and bilingual shortcuts modal across YouTube and HTML5 players.
 
 ## Pending / Future
 - Mobile app wrapper (Capacitor / TWA).
