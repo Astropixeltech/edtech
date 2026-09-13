@@ -28,6 +28,11 @@ const learnLogo = learnLogoAssetJson.url;
 import StudentNoticesTab from '@/components/student/StudentNoticesTab';
 import StudentRecordedClassesTab from '@/components/student/StudentRecordedClassesTab';
 import { Folder } from 'lucide-react';
+import { ExamModal } from '@/components/exam/ExamModal';
+import { ExamResultModal, ExamResult } from '@/components/exam/ExamResultModal';
+import { EXAM_PACKAGES, ExamPackage } from '@/data/mockQuestionBanks';
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
+import { ACADEMIC_NOTES, generateAndDownloadNotePdf } from '@/lib/pdfNotesGenerator';
 
 export default function StudentDashboard() {
   const { user, profile, signOut, isLoading: authLoading, refreshProfile } = useAuth();
@@ -47,6 +52,64 @@ export default function StudentDashboard() {
   const [selectedEnrollCourse, setSelectedEnrollCourse] = useState<Course | null>(null);
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
   const [courseSearch, setCourseSearch] = useState('');
+
+  // Exam Modal & Results State
+  const [activeExam, setActiveExam] = useState<ExamPackage | null>(null);
+  const [showExamModal, setShowExamModal] = useState(false);
+  const [selectedResult, setSelectedResult] = useState<ExamResult | null>(null);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [pastExamResults, setPastExamResults] = useState<ExamResult[]>(() => {
+    try {
+      const saved = localStorage.getItem('ap_student_exam_results');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error(e);
+    }
+    return [
+      {
+        examId: "hsc-physics-1st-motion",
+        examTitle: "HSC রসায়ন ১ম পত্র: পর্যায়বৃত্ত ধর্ম উইকলি টেস্ট",
+        subject: "রসায়ন ১ম পত্র",
+        score: 48,
+        totalMarks: 50,
+        correctCount: 48,
+        wrongCount: 2,
+        unansweredCount: 0,
+        negativeDeduction: 0.5,
+        accuracy: 96,
+        timeSpentSeconds: 1240,
+        submittedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+        userAnswers: {},
+        rank: "৩য়",
+        status: "passed",
+      },
+      {
+        examId: "buet-math-calculus",
+        examTitle: "বুয়েট প্রিলি মডেল টেস্ট ১ (পদার্থ, রসায়ন, গণিত)",
+        subject: "ইঞ্জিনিয়ারিং স্পেশাল",
+        score: 82,
+        totalMarks: 100,
+        correctCount: 85,
+        wrongCount: 12,
+        unansweredCount: 3,
+        negativeDeduction: 3,
+        accuracy: 88,
+        timeSpentSeconds: 3200,
+        submittedAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+        userAnswers: {},
+        rank: "১২তম",
+        status: "passed",
+      }
+    ];
+  });
+
+  const handleExamComplete = (result: ExamResult) => {
+    setShowExamModal(false);
+    setPastExamResults(prev => [result, ...prev]);
+    setSelectedResult(result);
+    setShowResultModal(true);
+    toast.success('পরীক্ষা সফলভাবে সম্পন্ন হয়েছে!');
+  };
 
   // Gamification: Streak and XP
   const [learningStreak] = useState(() => {
@@ -226,6 +289,9 @@ export default function StudentDashboard() {
               </Avatar>
             </div>
           </div>
+
+          {/* PWA Mobile App Install Prompt */}
+          <PWAInstallPrompt />
 
           {/* Tab: My Courses */}
           {activeTab === 'courses' && (
@@ -633,10 +699,30 @@ export default function StudentDashboard() {
             <div className="space-y-5">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
-                  { label: language === 'bn' ? 'অংশগ্রহণকৃত পরীক্ষা' : 'Tests Taken', value: '১২টি', icon: FileCheck, color: 'text-blue-600' },
-                  { label: language === 'bn' ? 'গড় স্কোর' : 'Avg Score', value: '৮৪%', icon: TrendingUp, color: 'text-emerald-600' },
-                  { label: language === 'bn' ? 'সর্বোচ্চ মেধা স্কোর' : 'Top Rank', value: '৭ম', icon: Award, color: 'text-amber-600' },
-                  { label: language === 'bn' ? 'সঠিক উত্তর হার' : 'Accuracy', value: '৮৯%', icon: CheckCircle2, color: 'text-primary' },
+                  { 
+                    label: language === 'bn' ? 'অংশগ্রহণকৃত পরীক্ষা' : 'Tests Taken', 
+                    value: `${pastExamResults.length}টি`, 
+                    icon: FileCheck, 
+                    color: 'text-blue-600' 
+                  },
+                  { 
+                    label: language === 'bn' ? 'গড় স্কোর' : 'Avg Score', 
+                    value: `${pastExamResults.length > 0 ? Math.round(pastExamResults.reduce((acc, r) => acc + ((r.score / (r.totalMarks || 1)) * 100), 0) / pastExamResults.length) : 85}%`, 
+                    icon: TrendingUp, 
+                    color: 'text-emerald-600' 
+                  },
+                  { 
+                    label: language === 'bn' ? 'শীর্ষ মেধা অবস্থান' : 'Top Rank', 
+                    value: pastExamResults.length > 0 ? (pastExamResults[0].rank || 'শীর্ষ ৫%') : 'শীর্ষ ৫%', 
+                    icon: Award, 
+                    color: 'text-amber-600' 
+                  },
+                  { 
+                    label: language === 'bn' ? 'গড় নির্ভুলতা' : 'Accuracy', 
+                    value: `${pastExamResults.length > 0 ? Math.round(pastExamResults.reduce((acc, r) => acc + (r.accuracy || 0), 0) / pastExamResults.length) : 92}%`, 
+                    icon: CheckCircle2, 
+                    color: 'text-primary' 
+                  },
                 ].map((stat, sIdx) => (
                   <div key={sIdx} className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-muted/60 flex items-center justify-center shrink-0">
@@ -650,34 +736,48 @@ export default function StudentDashboard() {
                 ))}
               </div>
 
-              {/* Upcoming Model Tests */}
+              {/* Upcoming / Active Model Tests */}
               <div className="bg-card border border-border/80 rounded-2xl p-5 shadow-xs space-y-4">
                 <div className="flex items-center justify-between border-b border-border/60 pb-3">
                   <div>
                     <h3 className="font-bold text-base text-foreground">
-                      {language === 'bn' ? 'আসন্ন মডেল টেস্ট ও উইকলি এক্সাম' : 'Upcoming Model Tests'}
+                      {language === 'bn' ? 'আসন্ন ও উন্মুক্ত মডেল টেস্ট' : 'Available Model Tests'}
                     </h3>
-                    <p className="text-xs text-muted-foreground">নির্ধারিত সময়ে পরীক্ষা শুরু হবে</p>
+                    <p className="text-xs text-muted-foreground">টাইমার ও নেগেটিভ মার্কিংসহ এখনই অংশ নিন</p>
                   </div>
-                  <Badge className="bg-primary/10 text-primary border-primary/20">Active Batch</Badge>
+                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+                    Live Testing
+                  </Badge>
                 </div>
 
                 <div className="grid gap-3">
-                  {[
-                    { title: "HSC পদার্থ ১ম পত্র: গতিবিদ্যা ও বলবিদ্যা পূর্ণাঙ্গ মডেল টেস্ট", marks: "১০০ নম্বর", duration: "১ ঘণ্টা ১৫ মিনিট", date: "আগামীকাল রাত ০৮:০০" },
-                    { title: "মেডিকেল জীববিজ্ঞান উইকলি এক্সাম: কোষ ও মানব শারীরতত্ত্ব", marks: "৫০ নম্বর", duration: "৩০ মিনিট", date: "১৫ সেপ্টেম্বর রাত ০৯:০০" },
-                    { title: "বুয়েট স্ট্যান্ডার্ড অ্যাডভান্সড ম্যাথ টেস্ট: ক্যালকুলাস ও ভেক্টর", marks: "৬০ নম্বর (লিখিত)", duration: "১ ঘণ্টা ৩০ মিনিট", date: "১৮ সেপ্টেম্বর সকাল ১০:০০" },
-                  ].map((ex, exIdx) => (
-                    <div key={exIdx} className="p-3.5 rounded-xl bg-muted/40 border border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="space-y-1">
-                        <h4 className="text-sm font-bold text-foreground">{ex.title}</h4>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-                          <span>পূর্ণমান: {ex.marks}</span>
-                          <span>সময়: {ex.duration}</span>
-                          <span className="font-semibold text-primary">তারিখ: {ex.date}</span>
+                  {EXAM_PACKAGES.map((pkg) => (
+                    <div key={pkg.id} className="p-4 rounded-xl bg-muted/30 border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-primary/40 transition-colors">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="text-sm font-bold text-foreground">{pkg.title}</h4>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                            {pkg.subject}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap font-mono">
+                          <span>প্রশ্ন: {pkg.totalQuestions}টি</span>
+                          <span>পূর্ণমান: {pkg.totalMarks}</span>
+                          <span className="flex items-center gap-1 text-primary">
+                            <Clock className="w-3 h-3" /> {pkg.durationMinutes} মিনিট
+                          </span>
+                          <span className="text-rose-500 font-medium">ভুল উত্তরে: -{pkg.negativeMarking}</span>
                         </div>
                       </div>
-                      <Button size="sm" onClick={() => toast.info(language === 'bn' ? 'পরীক্ষার সময় শুরু হলে বাটন সক্রিয় হবে' : 'Exam will unlock at scheduled time')} className="h-8 px-4 rounded-xl text-xs font-bold shrink-0 bg-primary hover:bg-primary/90 text-white">
+                      <Button 
+                        size="sm" 
+                        onClick={() => {
+                          setActiveExam(pkg);
+                          setShowExamModal(true);
+                        }} 
+                        className="h-8 px-4 rounded-xl text-xs font-bold shrink-0 bg-primary hover:bg-primary/90 text-white gap-1.5 shadow-xs"
+                      >
+                        <PlayCircle className="w-3.5 h-3.5" />
                         {language === 'bn' ? 'পরীক্ষায় বসুন' : 'Start Exam'}
                       </Button>
                     </div>
@@ -687,25 +787,50 @@ export default function StudentDashboard() {
 
               {/* Past Exam Results */}
               <div className="bg-card border border-border/80 rounded-2xl p-5 shadow-xs space-y-4">
-                <h3 className="font-bold text-base text-foreground">
-                  {language === 'bn' ? 'বিগত পরীক্ষার ফলাফল ও মূল্যায়ন' : 'Past Exam Results'}
-                </h3>
+                <div className="flex items-center justify-between border-b border-border/60 pb-3">
+                  <div>
+                    <h3 className="font-bold text-base text-foreground">
+                      {language === 'bn' ? 'বিগত পরীক্ষার ফলাফল ও উত্তরপত্র' : 'Past Exam Results'}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">সঠিক উত্তর ও বিস্তারিত ব্যাখ্যা পর্যালোচনা করুন</p>
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    মোট {pastExamResults.length}টি পরীক্ষা
+                  </Badge>
+                </div>
+
                 <div className="grid gap-3">
-                  {[
-                    { title: "HSC রসায়ন ১ম পত্র: পর্যায়বৃত্ত ধর্ম উইকলি টেস্ট", score: "৪৮/৫০", highest: "৫০", rank: "৩য়", status: "উত্তীর্ণ (A+)" },
-                    { title: "বুয়েট প্রিলি মডেল টেস্ট ১ (পদার্থ, রসায়ন, গণিত)", score: "৮২/১০০", highest: "৯৪", rank: "১২তম", status: "উত্তীর্ণ (A+)" },
-                    { title: "উচ্চতর গণিত ১ম পত্র: সরলরেখা ও বৃত্ত সাবজেক্টিভ টেস্ট", score: "৪২/৫০", highest: "৪৮", rank: "৮ম", status: "উত্তীর্ণ (A+)" },
-                  ].map((res, rIdx) => (
+                  {pastExamResults.map((res, rIdx) => (
                     <div key={rIdx} className="p-3.5 rounded-xl bg-muted/30 border border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
-                        <h4 className="text-sm font-bold text-foreground">{res.title}</h4>
-                        <p className="text-xs text-muted-foreground mt-0.5">ব্যাচে সর্বোচ্চ নম্বর: {res.highest} • মেধা স্থান: {res.rank}</p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="text-sm font-bold text-foreground">{res.examTitle}</h4>
+                          <span className="text-[10px] text-muted-foreground font-mono">
+                            {new Date(res.submittedAt).toLocaleDateString('bn-BD')}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          সঠিক: {res.correctCount}টি • ভুল: {res.wrongCount}টি • মেধা অবস্থান: {res.rank || 'শীর্ষ ৫%'}
+                        </p>
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
-                        <span className="text-sm font-extrabold text-primary">{res.score}</span>
-                        <span className="text-[11px] font-semibold px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                          {res.status}
+                        <span className="text-sm font-extrabold text-primary">
+                          {res.score.toFixed(1)} / {res.totalMarks}
                         </span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedResult(res);
+                            const foundExam = EXAM_PACKAGES.find(p => p.id === res.examId) || EXAM_PACKAGES[0];
+                            setActiveExam(foundExam);
+                            setShowResultModal(true);
+                          }}
+                          className="h-8 text-xs rounded-xl px-3 font-bold border-primary/40 hover:bg-primary/10 text-primary gap-1"
+                        >
+                          <BookOpen className="w-3.5 h-3.5" />
+                          উত্তরপত্র দেখুন
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -734,14 +859,7 @@ export default function StudentDashboard() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  { title: "পদার্থবিজ্ঞান ১ম পত্র: গতিবিদ্যা পূর্ণাঙ্গ ফর্মুলা শিট ও শর্টকাট", chapter: "অধ্যায় ৩ • গতিবিদ্যা", size: "12.4 MB • PDF", instructor: "Engr. Tanvir Ahmed (BUET)" },
-                  { title: "রসায়ন ১ম পত্র: রাসায়নিক পরিবর্তন গাণিতিক সমস্যা সমাধান", chapter: "অধ্যায় ৪ • রাসায়নিক পরিবর্তন", size: "8.6 MB • PDF", instructor: "Dr. Sumaiya Farhana" },
-                  { title: "উচ্চতর গণিত ১ম পত্র: ত্রিকোণমিতি অল ফর্মুলা অ্যান্ড হ্যাকস বুকলেট", chapter: "অধ্যায় ৭ • ত্রিকোণমিতি", size: "15.1 MB • PDF", instructor: "Fahim Shahriar (DU)" },
-                  { title: "মেডিকেল স্পেশাল জীববিজ্ঞান নোট: রক্ত সংবহন ও হৃদপিণ্ড", chapter: "প্রাণিবিজ্ঞান অধ্যায় ৪", size: "9.8 MB • PDF", instructor: "Dr. Sajid Hasan (DMC)" },
-                  { title: "বুয়েট ও ইঞ্জিনিয়ারিং ফিজিক্স কোশ্চেন ব্যাংক সলিউশন নোট", chapter: "স্পেশাল ইঞ্জিনিয়ারিং বুক", size: "22.0 MB • PDF", instructor: "Engr. Tanvir Ahmed" },
-                  { title: "আইসিটি অধ্যায় ৩: সংখ্যা পদ্ধতি ও ডিজিটাল ডিভাইস কমপ্লিট শিট", chapter: "অধ্যায় ৩ • আইসিটি", size: "6.5 MB • PDF", instructor: "Tahmid Chowdhury" },
-                ].map((note, nIdx) => (
+                {ACADEMIC_NOTES.map((note, nIdx) => (
                   <div key={nIdx} className="bg-card border border-border/80 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between gap-3 hover:border-primary/40 transition-colors">
                     <div className="space-y-1.5">
                       <span className="text-[11px] font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-md">
@@ -759,11 +877,14 @@ export default function StudentDashboard() {
                       <span className="text-[11px] text-muted-foreground font-mono">{note.size}</span>
                       <Button
                         size="sm"
-                        onClick={() => toast.success(language === 'bn' ? 'নোট ডাউনলোড শুরু হয়েছে...' : 'Download started...')}
-                        className="h-8 px-3.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-bold flex items-center gap-1.5"
+                        onClick={() => {
+                          generateAndDownloadNotePdf(note, profile?.full_name || 'Student');
+                          toast.success(language === 'bn' ? 'PDF ফর্মুলা বুকলেট ডাউনলোড সম্পন্ন হয়েছে!' : 'PDF Downloaded successfully!');
+                        }}
+                        className="h-8 px-3.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs"
                       >
                         <Download className="w-3.5 h-3.5" />
-                        <span>{language === 'bn' ? 'ডাউনলোড' : 'Download'}</span>
+                        <span>{language === 'bn' ? 'PDF ডাউনলোড' : 'Download PDF'}</span>
                       </Button>
                     </div>
                   </div>
@@ -1061,6 +1182,28 @@ export default function StudentDashboard() {
         userName={profile?.full_name || ''}
         onSuccess={() => fetchEnrollmentRequests()}
         language={language as 'en' | 'bn'}
+      />
+
+      {/* Interactive Exam Modal */}
+      <ExamModal
+        isOpen={showExamModal}
+        onClose={() => setShowExamModal(false)}
+        exam={activeExam}
+        onComplete={handleExamComplete}
+      />
+
+      {/* Exam Result & Solution Sheet Modal */}
+      <ExamResultModal
+        isOpen={showResultModal}
+        onClose={() => setShowResultModal(false)}
+        result={selectedResult}
+        exam={activeExam || (selectedResult ? EXAM_PACKAGES.find(p => p.id === selectedResult.examId) || EXAM_PACKAGES[0] : null)}
+        onRetake={() => {
+          setShowResultModal(false);
+          if (activeExam) {
+            setShowExamModal(true);
+          }
+        }}
       />
     </div>
   );
