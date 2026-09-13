@@ -897,27 +897,47 @@ const translations: Record<Language, Record<string, string>> = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Bangla removed — language is locked to English site-wide.
-  const [language] = useState<Language>("en");
+  const [language, setLanguageState] = useState<Language>(() => {
+    try {
+      const saved = localStorage.getItem("language") as Language;
+      return (saved === "en" || saved === "bn") ? saved : "bn";
+    } catch {
+      return "bn";
+    }
+  });
 
-  const setLanguage = (_lang: Language) => {
-    // no-op: Bangla has been removed from the site
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    try {
+      localStorage.setItem("language", lang);
+    } catch {}
+    document.documentElement.lang = lang;
+    if (lang === "bn") {
+      document.documentElement.classList.add("font-bengali");
+    } else {
+      document.documentElement.classList.remove("font-bengali");
+    }
   };
 
   const toggleLanguage = () => {
-    // no-op: Bangla has been removed from the site
+    setLanguage(language === "bn" ? "en" : "bn");
   };
 
   const t = (key: string): string => {
-    return translations.en[key] || key;
+    return translations[language]?.[key] || translations.bn?.[key] || translations.en?.[key] || key;
   };
 
   useEffect(() => {
-    document.documentElement.lang = "en";
-    document.documentElement.classList.remove('font-bengali');
-    try { localStorage.setItem("language", "en"); } catch {}
-  }, []);
-
+    document.documentElement.lang = language;
+    if (language === "bn") {
+      document.documentElement.classList.add("font-bengali");
+    } else {
+      document.documentElement.classList.remove("font-bengali");
+    }
+    try {
+      localStorage.setItem("language", language);
+    } catch {}
+  }, [language]);
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, toggleLanguage, t }}>

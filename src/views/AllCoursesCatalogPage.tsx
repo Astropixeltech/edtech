@@ -9,13 +9,14 @@ import CourseEnrollmentModal from "@/components/student/CourseEnrollmentModal";
 import { 
   Code, Palette, Bot, TrendingUp, Search, Sparkles, BookOpen, Clock, 
   ArrowRight, CheckCircle2, Star, Monitor, Video, Wrench, Shield, GraduationCap,
-  Layers, Stethoscope, Building, Compass, Atom, FlaskConical, Calculator, Trophy
+  Layers, Atom, FlaskConical, Calculator, Trophy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Course } from "@/types/lms";
 import EdgeCourseCard from "@/components/EdgeCourseCard";
 import CourseCardSkeleton from "@/components/skeletons/CourseCardSkeleton";
+import TargetUnitSelector, { TargetUnit } from "@/components/course/TargetUnitSelector";
 
 const categoryList = [
   { id: "all", labelBn: "সব কোর্স", labelEn: "All Courses", icon: BookOpen },
@@ -26,14 +27,6 @@ const categoryList = [
   { id: "ict_english", labelBn: "আইসিটি ও ভাষা", labelEn: "ICT & English", icon: Code, match: /ict|আইসিটি|english|ইংরেজি|grammar|communication/i },
 ];
 
-const admissionUnits = [
-  { id: "eng", nameBn: "Engineering (ইঞ্জিনিয়ারিং)", icon: Building, color: "border-blue-500 text-blue-600 bg-blue-50/50" },
-  { id: "varsity_a", nameBn: "Varsity A Unit (বিজ্ঞান)", icon: Compass, color: "border-emerald-500 text-emerald-600 bg-emerald-50/50" },
-  { id: "medical", nameBn: "Medical (মেডিকেল)", icon: Stethoscope, color: "border-red-500 text-red-600 bg-red-50/50" },
-  { id: "varsity_b", nameBn: "Varsity B & D Unit (মানবিক)", icon: BookOpen, color: "border-amber-500 text-amber-600 bg-amber-50/50" },
-  { id: "varsity_c", nameBn: "Varsity C Unit (ব্যবসায়)", icon: TrendingUp, color: "border-purple-500 text-purple-600 bg-purple-50/50" },
-];
-
 const AllCoursesCatalogPage = () => {
   const { language } = useLanguage();
   const isBn = language === "bn";
@@ -42,6 +35,7 @@ const AllCoursesCatalogPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("default");
   const [priceFilter, setPriceFilter] = useState<string>("all");
@@ -58,6 +52,9 @@ const AllCoursesCatalogPage = () => {
 
   const handleCategoryChange = (catId: string) => {
     setActiveCategory(catId);
+    if (catId !== "admission") {
+      setSelectedUnitId(null);
+    }
     if (catId === "all") {
       searchParams.delete("category");
     } else {
@@ -66,9 +63,20 @@ const AllCoursesCatalogPage = () => {
     setSearchParams(searchParams);
   };
 
+  const handleUnitSelect = (unit: TargetUnit | null) => {
+    if (!unit) {
+      setSelectedUnitId(null);
+      setSearchQuery("");
+    } else {
+      setSelectedUnitId(unit.id);
+      setSearchQuery(unit.searchTerm);
+    }
+  };
+
   const clearAllFilters = () => {
     setSearchQuery("");
     setActiveCategory("all");
+    setSelectedUnitId(null);
     setPriceFilter("all");
     setSortBy("default");
     searchParams.delete("category");
@@ -247,39 +255,13 @@ const AllCoursesCatalogPage = () => {
           </div>
         </section>
 
-        {/* Admission Unit Selector Banner (When Admission is active) */}
+        {/* Admission Target Unit Selector Banner (When Admission is active) */}
         {activeCategory === "admission" && (
           <section className="container mx-auto px-4 sm:px-6 pt-6 max-w-6xl">
-            <div className="rounded-2xl border border-gray-100 dark:border-border/50 bg-white dark:bg-card p-6 shadow-sm">
-              <h3 className="text-base font-bold text-foreground mb-3 text-center sm:text-left">
-                {isBn ? "তোমার ইউনিট বেছে নাও:" : "Select your target unit:"}
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                {admissionUnits.map((u) => {
-                  const Icon = u.icon;
-                  return (
-                    <div
-                      key={u.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => setSearchQuery(u.nameBn.split(" ")[0])}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          setSearchQuery(u.nameBn.split(" ")[0]);
-                        }
-                      }}
-                      className={`flex flex-col items-center justify-center gap-2 p-3.5 rounded-xl border transition-all cursor-pointer hover:shadow-md outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${u.color}`}
-                    >
-                      <Icon className="h-6 w-6" />
-                      <span className="text-xs font-bold text-center leading-snug">
-                        {u.nameBn}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            <TargetUnitSelector
+              selectedUnitId={selectedUnitId}
+              onSelectUnit={handleUnitSelect}
+            />
           </section>
         )}
 

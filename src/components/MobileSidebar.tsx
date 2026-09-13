@@ -11,6 +11,7 @@ import {
   Phone,
   Building2,
   ChevronDown,
+  Languages,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
@@ -22,7 +23,7 @@ interface MobileSidebarProps {
 
 export const MobileSidebar = ({ isOpen, onClose }: MobileSidebarProps) => {
   const location = useLocation();
-  const { language } = useLanguage();
+  const { language, toggleLanguage } = useLanguage();
   const isBn = language === "bn";
   const [isCompanyOpen, setIsCompanyOpen] = useState(false);
 
@@ -139,12 +140,21 @@ export const MobileSidebar = ({ isOpen, onClose }: MobileSidebarProps) => {
             </div>
           </nav>
 
-          {/* Login bottom action */}
-          <div className="mt-auto pt-4 border-t border-border/40">
+          {/* Footer Actions: Language toggle & Login */}
+          <div className="mt-auto pt-4 border-t border-border/40 flex flex-col gap-2.5">
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-border/80 hover:bg-muted/60 py-2.5 text-xs font-bold text-foreground transition-colors"
+            >
+              <Languages className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <span>{isBn ? "Switch to English (EN)" : "বাংলায় পরিবর্তন করুন (বাং)"}</span>
+            </button>
+
             <Link
               to="/login"
               onClick={onClose}
-              className="flex w-full items-center justify-center rounded-md bg-brand-500 hover:bg-brand-600 text-white py-2.5 text-sm font-medium transition-colors shadow-sm"
+              className="flex w-full items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 text-sm font-semibold transition-colors shadow-sm"
             >
               {isBn ? "লগইন" : "Login"}
             </Link>

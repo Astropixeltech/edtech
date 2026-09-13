@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu,
   ChevronDown,
-  Phone,
   Sun,
   Moon,
   BookOpen,
@@ -21,6 +20,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import learnLogoAssetJson from "@/assets/learn-with-alphazero-logo.png.asset.json";
 const learnLogo = learnLogoAssetJson.url;
 import MobileSidebar from "./MobileSidebar";
+import CourseSearchModal from "./CourseSearchModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,11 +32,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const CoursesNavbar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
-  const { language, setLanguage } = useLanguage();
+  const { language, toggleLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
   const { user, profile, role, signOut } = useAuth();
 
@@ -44,16 +44,16 @@ export const CoursesNavbar = () => {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/courses?search=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      navigate("/courses");
-    }
-  };
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsSearchModalOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, []);
 
   const isAdmissionActive = location.pathname === "/courses" && location.search.includes("category=admission");
   const isCoursesActive = location.pathname === "/courses" && !location.search.includes("category=admission");
@@ -86,17 +86,20 @@ export const CoursesNavbar = () => {
               />
             </Link>
 
-            {/* 10MS Course Search Bar */}
-            <form onSubmit={handleSearchSubmit} className="hidden sm:flex items-center relative flex-1 max-w-sm">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={isBn ? "কোর্স বা বিষয় খুঁজুন..." : "Search courses, topics..."}
-                className="w-full h-10 pl-9 pr-4 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 focus:border-emerald-500 dark:focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none transition-all"
-              />
-            </form>
+            {/* Course-Only Search Trigger Bar */}
+            <button
+              type="button"
+              onClick={() => setIsSearchModalOpen(true)}
+              className="hidden sm:flex items-center relative flex-1 max-w-sm h-10 pl-3.5 pr-3 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 hover:border-emerald-500/60 text-slate-500 dark:text-slate-400 transition-all text-left group cursor-pointer"
+            >
+              <Search className="w-4 h-4 mr-2.5 text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors shrink-0" />
+              <span className="flex-1 truncate">
+                {isBn ? "কোর্স খুঁজুন..." : "Search courses..."}
+              </span>
+              <kbd className="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded shadow-2xs">
+                ⌘K
+              </kbd>
+            </button>
           </div>
 
           {/* Middle: Desktop Navigation Links */}
@@ -176,26 +179,29 @@ export const CoursesNavbar = () => {
             </DropdownMenu>
           </nav>
 
-          {/* Right: Helpline, Language, Theme & Auth Button */}
+          {/* Right: Search (Mobile), Language, Theme & Auth Button */}
           <div className="flex items-center gap-2 sm:gap-3">
             
-            {/* 10MS Helpline Hotline Number */}
-            <a
-              href="tel:16910"
-              className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-500/30 transition-colors"
+            {/* Mobile Search Trigger Icon */}
+            <button
+              type="button"
+              onClick={() => setIsSearchModalOpen(true)}
+              aria-label="Search courses"
+              className="flex sm:hidden items-center justify-center h-9 w-9 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
-              <Phone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>{isBn ? "১৬৯১০" : "16910"}</span>
-            </a>
+              <Search className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            </button>
 
             {/* Language Switcher */}
             <button
-              onClick={() => setLanguage(language === "bn" ? "en" : "bn")}
-              className="h-9 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-1"
+              type="button"
+              onClick={toggleLanguage}
+              className="h-9 px-2.5 sm:px-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-1.5 active:scale-95 cursor-pointer"
               aria-label="Toggle Language"
+              title={isBn ? "Switch language to English" : "বাংলা ভাষায় পরিবর্তন করুন"}
             >
               <Languages className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>{language === "bn" ? "EN" : "বাং"}</span>
+              <span className="font-semibold">{isBn ? "EN" : "বাং"}</span>
             </button>
 
             {/* Theme Toggle */}
@@ -300,6 +306,9 @@ export const CoursesNavbar = () => {
 
       {/* Mobile Slide-in Drawer */}
       <MobileSidebar isOpen={isMobileOpen} onClose={() => setIsMobileOpen(false)} />
+
+      {/* Course-Only Search Modal */}
+      <CourseSearchModal isOpen={isSearchModalOpen} onClose={() => setIsSearchModalOpen(false)} />
     </>
   );
 };

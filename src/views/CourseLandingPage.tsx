@@ -526,6 +526,28 @@ export default function CourseLandingPage() {
     return localEnrolled.includes(c.id);
   }, [c?.id, effectiveUserId]);
 
+  // Educational video fallbacks based on category (never Rick Astley)
+  const defaultFallbackVideoId = useMemo(() => {
+    const cat = (c?.category || '').toLowerCase();
+    if (cat.includes('graphic') || cat.includes('design')) return 'R9_uLILm0qg';
+    if (cat.includes('math') || cat.includes('গণিত')) return 'V7z7BAZdt2M';
+    if (cat.includes('chem') || cat.includes('রসায়ন')) return '3z_2H63b6kE';
+    if (cat.includes('physics') || cat.includes('পদার্থ')) return 'qz0aGYrrlhU';
+    return 'qz0aGYrrlhU';
+  }, [c?.category]);
+
+  // Resolve authentic sample demo class video (lesson 2 or first free preview)
+  const demoLesson = useMemo(() => {
+    for (const mod of data?.modules || []) {
+      for (const les of mod.lessons || []) {
+        if (les.video_url && (les.is_free_preview || les.id !== data?.modules?.[0]?.lessons?.[0]?.id)) {
+          return les;
+        }
+      }
+    }
+    return data?.modules?.[0]?.lessons?.[1] || data?.modules?.[0]?.lessons?.[0] || null;
+  }, [data?.modules]);
+
   if (loading) {
     return (
       <Layout flushTop={false}>
@@ -592,30 +614,7 @@ export default function CourseLandingPage() {
   ];
   const faqs = c?.faqs ?? [];
 
-  // Educational video fallbacks based on category (never Rick Astley)
-  const defaultFallbackVideoId = useMemo(() => {
-    const cat = (c?.category || '').toLowerCase();
-    if (cat.includes('graphic') || cat.includes('design')) return 'R9_uLILm0qg';
-    if (cat.includes('math') || cat.includes('গণিত')) return 'V7z7BAZdt2M';
-    if (cat.includes('chem') || cat.includes('রসায়ন')) return '3z_2H63b6kE';
-    if (cat.includes('physics') || cat.includes('পদার্থ')) return 'qz0aGYrrlhU';
-    return 'qz0aGYrrlhU';
-  }, [c?.category]);
-
   const videoId = getYouTubeId(previewLesson?.video_url || c.intro_video_url) || (c as any).youtube_video_id || defaultFallbackVideoId;
-
-  // Resolve authentic sample demo class video (lesson 2 or first free preview)
-  const demoLesson = useMemo(() => {
-    for (const mod of data?.modules || []) {
-      for (const les of mod.lessons || []) {
-        if (les.video_url && (les.is_free_preview || les.id !== data?.modules?.[0]?.lessons?.[0]?.id)) {
-          return les;
-        }
-      }
-    }
-    return data?.modules?.[0]?.lessons?.[1] || data?.modules?.[0]?.lessons?.[0] || null;
-  }, [data?.modules]);
-
   const demoVideoId = getYouTubeId(demoLesson?.video_url) || defaultFallbackVideoId;
 
   const handleEnroll = () => {
