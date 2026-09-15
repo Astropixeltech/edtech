@@ -77,7 +77,7 @@ const staticPages: SearchItem[] = [
     titleBn: "সকল কোর্স ক্যাটালগ",
     description: "Browse all engineering, university and HSC admission preparation courses",
     descriptionBn: "ইঞ্জিনিয়ারিং, বিশ্ববিদ্যালয় এবং এইচএসসি প্রস্তুতিমূলক সকল কোর্স ব্রাউজ করুন",
-    path: "/catalog",
+    path: "/courses",
     icon: BookOpen,
     keywords: ["courses", "course", "catalog", "engineering", "buet", "admission", "medical", "hsc", "academic", "কোর্স", "ক্যাটালগ", "ভর্তি"],
     category: "course"
@@ -348,7 +348,7 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
       const { data, error } = await supabase.functions.invoke('ai-assistant', {
         body: {
           message: `User is searching for "${searchQuery}" on Astropixel Learn. We offer university admission prep, HSC prep, syllabus calculators, eligibility tools, and certificates.
-Suggest which page they should visit in 1 short sentence. Available: All Courses (/catalog), Free Resources (/free-resources), Syllabus Tracker (/syllabus-calculator), Eligibility Calculator (/eligibility-calculator), Student Portal (/student/login), About (/about), Contact (/contact).
+Suggest which page they should visit in 1 short sentence. Available: All Courses (/courses), Free Resources (/free-resources), Syllabus Tracker (/syllabus-calculator), Eligibility Calculator (/eligibility-calculator), Student Portal (/student/login), About (/about), Contact (/contact).
 Reply in ${language === 'bn' ? 'Bengali' : 'English'} only under 15 words.`
         }
       });

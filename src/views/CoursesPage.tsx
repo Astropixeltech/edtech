@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -28,6 +28,8 @@ import CategoryCard from "@/components/CategoryCard";
 import EdgeCourseCard from "@/components/EdgeCourseCard";
 import HorizontalScroller from "@/components/ui/HorizontalScroller";
 import HomePageSkeleton from "@/components/skeletons/HomePageSkeleton";
+import { TestimonialCard } from "@/components/ui/testimonial-card";
+import { TeamSection } from "@/components/ui/team";
 
 import instructorHH from "@/assets/instructors/hh.png.asset.json";
 import instructorNayeem from "@/assets/instructors/nayeem.png.asset.json";
@@ -109,7 +111,7 @@ const DEFAULT_BANNER_SLIDES = [
     subtitleEn: "Master complex physics and higher mathematics with deep conceptual clarity, question bank analysis, and structured mock tests.",
     ctaBn: "ইঞ্জিনিয়ারিং কোর্স",
     ctaEn: "Engineering Courses",
-    ctaHref: "/catalog?category=admission",
+    ctaHref: "/courses?category=admission",
   },
   {
     id: "3",
@@ -126,13 +128,13 @@ const DEFAULT_BANNER_SLIDES = [
     subtitleEn: "High-yield medical biology and chemistry line-by-line revision with daily topic-wise mock tests.",
     ctaBn: "মেডিকেল কোর্স",
     ctaEn: "Medical Courses",
-    ctaHref: "/catalog?category=admission",
+    ctaHref: "/courses?category=admission",
   },
   {
     id: "4",
     image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200&auto=format&fit=crop",
     eyebrowBn: "ঢাকা বিশ্ববিদ্যালয় 'ক' ইউনিট ও বিজ্ঞান প্রস্তুতি",
-    eyebrowEn: "Dhaka University 'A' Unit Prep",
+    eyebrowEn: "DU 'A' Unit Prep",
     title1Bn: "ঢাবি 'ক' ইউনিট",
     title1En: "DU 'A' Unit",
     title2Bn: "বিজ্ঞান অনুষদের শীর্ষ প্রস্তুতি।",
@@ -143,7 +145,7 @@ const DEFAULT_BANNER_SLIDES = [
     subtitleEn: "Comprehensive written and MCQ techniques for DU A-Unit and leading science university admissions.",
     ctaBn: "ভার্সিটি কোর্স",
     ctaEn: "Varsity Courses",
-    ctaHref: "/catalog?category=admission",
+    ctaHref: "/courses?category=admission",
   },
 ];
 
@@ -151,51 +153,69 @@ const studentReviews = [
   {
     nameBn: "আসিফ ইকবাল",
     nameEn: "Asif Iqbal",
+    handleBn: "@asif_buet23",
+    handleEn: "@asif_buet23",
     roleBn: "বুয়েট '২৩ ব্যাচ (সিভিল)",
     roleEn: "BUET '23 (Civil)",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80",
     quoteBn: "অ্যাস্ট্রোপিক্সেলের ইঞ্জিনিয়ারিং ফিজিক্স ও হায়ার ম্যাথ ক্লাসগুলো আমার বুয়েট ভর্তির স্বপ্ন পূরণ করেছে। কনসেপ্টগুলো এতো সহজে বোঝানো হয়!",
     quoteEn: "The engineering physics and higher math masterclasses made all the difference in my BUET admission success.",
   },
   {
-    nameBn: "সাদিয়া তাসনিম",
-    nameEn: "Sadia Tasnim",
-    roleBn: "ঢাকা মেডিকেল কলেজ (DMC '২৪)",
-    roleEn: "Dhaka Medical College (DMC '24)",
-    quoteBn: "মেডিকেল বায়োলজি ও কেমিস্ট্রি ক্লাসের শর্ট টেকনিক ও সাপ্তাহিক এক্সামগুলো আমাকে ডিএমসিতে চান্স পেতে সবচেয়ে বেশি সাহায্য করেছে।",
-    quoteEn: "The high-yield medical biology and chemistry modules, along with weekly mocks, helped me secure my dream seat at DMC.",
-  },
-  {
     nameBn: "তানভীর হাসান",
     nameEn: "Tanvir Hasan",
+    handleBn: "@tanvir_hsc",
+    handleEn: "@tanvir_hsc",
     roleBn: "এইচএসসি বিজ্ঞান (GPA-5.00)",
     roleEn: "HSC Science (GPA 5.00)",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80",
     quoteBn: "পদার্থবিজ্ঞান ও উচ্চতর গণিতে আমার আগে অনেক ভীতি ছিল। এখানকার ক্লাস ও নোটস দেখে টেস্ট ও বোর্ডে সর্বোচ্চ নম্বর পেয়েছি।",
     quoteEn: "I used to struggle with Physics and Higher Math. The structured lessons and chapter notes completely changed my confidence.",
   },
   {
     nameBn: "মেহজাবিন চৌধুরী",
     nameEn: "Mehjabin Chowdhury",
+    handleBn: "@mehjabin_du",
+    handleEn: "@mehjabin_du",
     roleBn: "ঢাকা বিশ্ববিদ্যালয় 'ক' ইউনিট",
     roleEn: "Dhaka University 'A' Unit",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80",
     quoteBn: "ঢাবি ক ইউনিটের প্রশ্নব্যাংক সলভিং আর ম্যাথ শর্ট ট্রিকসের ক্লাসগুলো ছিল এক কথায় অনবদ্য। প্রতিটি কনসেপ্ট পানির মতো পরিষ্কার!",
     quoteEn: "The DU A-Unit question bank solving sessions were masterclasses in speed and conceptual depth.",
   },
   {
     nameBn: "রাকিবুল ইসলাম",
     nameEn: "Rakibul Islam",
+    handleBn: "@rakib_cse",
+    handleEn: "@rakib_cse",
     roleBn: "বুয়েট '২৩ ব্যাচ (সিএসই)",
     roleEn: "BUET '23 (CSE)",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80",
     quoteBn: "ম্যাথ ও ফিজিক্সের অ্যানালাইসিস ক্লাসগুলো আমার ক্যালকুলেশন স্পিড দ্বিগুণ করে দিয়েছিল। বুয়েট ভর্তি পরীক্ষায় এটাই পার্থক্য গড়ে দিয়েছে।",
     quoteEn: "The analytical problem solving sessions doubled my calculation speed and confidence for the engineering admission test.",
   },
   {
     nameBn: "সামিয়া আক্তার",
     nameEn: "Samia Akter",
+    handleBn: "@samia_ssc",
+    handleEn: "@samia_ssc",
     roleBn: "এসএসসি বিজ্ঞান (গোল্ডেন GPA-5)",
     roleEn: "SSC Science (Golden GPA 5)",
+    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=256&q=80",
     quoteBn: "ক্লাস ৯-১০ এর বিজ্ঞান ও গণিত ক্লাসগুলো এতটাই গোছানো যে বোর্ড পরীক্ষার আগে কোনো বাড়তি কোচিং এর প্রয়োজনই হয়নি।",
     quoteEn: "The SSC foundational classes were so well organized that I never needed any outside coaching to score Golden GPA 5.",
   },
+  {
+    nameBn: "রেজাউল করিম",
+    nameEn: "Rezaul Karim",
+    handleBn: "@reza_dmc",
+    handleEn: "@reza_dmc",
+    roleBn: "ঢাকা মেডিকেল কলেজ (DMC)",
+    roleEn: "Dhaka Medical College (DMC)",
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=256&q=80",
+    quoteBn: "মেডিকেল বায়োলজি ও বায়ো-কেমিস্ট্রি সেশনগুলোর জন্য স্পেশাল থ্যাংকস। এক্সাম হলের প্রেসার হ্যান্ডেল করার গাইডলাইনগুলো দারুণ সাহায্য করেছে।",
+    quoteEn: "Special thanks for the medical biology sessions. The exam strategies helped me manage high pressure situations flawlessly.",
+  }
 ];
 
 export default function CoursesPage() {
@@ -223,6 +243,14 @@ export default function CoursesPage() {
 
   const [instructorsList, setInstructorsList] = useState<any[]>(defaultTrainersList);
   const [teacherCount, setTeacherCount] = useState<number>(defaultTrainersList.length);
+
+  const instructorTeamMembers = useMemo(() => {
+    return instructorsList.map((t) => ({
+      image: t.image || t.avatar_url || instructorAtik.url,
+      name: t.name,
+      role: isBn ? (t.qualificationBn || t.roleTag || t.role) : (t.qualificationEn || t.roleTag || t.role),
+    }));
+  }, [instructorsList, isBn]);
 
   useEffect(() => {
     let alive = true;
@@ -360,11 +388,11 @@ export default function CoursesPage() {
 
       <div className="container-fluid-2k bg-white dark:bg-background overflow-hidden">
         
-        {/* 1. HERO BANNER SECTION (Recovered EdgeCourseBD responsive heights, aligned to max-w-6xl with rounded radius bottom) */}
+        {/* 1. HERO BANNER SECTION (Sharp 4 corners design) */}
         <section 
           onMouseEnter={() => setIsSliderPaused(true)}
           onMouseLeave={() => setIsSliderPaused(false)}
-          className="relative w-full h-[250px] sm:h-[400px] md:h-[550px] 4xl:h-[700px] overflow-hidden bg-black group rounded-b-[32px] sm:rounded-b-[40px] md:rounded-b-[48px] shadow-sm"
+          className="relative w-full h-[250px] sm:h-[400px] md:h-[550px] 4xl:h-[700px] overflow-hidden bg-black group rounded-none shadow-sm"
         >
           <AnimatePresence mode="wait">
             <motion.div
@@ -378,7 +406,7 @@ export default function CoursesPage() {
             >
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent flex items-end">
                 <div className="max-w-6xl mx-auto w-full pb-10 sm:pb-14 px-4 sm:px-6 lg:px-8 text-white">
-                  <span className="inline-block px-3 py-1 rounded-full bg-brand-500 text-white text-xs font-bold mb-2 shadow-sm">
+                  <span className="inline-block px-3 py-1 rounded-sm bg-brand-500 text-white text-xs font-bold mb-2 shadow-sm">
                     {isBn ? currentHero.eyebrowBn : currentHero.eyebrowEn}
                   </span>
                   <h1 className="text-xl sm:text-3xl md:text-5xl font-extrabold max-w-2xl leading-tight">
@@ -425,19 +453,19 @@ export default function CoursesPage() {
           </div>
         </section>
 
-        {/* 2. STAT CARDS ROW (Balanced spacing under hero banner) */}
-        <section className="bg-white dark:bg-background border-b border-gray-100 dark:border-border/40 py-8 sm:py-10">
+        {/* 2. STAT CARDS ROW (Balanced spacing under hero banner with subtle rounded top corners) */}
+        <section className="relative -mt-6 sm:-mt-8 z-10 rounded-t-3xl sm:rounded-t-[32px] bg-white dark:bg-background border-b border-gray-100 dark:border-border/40 py-8 sm:py-10">
           <div className="max-w-6xl mx-auto grid grid-cols-2 gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8 lg:grid-cols-4">
             <StatCard
               icon={Users}
-              value="১০,০০০+"
+              value={isBn ? "১০,০০০+" : "10,000+"}
               label={isBn ? "নিবন্ধিত শিক্ষার্থী" : "Active Students"}
               iconBgColor="bg-emerald-50 dark:bg-emerald-900/20"
               iconColor="text-brand-600 dark:text-brand-400"
             />
             <StatCard
               icon={BookOpen}
-              value="২৫+"
+              value={isBn ? "২৫+" : "25+"}
               label={isBn ? "প্র্যাক্টিক্যাল কোর্স" : "Online Courses"}
               iconBgColor="bg-blue-50 dark:bg-blue-900/20"
               iconColor="text-blue-600 dark:text-blue-400"
@@ -451,7 +479,7 @@ export default function CoursesPage() {
             />
             <StatCard
               icon={Award}
-              value="৯৮%"
+              value={isBn ? "৯৮%" : "98%"}
               label={isBn ? "ক্যারিয়ার সাকসেস" : "Success Rate"}
               iconBgColor="bg-purple-50 dark:bg-purple-900/20"
               iconColor="text-purple-600 dark:text-purple-400"
@@ -476,7 +504,7 @@ export default function CoursesPage() {
                 icon={Atom}
                 title={isBn ? "HSC পদার্থবিজ্ঞান" : "HSC Physics"}
                 count={8}
-                to="/catalog?category=hsc"
+                to="/courses?category=hsc&q=physics"
                 color="text-blue-600"
                 bgColor="bg-blue-50 dark:bg-blue-900/20"
               />
@@ -484,7 +512,7 @@ export default function CoursesPage() {
                 icon={FlaskConical}
                 title={isBn ? "HSC রসায়ন" : "HSC Chemistry"}
                 count={7}
-                to="/catalog?category=hsc"
+                to="/courses?category=hsc&q=chemistry"
                 color="text-emerald-600"
                 bgColor="bg-emerald-50 dark:bg-emerald-900/20"
               />
@@ -492,7 +520,7 @@ export default function CoursesPage() {
                 icon={Calculator}
                 title={isBn ? "উচ্চতর গণিত" : "Higher Mathematics"}
                 count={6}
-                to="/catalog?category=hsc"
+                to="/courses?category=hsc&q=math"
                 color="text-purple-600"
                 bgColor="bg-purple-50 dark:bg-purple-900/20"
               />
@@ -500,7 +528,7 @@ export default function CoursesPage() {
                 icon={Compass}
                 title={isBn ? "BUET ও ইঞ্জিনিয়ারিং" : "BUET & Engineering"}
                 count={9}
-                to="/catalog?category=admission"
+                to="/courses?category=admission&unit=buet"
                 color="text-amber-600"
                 bgColor="bg-amber-50 dark:bg-amber-900/20"
               />
@@ -508,7 +536,7 @@ export default function CoursesPage() {
                 icon={Stethoscope}
                 title={isBn ? "মেডিকেল এডমিশন" : "Medical Admission"}
                 count={6}
-                to="/catalog?category=admission"
+                to="/courses?category=admission&unit=medical"
                 color="text-rose-600"
                 bgColor="bg-rose-50 dark:bg-rose-900/20"
               />
@@ -516,7 +544,7 @@ export default function CoursesPage() {
                 icon={GraduationCap}
                 title={isBn ? "ঢাবি 'ক' ইউনিট" : "Varsity 'A' Unit"}
                 count={5}
-                to="/catalog?category=admission"
+                to="/courses?category=admission&unit=varsity"
                 color="text-indigo-600"
                 bgColor="bg-indigo-50 dark:bg-indigo-900/20"
               />
@@ -524,7 +552,7 @@ export default function CoursesPage() {
                 icon={BookOpen}
                 title={isBn ? "এসএসসি বিজ্ঞান ৯-১০" : "SSC Science (9-10)"}
                 count={8}
-                to="/catalog?category=ssc"
+                to="/courses?category=ssc"
                 color="text-teal-600"
                 bgColor="bg-teal-50 dark:bg-teal-900/20"
               />
@@ -532,7 +560,7 @@ export default function CoursesPage() {
                 icon={Trophy}
                 title={isBn ? "আইসিটি ও অলিম্পিয়াড" : "ICT & Olympiads"}
                 count={4}
-                to="/catalog?category=olympiad"
+                to="/courses?category=olympiad"
                 color="text-orange-600"
                 bgColor="bg-orange-50 dark:bg-orange-900/20"
               />
@@ -581,7 +609,7 @@ export default function CoursesPage() {
 
             <div className="flex justify-center pt-4">
               <Link
-                to="/catalog"
+                to="/courses"
                 className="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 hover:underline"
               >
                 <span>{isBn ? "সকল কোর্স দেখুন" : "View all courses"}</span>
@@ -616,15 +644,15 @@ export default function CoursesPage() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 pt-1">
                   <Link
-                    to="/catalog?category=admission"
-                    className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-sm transition-colors shadow-md"
+                    to="/courses?category=admission"
+                    className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-sm bg-primary hover:bg-primary/90 text-white font-semibold text-sm transition-colors shadow-md"
                   >
                     <span>{isBn ? "এডমিশন কোর্স দেখুন" : "Explore Admission Courses"}</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link
-                    to="/catalog"
-                    className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition-colors border border-white/20"
+                    to="/courses"
+                    className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-sm bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition-colors border border-white/20"
                   >
                     <span>{isBn ? "সব কোর্স দেখুন" : "Browse All Courses"}</span>
                   </Link>
@@ -655,52 +683,8 @@ export default function CoursesPage() {
           </div>
         </section>
 
-        {/* 6. EXPERT INSTRUCTORS (Continuous Infinite Loop with Square Images) */}
-        <section className="bg-background/50 py-12 md:py-14 px-4 sm:px-6 lg:px-8 border-t border-border/60">
-          <div className="max-w-6xl mx-auto space-y-8">
-            <div className="flex flex-col items-center gap-2 text-center max-w-xl mx-auto">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-primary">
-                {isBn ? "শীর্ষ ফ্যাকাল্টি" : "Top Faculty"}
-              </span>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
-                {isBn ? "দেশসেরা প্রশিক্ষকদের প্যানেল" : "Expert Instructors"}
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-semibold">
-                {isBn ? "বুয়েট, মেডিকেল ও শীর্ষ বিশ্ববিদ্যালয়ের অভিজ্ঞ মেন্টরদের সাথে সরাসরি প্রস্তুতি" : "Learn directly from top engineering & medical mentors"}
-              </p>
-            </div>
-
-            {/* Continuous Infinite Marquee Scroller */}
-            <div className="relative w-full overflow-hidden group/scroller py-2">
-              <div className="flex gap-4 sm:gap-6 animate-marquee-sideways hover:[animation-play-state:paused]">
-                {[...instructorsList, ...instructorsList].map((t, idx) => (
-                  <div
-                    key={`${t.id || t.name}-${idx}`}
-                    className="group/inst flex w-[240px] sm:w-[260px] shrink-0 flex-col items-center text-center gap-3.5 rounded-2xl bg-card dark:bg-card/95 border border-border/80 dark:border-border/60 p-5 shadow-xs hover:shadow-md hover:-translate-y-1 hover:border-primary/50 transition-all duration-200"
-                  >
-                    {/* Square Image with Rounded Corners */}
-                    <div className="relative w-full aspect-square max-w-[180px] overflow-hidden rounded-xl border border-border/70 bg-muted/20 group-hover/inst:border-primary/50 transition-colors shadow-xs">
-                      <img
-                        src={t.image || t.avatar_url || instructorAtik.url}
-                        alt={t.name}
-                        className="h-full w-full object-cover object-top transition-transform duration-300 group-hover/inst:scale-105"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="w-full space-y-1">
-                      <h4 className="text-sm font-extrabold text-slate-900 dark:text-white group-hover/inst:text-primary transition-colors">
-                        {t.name}
-                      </h4>
-                      <p className="text-xs text-slate-700 dark:text-slate-200 font-semibold line-clamp-2 leading-relaxed">
-                        {isBn ? (t.qualificationBn || t.roleTag || t.role) : (t.qualificationEn || t.roleTag || t.role)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* 6. EXPERT INSTRUCTORS (TeamSection Marquee Layout with Full Color Images) */}
+        <TeamSection members={instructorTeamMembers} isBn={isBn} />
 
         {/* 7. STUDENT TESTIMONIALS (Curated Institutional Hall of Fame Grid) */}
         <section className="bg-background py-12 md:py-14 px-4 sm:px-6 lg:px-8 border-t border-border/60">
@@ -717,43 +701,18 @@ export default function CoursesPage() {
               </p>
             </div>
 
-            {/* Curated Grid of Verified Reviews */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+            {/* Curated Grid of Verified Reviews using TestimonialCard */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 justify-items-center">
               {studentReviews.map((rev, idx) => (
-                <div
+                <TestimonialCard
                   key={idx}
-                  className="space-y-4 rounded-2xl bg-card dark:bg-card/95 border border-border/80 dark:border-border/60 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/40 transition-all duration-200 flex flex-col justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="h-11 w-11 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-black text-sm shrink-0 shadow-none">
-                      {(isBn ? rev.nameBn : rev.nameEn)[0]}
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">
-                        {isBn ? rev.nameBn : rev.nameEn}
-                      </h4>
-                      <p className="text-xs text-slate-700 dark:text-slate-300 font-bold">
-                        {isBn ? rev.roleBn : rev.roleEn}
-                      </p>
-                    </div>
-                  </div>
-
-                  <p className="text-xs sm:text-sm text-slate-900 dark:text-slate-100 font-medium leading-relaxed italic flex-1">
-                    "{isBn ? rev.quoteBn : rev.quoteEn}"
-                  </p>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-border/40">
-                    <div className="flex items-center gap-0.5 text-amber-500">
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <Star key={s} className="h-3 w-3 fill-current" />
-                      ))}
-                    </div>
-                    <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      {isBn ? "ভেরিফাইড রিভিউ" : "Verified Student"}
-                    </span>
-                  </div>
-                </div>
+                  author={{
+                    name: isBn ? rev.nameBn : rev.nameEn,
+                    handle: isBn ? `${rev.roleBn} (${rev.handleBn})` : `${rev.roleEn} (${rev.handleEn})`,
+                    avatar: rev.avatar,
+                  }}
+                  text={isBn ? rev.quoteBn : rev.quoteEn}
+                />
               ))}
             </div>
           </div>

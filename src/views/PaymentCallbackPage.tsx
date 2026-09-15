@@ -173,7 +173,7 @@ const PaymentCallbackPage = () => {
                   <PlayCircle className="w-4 h-4" />
                   ক্লাস শুরু করুন
                 </Button>
-                <Button onClick={() => navigate('/catalog')} variant="outline">
+                <Button onClick={() => navigate('/courses')} variant="outline">
                   সকল কোর্স
                 </Button>
               </div>

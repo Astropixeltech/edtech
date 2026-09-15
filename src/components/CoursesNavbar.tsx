@@ -42,8 +42,14 @@ export const CoursesNavbar = () => {
 
   const isBn = language === "bn";
 
+  const [scrolled, setScrolled] = useState(false);
+
   useEffect(() => {
     setMounted(true);
+
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
 
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -51,8 +57,12 @@ export const CoursesNavbar = () => {
         setIsSearchModalOpen((prev) => !prev);
       }
     };
+    window.addEventListener("scroll", handleScroll);
     window.addEventListener("keydown", handleGlobalKeyDown);
-    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("keydown", handleGlobalKeyDown);
+    };
   }, []);
 
   const isAdmissionActive = location.pathname === "/courses" && location.search.includes("category=admission");
@@ -62,7 +72,11 @@ export const CoursesNavbar = () => {
   return (
     <>
       {/* 10 Minute School-Style Full-Width Sticky Navbar */}
-      <header className="sticky top-0 left-0 right-0 z-50 w-full bg-white dark:bg-slate-900 border-b border-border/80 shadow-xs transition-colors">
+      <header className={`sticky top-0 left-0 right-0 z-50 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 transition-all duration-300 ${
+        scrolled
+          ? "shadow-[0_4px_20px_-2px_rgba(16,185,129,0.08),0_2px_8px_-1px_rgba(15,23,42,0.04)] dark:shadow-[0_4px_20px_-2px_rgba(16,185,129,0.15),0_2px_8px_-1px_rgba(0,0,0,0.4)]"
+          : "shadow-[0_2px_12px_-2px_rgba(16,185,129,0.04)] dark:shadow-none"
+      }`}>
         <div className="max-w-7xl mx-auto h-16 sm:h-[72px] px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 sm:gap-6">
           
           {/* Left: Brand Logo & Course Search Bar */}

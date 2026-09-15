@@ -7,12 +7,11 @@ import { usePublicCourses } from "@/hooks/usePublicCourses";
 import { useAuth } from "@/contexts/AuthContext";
 import CourseEnrollmentModal from "@/components/student/CourseEnrollmentModal";
 import { 
-  Code, Palette, Bot, TrendingUp, Search, Sparkles, BookOpen, Clock, 
+  Code, Palette, Bot, TrendingUp, Sparkles, BookOpen, Clock, 
   ArrowRight, CheckCircle2, Star, Monitor, Video, Wrench, Shield, GraduationCap,
   Layers, Atom, FlaskConical, Calculator, Trophy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Course } from "@/types/lms";
 import EdgeCourseCard from "@/components/EdgeCourseCard";
 import CourseCardSkeleton from "@/components/skeletons/CourseCardSkeleton";
@@ -23,8 +22,8 @@ const categoryList = [
   { id: "hsc", labelBn: "এইচএসসি বিজ্ঞান", labelEn: "HSC Science", icon: Atom, match: /hsc|এইচএসসি|পদার্থ|রসায়ন|উচ্চতর গণিত|বিজ্ঞান|science|physics|chemistry|math/i },
   { id: "admission", labelBn: "বিশ্ববিদ্যালয় ভর্তি", labelEn: "University Admission", icon: GraduationCap, match: /admission|ভর্তি|buet|বুয়েট|মেডিকেল|medical|varsity|ভার্সিটি|ইঞ্জিনিয়ারিং|engineering/i },
   { id: "ssc", labelBn: "এসএসসি ৯-১০", labelEn: "SSC 9-10", icon: BookOpen, match: /ssc|এসএসসি|class 9|class 10|৯ম|১০ম|মাধ্যমিক/i },
-  { id: "olympiad", labelBn: "অলিম্পিয়াড ও স্পেশাল", labelEn: "Olympiad & Special", icon: Trophy, match: /olympiad|অলিম্পিয়াড|math olympiad|physics olympiad|biology/i },
-  { id: "ict_english", labelBn: "আইসিটি ও ভাষা", labelEn: "ICT & English", icon: Code, match: /ict|আইসিটি|english|ইংরেজি|grammar|communication/i },
+  { id: "olympiad", labelBn: "আইসিটি ও অলিম্পিয়াড", labelEn: "ICT & Olympiad", icon: Trophy, match: /olympiad|অলিম্পিয়াড|math olympiad|physics olympiad|biology|ict|আইসিটি|c-programming|কোডিং/i },
+  { id: "ict_english", labelBn: "ভাষা ও দক্ষতা", labelEn: "Skills & English", icon: Code, match: /english|ইংরেজি|grammar|communication|marketing|graphic|design|web/i },
 ];
 
 const AllCoursesCatalogPage = () => {
@@ -42,11 +41,28 @@ const AllCoursesCatalogPage = () => {
   const [enrollmentCourse, setEnrollmentCourse] = useState<Course | null>(null);
   const [showEnrollmentModal, setShowEnrollmentModal] = useState<boolean>(false);
 
-  // Sync category param from URL
+  // Sync category, q, and unit params from URL
   useEffect(() => {
     const cat = searchParams.get("category");
+    const q = searchParams.get("q") || searchParams.get("search");
+    const unit = searchParams.get("unit");
+
     if (cat && categoryList.some((c) => c.id === cat)) {
       setActiveCategory(cat);
+    } else {
+      setActiveCategory("all");
+    }
+
+    if (unit) {
+      setSelectedUnitId(unit);
+      if (unit === "buet") setSearchQuery("বুয়েট");
+      else if (unit === "medical") setSearchQuery("মেডিকেল");
+      else if (unit === "varsity") setSearchQuery("ঢাকা বিশ্ববিদ্যালয়");
+    } else if (q) {
+      setSearchQuery(q);
+    } else if (!unit && !q) {
+      setSearchQuery("");
+      setSelectedUnitId(null);
     }
   }, [searchParams]);
 
@@ -56,6 +72,10 @@ const AllCoursesCatalogPage = () => {
       setSelectedUnitId(null);
     }
     if (catId === "all") {
+      setSearchQuery("");
+      setSelectedUnitId(null);
+      setPriceFilter("all");
+      setSortBy("default");
       searchParams.delete("category");
     } else {
       searchParams.set("category", catId);
@@ -148,6 +168,44 @@ const AllCoursesCatalogPage = () => {
     setShowEnrollmentModal(true);
   };
 
+  const getHeaderBadgeText = (catId: string, unitId: string | null, isBn: boolean) => {
+    if (catId === "admission") {
+      if (unitId === "buet") return isBn ? "ইঞ্জিনিয়ারিং ভর্তি প্রোগ্রাম (BUET + CKRUET)" : "Engineering Admission Track (BUET + CKRUET)";
+      if (unitId === "varsity-a") return isBn ? "ভার্সিটি ক ইউনিট স্পেশাল (বিজ্ঞান)" : "Varsity A-Unit Program (DU 'Ka' + GST A)";
+      if (unitId === "medical") return isBn ? "মেডিকেল ও ডেন্টাল এডমিশন" : "Medical & Dental Admission Track";
+      if (unitId === "varsity-b") return isBn ? "ভার্সিটি খ ও ঘ ইউনিট (মানবিক)" : "Varsity B & D Unit Track";
+      if (unitId === "varsity-c") return isBn ? "ভার্সিটি গ ইউনিট (ব্যবসায় শিক্ষা)" : "Varsity C Unit (Business + IBA)";
+      return isBn ? "বিশ্ববিদ্যালয় ভর্তি স্পেশাল প্রোগ্রাম" : "University Admission Master Programs";
+    }
+    if (catId === "hsc") return isBn ? "এইচএসসি বিজ্ঞান একাডেমিক" : "HSC Science Academic Masterclasses";
+    if (catId === "ssc") return isBn ? "এসএসসি ৯-১০ বোর্ড প্রস্তুতি" : "SSC 9-10 Board Exam Foundation";
+    if (catId === "olympiad") return isBn ? "অলিম্পিয়াড ও স্পেশাল ফাউন্ডেশন" : "National Olympiad & Special Courses";
+    if (catId === "ict_english") return isBn ? "আইসিটি ও ল্যাঙ্গুয়েজ ডেভেলপমেন্ট" : "ICT & English Language Skills";
+    return isBn ? "আমাদের সকল প্ল্যাটফর্ম কোর্সসমূহ" : "All Platform Learning Courses";
+  };
+
+  const getHeaderTitleText = (catId: string, unitId: string | null, isBn: boolean) => {
+    if (catId === "admission") {
+      if (unitId === "buet") return isBn ? "ইঞ্জিনিয়ারিং ভর্তি কোর্সসমূহ" : "Engineering Admission Preparation Courses";
+      if (unitId === "varsity-a") return isBn ? "ঢাকা বিশ্ববিদ্যালয় 'ক' ইউনিট ও ভার্সিটি বিজ্ঞান কোর্স" : "DU Varsity A-Unit & Science Admission Courses";
+      if (unitId === "medical") return isBn ? "মেডিকেল ও ডেন্টাল এডমিশন প্রস্তুতি কোর্স" : "Medical & Dental College Admission Courses";
+      if (unitId === "varsity-b") return isBn ? "মানবিক ও বিভাগ পরিবর্তন ইউনিট ভর্তি কোর্স" : "Humanities & Varsity B Unit Admission Courses";
+      if (unitId === "varsity-c") return isBn ? "ব্যবসায় শিক্ষা ও আইবিএ ভর্তি কোর্সসমূহ" : "Business Faculty & IBA Admission Courses";
+      return isBn ? "বিশ্ববিদ্যালয় ভর্তি প্রস্তুতি কোর্সসমূহ" : "University Admission Programs";
+    }
+    if (catId === "hsc") return isBn ? "এইচএসসি বিজ্ঞান বিভাগের সকল একাডেমিক কোর্স" : "HSC Science Academic Courses";
+    if (catId === "ssc") return isBn ? "এসএসসি ৯-১০ শ্রেণির বোর্ড প্রস্তুতি কোর্সসমূহ" : "SSC Board Exam Preparation Courses";
+    if (catId === "olympiad") return isBn ? "জাতীয় অলিম্পিয়াড ও অ্যাডভান্সড সলভিং কোর্স" : "National Olympiad & Advanced Solving";
+    if (catId === "ict_english") return isBn ? "এইচএসসি আইসিটি ও স্পোকেন/রাইটিং ইংলিশ কোর্স" : "HSC ICT & English Skill Courses";
+    return isBn ? "আমাদের সকল একাডেমিক ও ভর্তি প্রস্তুতি কোর্স" : "Explore All Academic & Admission Programs";
+  };
+
+  const getHeaderSubtitleText = (catId: string, unitId: string | null, isBn: boolean, count: number) => {
+    return isBn
+      ? `অভিজ্ঞ মেন্টরদের সাথে মোট ${count} টি কোর্স থেকে বেছে নিন আপনার পছন্দের সঠিক প্রস্তুতি প্রোগ্রাম।`
+      : `Select from ${count} specialized courses designed by expert mentors for focused learning.`;
+  };
+
   return (
     <Layout>
       <Helmet>
@@ -155,94 +213,82 @@ const AllCoursesCatalogPage = () => {
         <meta name="description" content="ওয়েব ডেভেলপমেন্ট, গ্রাফিক ডিজাইন, ইউআই/ইউএক্স, এআই ও ডিজিটাল মার্কেটিং কোর্সসমূহ।" />
       </Helmet>
 
-      <div className="min-h-screen bg-background pb-24">
-        {/* Page Hero Header */}
-        <section className="relative pt-8 pb-10 border-b border-gray-100 dark:border-border/40 bg-gradient-to-b from-brand-50/40 via-transparent to-transparent">
-          <div className="container mx-auto px-4 sm:px-6 text-center max-w-4xl">
+      <div className="min-h-screen bg-[#0B1120] pb-24">
+        {/* Ultra-Clean Minimal Hero Header */}
+        <section className="relative pt-12 pb-16 bg-[#0B1120] text-white">
+          <div className="container mx-auto px-4 sm:px-6 text-center max-w-3xl">
             
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white leading-tight mb-3">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-tight mb-3 tracking-tight">
               {activeCategory === "admission"
                 ? (isBn ? "এইচএসসি ও বিশ্ববিদ্যালয় ভর্তি প্রস্তুতি" : "Admission & HSC Prep")
                 : (isBn ? "আমাদের সকল একাডেমিক ও ভর্তি কোর্সসমূহ" : "Explore All Academic & Admission Courses")}
             </h1>
 
-            <p className="text-slate-700 dark:text-slate-300 font-semibold text-sm sm:text-base max-w-2xl mx-auto leading-relaxed mb-6">
+            <p className="text-slate-300 font-medium text-sm sm:text-base max-w-xl mx-auto leading-relaxed mb-2">
               {activeCategory === "admission"
                 ? (isBn ? "স্বপ্নের ক্যাম্পাসে জায়গা করে নিতে বুয়েট, ঢাবি ও মেডিকেলের অভিজ্ঞ মেন্টরদের বিশেষ এডমিশন প্রোগ্রাম।" : "Specialized admission programs designed by BUET, DU & Medical mentors.")
                 : (isBn ? "এইচএসসি বিজ্ঞান, বুয়েট-মেডিকেল ভর্তি ও এসএসসি পরীক্ষার পূর্ণাঙ্গ প্রস্তুতি এক প্ল্যাটফর্মে।" : "Comprehensive preparation for HSC Science, BUET/Medical Admission, and SSC board exams.")}
             </p>
 
-            {/* Interactive Search Bar */}
-            <div className="relative max-w-xl mx-auto mb-6">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-              <Input
-                type="text"
-                placeholder={isBn ? "কোর্সের নাম লিখে খুঁজুন..." : "Search courses by keyword..."}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-11 pr-10 h-12 rounded-full border-gray-300 dark:border-border bg-white dark:bg-card shadow-sm text-sm font-bold text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus-visible:ring-brand-500"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-foreground text-xs p-1"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
+          </div>
+        </section>
 
-            {/* Skill Category Filter Pills */}
-            <div className="flex items-center justify-center gap-2 overflow-x-auto scrollbar-none max-w-full py-1 px-2">
-              {categoryList.map((cat) => {
-                const Icon = cat.icon;
-                const isActive = activeCategory === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => handleCategoryChange(cat.id)}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all duration-200 border ${
-                      isActive
-                        ? "bg-brand-500 text-white border-brand-500 shadow-sm"
-                        : "bg-white dark:bg-card hover:bg-gray-50 dark:hover:bg-accent text-slate-900 dark:text-slate-100 border-gray-300 dark:border-border"
-                    }`}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                    <span>{isBn ? cat.labelBn : cat.labelEn}</span>
-                  </button>
-                );
-              })}
-            </div>
+        {/* Main Content Area with Soft Top Curve */}
+        <div className="relative -mt-6 sm:-mt-8 z-10 rounded-t-3xl sm:rounded-t-[32px] bg-slate-50 dark:bg-slate-950 min-h-screen pt-6 pb-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
 
-            {/* Secondary Controls: Price Filter, Sort & Count */}
-            <div className="flex items-center justify-between flex-wrap gap-3 mt-6 pt-4 border-t border-gray-100 dark:border-border/40 max-w-4xl mx-auto px-2 text-xs">
-              {/* Price Toggle */}
-              <div className="flex items-center gap-1 bg-gray-100 dark:bg-card/80 p-1 rounded-full border border-border/50">
-                {(["all", "paid", "free"] as const).map((pf) => (
-                  <button
-                    key={pf}
-                    onClick={() => setPriceFilter(pf)}
-                    className={`px-3 py-1 rounded-full font-bold transition-all ${
-                      priceFilter === pf
-                        ? "bg-white dark:bg-muted text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {pf === "all" ? (isBn ? "সব কোর্স" : "All") : pf === "paid" ? (isBn ? "পেইড" : "Paid") : (isBn ? "ফ্রি" : "Free")}
-                  </button>
-                ))}
+            {/* Organized Sub-Navigation Filter Bar */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm shadow-xs p-2.5 mb-6 flex flex-col lg:flex-row items-center justify-between gap-4">
+              
+              {/* Category Filter Tabs */}
+              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none w-full lg:w-auto py-0.5">
+                {categoryList.map((cat) => {
+                  const Icon = cat.icon;
+                  const isActive = activeCategory === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => handleCategoryChange(cat.id)}
+                      className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-sm text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+                        isActive
+                          ? "bg-emerald-600 text-white shadow-xs"
+                          : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600"
+                      }`}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      <span>{isBn ? cat.labelBn : cat.labelEn}</span>
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Course count & Sort dropdown */}
-              <div className="flex items-center gap-3 ml-auto">
-                <span className="text-muted-foreground font-medium">
+              {/* Controls: Price Filter, Sort & Count */}
+              <div className="flex items-center justify-between lg:justify-end gap-3 w-full lg:w-auto text-xs pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-800">
+                {/* Price Toggle */}
+                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-sm">
+                  {(["all", "paid", "free"] as const).map((pf) => (
+                    <button
+                      key={pf}
+                      onClick={() => setPriceFilter(pf)}
+                      className={`px-2.5 py-1 rounded-sm font-bold transition-all cursor-pointer ${
+                        priceFilter === pf
+                          ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                      }`}
+                    >
+                      {pf === "all" ? (isBn ? "সব" : "All") : pf === "paid" ? (isBn ? "পেইড" : "Paid") : (isBn ? "ফ্রি" : "Free")}
+                    </button>
+                  ))}
+                </div>
+
+                <span className="text-slate-500 dark:text-slate-400 font-bold hidden sm:inline">
                   {filteredCourses.length} {isBn ? "টি কোর্স" : "courses"}
                 </span>
 
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="h-8 px-2.5 rounded-lg border border-border bg-white dark:bg-card text-foreground font-semibold focus:outline-none focus:border-brand-500"
+                  className="h-8 px-2.5 rounded-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500 cursor-pointer"
                 >
                   <option value="default">{isBn ? "সাধারণ ক্রম" : "Default Sort"}</option>
                   <option value="price_asc">{isBn ? "ফি: কম থেকে বেশি" : "Price: Low to High"}</option>
@@ -251,22 +297,35 @@ const AllCoursesCatalogPage = () => {
                 </select>
               </div>
             </div>
+          {/* Admission Target Unit Selector Banner (When Admission is active) */}
+          {activeCategory === "admission" && (
+            <section className="container mx-auto px-4 sm:px-6 pt-2 pb-2 max-w-6xl">
+              <TargetUnitSelector
+                selectedUnitId={selectedUnitId}
+                onSelectUnit={handleUnitSelect}
+              />
+            </section>
+          )}
 
-          </div>
-        </section>
-
-        {/* Admission Target Unit Selector Banner (When Admission is active) */}
-        {activeCategory === "admission" && (
-          <section className="container mx-auto px-4 sm:px-6 pt-6 max-w-6xl">
-            <TargetUnitSelector
-              selectedUnitId={selectedUnitId}
-              onSelectUnit={handleUnitSelect}
-            />
-          </section>
-        )}
-
-        {/* Course Catalog Grid View */}
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          {/* Course Catalog Grid View */}
+          <section className="container mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Centered Category & Unit Section Header Tagline (Renders for specific category/unit filters) */}
+            {!coursesLoading && filteredCourses.length > 0 && activeCategory !== "all" && (
+              <div className="text-center max-w-3xl mx-auto pt-4 pb-8 sm:pt-6 sm:pb-10 space-y-2.5">
+                <div className="inline-flex items-center justify-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-xs sm:text-sm font-extrabold uppercase tracking-wider">
+                  <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>{getHeaderBadgeText(activeCategory, selectedUnitId, isBn)}</span>
+                </div>
+                
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                  {getHeaderTitleText(activeCategory, selectedUnitId, isBn)}
+                </h2>
+                
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium max-w-lg mx-auto leading-relaxed">
+                  {getHeaderSubtitleText(activeCategory, selectedUnitId, isBn, filteredCourses.length)}
+                </p>
+              </div>
+            )}
           {coursesLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
               {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
@@ -337,6 +396,8 @@ const AllCoursesCatalogPage = () => {
             </div>
           )}
         </section>
+          </div>
+        </div>
       </div>
 
       {/* Direct Enrollment Modal */}

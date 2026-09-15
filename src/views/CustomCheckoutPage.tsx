@@ -93,7 +93,7 @@ export default function CustomCheckoutPage() {
           <p className="text-sm text-slate-400">{err || 'ইনভয়েস পাওয়া যায়নি বা মেয়াদ উত্তীর্ণ হয়ে গেছে।'}</p>
           <div className="flex flex-col sm:flex-row gap-2 pt-2 justify-center">
             <a
-              href="/catalog"
+              href="/courses"
               className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
             >
               সকল কোর্স দেখুন

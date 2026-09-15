@@ -36,10 +36,10 @@ export const EdgeCourseCard = ({ course, onEnroll, className }: EdgeCourseCardPr
 
   return (
     <div
-      className={`group w-full shrink-0 overflow-hidden rounded-2xl border border-border/80 dark:border-border/60 bg-card dark:bg-card/95 shadow-sm hover:shadow-md hover:-translate-y-1 hover:border-primary/40 dark:hover:border-primary/50 transition-all duration-200 snap-start flex flex-col justify-between ${className || "min-w-[260px] max-w-[320px]"}`}
+      className={`group w-full shrink-0 overflow-hidden rounded-sm border border-border/80 dark:border-border/60 bg-card dark:bg-card/95 shadow-sm hover:shadow-md hover:-translate-y-1 hover:border-primary/40 dark:hover:border-primary/50 transition-all duration-200 snap-start flex flex-col justify-between ${className || "min-w-[260px] max-w-[320px]"}`}
     >
       {/* Thumbnail */}
-      <Link to={targetLink} className="relative block h-[180px] w-full overflow-hidden bg-gray-100 dark:bg-accent rounded-t-2xl">
+      <Link to={targetLink} className="relative block h-[180px] w-full overflow-hidden bg-gray-100 dark:bg-accent rounded-t-sm">
         {course.thumbnail_url ? (
           <img
             src={course.thumbnail_url}
@@ -53,7 +53,7 @@ export const EdgeCourseCard = ({ course, onEnroll, className }: EdgeCourseCardPr
           </div>
         )}
         {course.category && (
-          <span className="absolute top-3 left-3 bg-black/65 backdrop-blur-md text-white text-[11px] font-semibold px-2.5 py-1 rounded-full border border-white/20 shadow-sm">
+          <span className="absolute top-3 left-3 bg-black/65 backdrop-blur-md text-white text-[11px] font-semibold px-2.5 py-1 rounded-sm border border-white/20 shadow-sm">
             {course.category}
           </span>
         )}
@@ -111,7 +111,7 @@ export const EdgeCourseCard = ({ course, onEnroll, className }: EdgeCourseCardPr
 
           <Link
             to={targetLink}
-            className="h-9 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-xs shrink-0 active:scale-95"
+            className="h-9 px-4 rounded-sm bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-xs shrink-0 active:scale-95"
           >
             <span>{isBn ? "বিস্তারিত দেখুন" : "View Details"}</span>
             <ArrowRight className="h-3.5 w-3.5" />

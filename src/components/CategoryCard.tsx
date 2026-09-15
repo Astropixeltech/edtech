@@ -22,10 +22,10 @@ export const CategoryCard = ({
   return (
     <Link
       to={to}
-      className="group mx-auto flex h-full w-full max-w-[300px] flex-col items-center justify-center rounded-2xl border border-border/80 dark:border-border/60 bg-card dark:bg-card/95 p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/40 dark:hover:border-primary/50 transition-all duration-200 relative overflow-hidden"
+      className="group mx-auto flex h-full w-full max-w-[300px] flex-col items-center justify-center rounded-sm border border-border/80 dark:border-border/60 bg-card dark:bg-card/95 p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/40 dark:hover:border-primary/50 transition-all duration-200 relative overflow-hidden"
     >
       <div
-        className={`flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:scale-105 transition-transform duration-200 shrink-0 shadow-none`}
+        className={`flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-sm bg-primary/10 text-primary group-hover:scale-105 transition-transform duration-200 shrink-0 shadow-none`}
       >
         <Icon className="h-6 w-6 sm:h-7 sm:w-7" />
       </div>
@@ -35,7 +35,7 @@ export const CategoryCard = ({
       </h3>
 
       {count !== undefined && (
-        <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 mt-1 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
+        <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 mt-1 px-2.5 py-0.5 rounded-sm bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
           {count} টি কোর্স
         </span>
       )}

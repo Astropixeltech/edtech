@@ -6,6 +6,8 @@ import {
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
+import { Plyr } from "plyr-react";
+import "plyr-react/plyr.css";
 
 interface StickyEnrollCardProps {
   price: number;
@@ -69,20 +71,31 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
   const activeVideoId = activeSlide === 2 ? (demoVideoId || videoId) : videoId;
 
   return (
-    <div className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden transition-all">
+    <div className="space-y-3">
+      <div className="w-full rounded-none border-4 border-white bg-white dark:bg-slate-900 shadow-2xl overflow-hidden transition-all">
       {/* 1. Interactive 4-Slide Media Area */}
       <div className="relative aspect-video w-full overflow-hidden bg-slate-950 group select-none">
         {/* SLIDE 0: Course Intro Video Trailer */}
         {activeSlide === 0 && (
           <>
             {isPlayingPreview && activeVideoId ? (
-              <iframe
-                src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=1&rel=0`}
-                title="Course Trailer"
-                className="h-full w-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+              <div className="h-full w-full [&_.plyr]:h-full [&_.plyr]:w-full [&_.plyr__video-embed]:h-full">
+                <Plyr
+                  source={{
+                    type: "video",
+                    sources: [
+                      {
+                        src: activeVideoId,
+                        provider: "youtube",
+                      },
+                    ],
+                  }}
+                  options={{
+                    autoplay: true,
+                    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+                  }}
+                />
+              </div>
             ) : (
               <>
                 {thumbnailUrl ? (
@@ -146,13 +159,23 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
         {activeSlide === 2 && (
           <>
             {isPlayingDemo && activeVideoId ? (
-              <iframe
-                src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=1&rel=0`}
-                title="Demo Class"
-                className="h-full w-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+              <div className="h-full w-full [&_.plyr]:h-full [&_.plyr]:w-full [&_.plyr__video-embed]:h-full">
+                <Plyr
+                  source={{
+                    type: "video",
+                    sources: [
+                      {
+                        src: activeVideoId,
+                        provider: "youtube",
+                      },
+                    ],
+                  }}
+                  options={{
+                    autoplay: true,
+                    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+                  }}
+                />
+              </div>
             ) : (
               <div
                 onClick={() => setIsPlayingDemo(true)}
@@ -226,37 +249,41 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
         </button>
       </div>
 
-      {/* 10MS 4-Slide Interactive Selector Strip */}
-      <div className="grid grid-cols-4 divide-x divide-slate-100 dark:divide-slate-800/80 bg-slate-50 dark:bg-slate-950/60 border-b border-slate-100 dark:border-slate-800/80 text-[11px] font-bold">
-        {[
-          { labelBn: "ট্রেলার", labelEn: "Trailer", icon: "📹" },
-          { labelBn: "আউটকাম", labelEn: "Highlights", icon: "🎯" },
-          { labelBn: "ডেমো ক্লাস", labelEn: "Demo", icon: "🎬" },
-          { labelBn: "সার্টিফিকেট", labelEn: "Certificate", icon: "🎓" },
-        ].map((slide, idx) => (
-          <button
-            key={idx}
-            type="button"
-            onClick={() => {
-              setActiveSlide(idx);
-              setIsPlayingPreview(false);
-              setIsPlayingDemo(false);
-            }}
-            className={`py-2 px-1 text-center transition-all cursor-pointer flex flex-col items-center gap-0.5 ${
-              activeSlide === idx
-                ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 font-black shadow-xs border-b-2 border-emerald-600"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-            }`}
-          >
-            <span>{slide.icon}</span>
-            <span className="truncate max-w-full text-[10px] sm:text-[11px]">
-              {isBn ? slide.labelBn : slide.labelEn}
-            </span>
-          </button>
-        ))}
+      {/* 10MS 4-Thumbnail Media Selector Strip */}
+      <div className="p-2.5 bg-slate-50 dark:bg-slate-950/60 border-b border-slate-100 dark:border-slate-800/80">
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            { id: 0, label: isBn ? "কোর্স ট্রেলার" : "Trailer", img: thumbnailUrl || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400" },
+            { id: 1, label: isBn ? "হাইলাইটস" : "Highlights", img: "https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=400" },
+            { id: 2, label: isBn ? "ডেমো ক্লাস" : "Demo Class", img: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=400" },
+            { id: 3, label: isBn ? "সার্টিফিকেট" : "Certificate", img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=400" },
+          ].map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => {
+                setActiveSlide(item.id);
+                setIsPlayingPreview(false);
+                setIsPlayingDemo(false);
+              }}
+              className={`relative aspect-video rounded-none overflow-hidden border-2 transition-all cursor-pointer group ${
+                activeSlide === item.id
+                  ? "border-emerald-600 ring-2 ring-emerald-500/30 scale-[1.02]"
+                  : "border-transparent opacity-80 hover:opacity-100"
+              }`}
+            >
+              <img src={item.img} alt={item.label} className="h-full w-full object-cover" />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <div className="h-5 w-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs group-hover:scale-110 transition-transform">
+                  <Play className="h-2.5 w-2.5 fill-current ml-0.5" />
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="p-5 sm:p-6 space-y-5">
+      <div className="p-4 sm:p-5 space-y-4">
         {/* Pricing Row */}
         <div className="flex items-baseline justify-between">
           <div className="space-y-0.5">
@@ -282,7 +309,7 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
         {isEnrolled ? (
           <button
             onClick={() => navigate(`/student/course/${courseId || ''}`)}
-            className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-extrabold text-base flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg cursor-pointer"
+            className="w-full h-11 rounded-sm bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-extrabold text-base flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer"
           >
             <span>{isBn ? "ক্লাস শুরু করুন" : "Go to Classroom"}</span>
             <ArrowRight className="h-4 w-4" />
@@ -290,7 +317,7 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
         ) : (
           <button
             onClick={onEnroll}
-            className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-extrabold text-base flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg cursor-pointer"
+            className="w-full h-11 rounded-sm bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-extrabold text-base flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer"
           >
             <span>{price > 0 ? (isBn ? "কোর্সটি কিনুন" : "Enroll Now") : (isBn ? "ফ্রি শুরু করুন" : "Start Free")}</span>
             <ArrowRight className="h-4 w-4" />
@@ -354,33 +381,34 @@ export const StickyEnrollCard: React.FC<StickyEnrollCardProps> = ({
             </li>
           </ul>
         </div>
-
-        {/* 10MS Helpline Section */}
-        <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-          <div className="space-y-0.5">
-            <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">
-              {isBn ? "কোর্সটি সম্পর্কে বিস্তারিত জানতে" : "For any queries about this course"}
-            </span>
-            <a
-              href="tel:16910"
-              className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-extrabold hover:underline"
-            >
-              <PhoneCall className="h-3.5 w-3.5" />
-              <span>{isBn ? "ফোন করুন ১৬৯১০" : "Call 16910"}</span>
-            </a>
-          </div>
-
-          <button
-            onClick={handleShare}
-            className="p-2 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-emerald-600 hover:border-emerald-500/40 transition-colors"
-            title={isBn ? "শেয়ার করুন" : "Share"}
-          >
-            <Share2 className="h-4 w-4" />
-          </button>
-        </div>
       </div>
     </div>
-  );
+
+    {/* 10MS Helpline Section (Outside Card Box) */}
+    <div className="pt-2 px-1 flex items-center justify-between text-xs">
+      <div className="space-y-0.5">
+        <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">
+          {isBn ? "কোর্সটি সম্পর্কে বিস্তারিত জানতে" : "For any queries about this course"}
+        </span>
+        <a
+          href="tel:16910"
+          className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-extrabold hover:underline"
+        >
+          <PhoneCall className="h-3.5 w-3.5" />
+          <span>{isBn ? "ফোন করুন ১৬৯১০" : "Call 16910"}</span>
+        </a>
+      </div>
+
+      <button
+        onClick={handleShare}
+        className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:text-emerald-600 hover:border-emerald-500/40 shadow-2xs transition-colors cursor-pointer"
+        title={isBn ? "শেয়ার করুন" : "Share"}
+      >
+        <Share2 className="h-4 w-4" />
+      </button>
+    </div>
+  </div>
+);
 };
 
 export default StickyEnrollCard;

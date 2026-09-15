@@ -116,28 +116,28 @@ const LearnAboutPage = () => {
           <div className="container max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 px-4 sm:px-6">
             <StatCard
               icon={Users}
-              value="১০,০০০+"
+              value={language === "bn" ? "১০,০০০+" : "10,000+"}
               label={t("সক্রিয় শিক্ষার্থী", "Active Students")}
               iconBgColor="bg-emerald-50 dark:bg-emerald-900/20"
               iconColor="text-brand-600 dark:text-brand-400"
             />
             <StatCard
               icon={BookOpen}
-              value="২৫+"
+              value={language === "bn" ? "২৫+" : "25+"}
               label={t("প্র্যাক্টিক্যাল কোর্স", "Hands-on Courses")}
               iconBgColor="bg-blue-50 dark:bg-blue-900/20"
               iconColor="text-blue-600 dark:text-blue-400"
             />
             <StatCard
               icon={GraduationCap}
-              value="১৫+"
+              value={language === "bn" ? "১৫+" : "15+"}
               label={t("অভিজ্ঞ মেন্টর", "Expert Mentors")}
               iconBgColor="bg-amber-50 dark:bg-amber-900/20"
               iconColor="text-amber-600 dark:text-amber-400"
             />
             <StatCard
               icon={Award}
-              value="৯৮%"
+              value={language === "bn" ? "৯৮%" : "98%"}
               label={t("সফলতার হার", "Success Rate")}
               iconBgColor="bg-purple-50 dark:bg-purple-900/20"
               iconColor="text-purple-600 dark:text-purple-400"
@@ -258,7 +258,7 @@ const LearnAboutPage = () => {
             </p>
             <div className="pt-2">
               <Link
-                to="/catalog"
+                to="/courses"
                 className="inline-flex items-center gap-2 h-11 px-6 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm shadow-md transition-colors"
               >
                 <span>{t("সকল কোর্স এক্সপ্লোর করুন", "Explore All Courses")}</span>

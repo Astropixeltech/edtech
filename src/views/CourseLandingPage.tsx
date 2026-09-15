@@ -18,6 +18,8 @@ import CourseEnrollmentModal from '@/components/student/CourseEnrollmentModal';
 import { CourseRoadmap } from '@/components/course/CourseRoadmap';
 import { StickyEnrollCard } from '@/components/course/StickyEnrollCard';
 import { CourseStickyBar } from '@/components/course/CourseStickyBar';
+import { Plyr } from 'plyr-react';
+import 'plyr-react/plyr.css';
 import { supabase } from '@/integrations/supabase/client';
 import { INITIAL_REAL_YOUTUBE_COURSES } from '@/lib/seedCourses';
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY as SUPABASE_ANON } from '@/lib/env';
@@ -738,53 +740,13 @@ export default function CourseLandingPage() {
         courseId={c.id}
       />
 
-      {/* 2. 10 MINUTE SCHOOL DARK NAVY HERO BANNER */}
+      {/* 2. 10 MINUTE SCHOOL FULL-WIDTH DARK NAVY HERO BANNER */}
       <div className="bg-[#0B1120] text-white border-b border-slate-800/80">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12 lg:pb-20">
-          <div className="flex flex-col lg:flex-row items-start justify-between gap-8">
-            {/* Left Hero Content */}
-            <div className="w-full lg:max-w-[62%] space-y-4">
-              {/* Breadcrumbs */}
-              <nav className="flex items-center gap-2 text-xs text-slate-400 font-medium overflow-x-auto whitespace-nowrap">
-                <Link to="/" className="hover:text-emerald-400 transition-colors">
-                  {isBn ? "হোম" : "Home"}
-                </Link>
-                <ChevronRight className="h-3 w-3 shrink-0 text-slate-600" />
-                <Link to="/courses" className="hover:text-emerald-400 transition-colors">
-                  {isBn ? "সকল কোর্স" : "All Courses"}
-                </Link>
-                <ChevronRight className="h-3 w-3 shrink-0 text-slate-600" />
-                <span className="text-emerald-400 font-bold">
-                  {c.category || (isBn ? "স্কিলস" : "Skills")}
-                </span>
-                <ChevronRight className="h-3 w-3 shrink-0 text-slate-600" />
-                <span className="text-white font-bold truncate max-w-[200px] sm:max-w-none">
-                  {title}
-                </span>
-              </nav>
-
-              {/* Course Hero Banner Image Showcase */}
-              {activeBannerUrl && (
-                <div className="relative w-full rounded-2xl overflow-hidden border border-slate-700/60 shadow-2xl group my-3 bg-slate-900 aspect-[16/7] sm:aspect-[21/8]">
-                  <img
-                    src={activeBannerUrl}
-                    alt={title}
-                    className="w-full h-full object-cover object-center transform transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/20 to-transparent pointer-events-none" />
-                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs pointer-events-none">
-                    <span className="px-2.5 py-1 rounded-full bg-emerald-500 text-slate-950 font-bold tracking-wide shadow-md">
-                      {isBn ? "অ্যাকাডেমিক স্পেশাল ব্যাচ" : "Academic Special Batch"}
-                    </span>
-                    <span className="px-2.5 py-1 rounded-full bg-slate-900/80 text-emerald-400 border border-emerald-500/30 font-medium backdrop-blur-sm">
-                      {c.category || (isBn ? "এইচএসসি ও এডমিশন" : "HSC & Admission")}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Title */}
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 lg:pt-12 pb-14 lg:pb-16">
+          <div className="flex flex-col lg:flex-row gap-8 items-start relative">
+            {/* Left Hero Title Block */}
+            <div className="w-full lg:w-[60%] space-y-4">
+              <h1 className="text-2xl sm:text-3xl lg:text-[34px] font-black text-white leading-tight tracking-tight">
                 {title}
               </h1>
 
@@ -796,7 +758,7 @@ export default function CourseLandingPage() {
                   ))}
                 </div>
                 <span className="text-slate-300 font-bold">
-                  {isBn ? "(৭১.৪% শিক্ষার্থী কোর্স শেষে ৫ রেটিং দিয়েছেন)" : "(71.4% students gave 5-star rating)"}
+                  {isBn ? "(৭১.১% শিক্ষার্থী কোর্স শেষে ৫ রেটিং দিয়েছেন)" : "(71.1% students gave 5-star rating)"}
                 </span>
               </div>
 
@@ -806,67 +768,89 @@ export default function CourseLandingPage() {
                   {shortDesc}
                 </p>
               )}
-            </div>
 
-            {/* Mobile-only StickyEnrollCard placeholder */}
-            <div className="w-full lg:hidden pt-2">
-              <StickyEnrollCard
-                price={c.price || 0}
-                thumbnailUrl={c.thumbnail_url}
-                videoId={videoId}
-                demoVideoId={demoVideoId}
-                totalClasses={c.total_classes || `${data?.lesson_count || 39}টি`}
-                duration={c.duration || "১০ ঘণ্টা"}
-                onEnroll={handleEnroll}
-                title={title || ""}
-                isEnrolled={isEnrolled}
-                courseId={c.id}
-                learningOutcomes={outcomes}
-                videoCount={data?.lesson_count || 39}
-              />
+              {/* Mobile-only StickyEnrollCard placeholder */}
+              <div className="w-full lg:hidden pt-2">
+                <StickyEnrollCard
+                  price={c.price || 0}
+                  thumbnailUrl={c.thumbnail_url}
+                  videoId={videoId}
+                  demoVideoId={demoVideoId}
+                  totalClasses={c.total_classes || `${data?.lesson_count || 39}টি`}
+                  duration={c.duration || "১০ ঘণ্টা"}
+                  onEnroll={handleEnroll}
+                  title={title || ""}
+                  isEnrolled={isEnrolled}
+                  courseId={c.id}
+                  learningOutcomes={outcomes}
+                  videoCount={data?.lesson_count || 39}
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 3. 10MS SUB-NAVIGATION STICKY TABS */}
-      <div className="sticky top-16 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-xs">
+      {/* 3. 10MS MAIN BODY & DESKTOP STICKY RIGHT CARD */}
+      <div className="relative -mt-6 sm:-mt-8 z-20 rounded-t-3xl sm:rounded-t-[32px] bg-slate-50 dark:bg-slate-950 min-h-screen pb-12 pt-2">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-2.5">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => handleTabClick(tab.id)}
-                className={`shrink-0 px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
-                  activeTab === tab.id
-                    ? "bg-emerald-600 text-white shadow-xs"
-                    : "text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-                }`}
-              >
-                {isBn ? tab.labelBn : tab.labelEn}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+          <div className="flex flex-col lg:flex-row gap-8 items-start relative">
 
-      {/* 4. MAIN TWO-COLUMN BODY */}
-      <div className="bg-slate-50 dark:bg-slate-950 min-h-screen py-8">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row gap-8 items-start">
+            {/* ═══ LEFT CONTENT COLUMN (w-full lg:w-[60%]) ═══ */}
+            <div className="w-full lg:w-[60%] space-y-8 pt-6 min-w-0">
 
-            {/* ═══ LEFT CONTENT COLUMN (w-full lg:w-[63%]) ═══ */}
-            <div className="w-full lg:w-[63%] space-y-8 min-w-0">
+              {/* Sub-Navigation Bar (Scoped to Left Column) */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm shadow-xs px-3 py-2 mb-6">
+                <div className="flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById("subnav-container");
+                      if (el) el.scrollBy({ left: -150, behavior: "smooth" });
+                    }}
+                    className="h-7 w-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer font-bold text-xs"
+                    aria-label="Scroll left"
+                  >
+                    ‹
+                  </button>
+                  <div id="subnav-container" className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1 flex-1">
+                    {tabs.map((tab) => (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => handleTabClick(tab.id)}
+                        className={`shrink-0 px-3.5 py-1.5 rounded-sm text-xs font-extrabold transition-all cursor-pointer ${
+                          activeTab === tab.id
+                            ? "bg-emerald-600 text-white shadow-xs"
+                            : "text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        }`}
+                      >
+                        {isBn ? tab.labelBn : tab.labelEn}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById("subnav-container");
+                      if (el) el.scrollBy({ left: 150, behavior: "smooth" });
+                    }}
+                    className="h-7 w-7 rounded-full bg-slate-800 text-white flex items-center justify-center shrink-0 hover:bg-slate-700 cursor-pointer font-bold text-xs"
+                    aria-label="Scroll right"
+                  >
+                    ›
+                  </button>
+                </div>
+              </div>
 
               {/* Section 1: কোর্স ইন্সট্রাক্টর */}
               <div id="section-instructor" className="scroll-mt-28 space-y-3">
                 <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
                   {isBn ? "কোর্স ইন্সট্রাক্টর" : "Course Instructor"}
                 </h3>
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="relative h-16 w-16 sm:h-20 sm:w-20 rounded-full overflow-hidden shrink-0 border-2 border-slate-200 dark:border-slate-700 bg-emerald-50 dark:bg-emerald-950/40">
+                    <div className="relative h-16 w-16 sm:h-20 sm:w-20 rounded-lg overflow-hidden shrink-0 border-2 border-slate-200 dark:border-slate-700 bg-emerald-50 dark:bg-emerald-950/40">
                       {instructors[0]?.image ? (
                         <img src={instructors[0].image} alt={instructors[0].name} className="h-full w-full object-cover" />
                       ) : (
@@ -890,7 +874,7 @@ export default function CourseLandingPage() {
 
               {/* Section 2: কোর্সটি যেভাবে সাজানো হয়েছে (10MS Signature Dark Navy 2x2 Grid) */}
               <div id="section-structure" className="scroll-mt-28">
-                <div className="rounded-2xl border border-slate-800 bg-[#0B1120] text-white p-6 sm:p-7 shadow-lg space-y-6">
+                <div className="rounded-sm border border-slate-800 bg-[#0B1120] text-white p-6 sm:p-7 shadow-lg space-y-6">
                   <div>
                     <h3 className="text-lg sm:text-xl font-extrabold text-white">
                       {isBn ? "কোর্সটি যেভাবে সাজানো হয়েছে" : "How The Course Is Structured"}
@@ -902,8 +886,8 @@ export default function CourseLandingPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Item 1 */}
-                    <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <span className="grid h-10 w-10 place-items-center rounded-xl bg-rose-500/20 text-rose-400 shrink-0">
+                    <div className="flex items-start gap-3.5 p-4 rounded-sm bg-slate-900/80 border border-slate-800">
+                      <span className="grid h-10 w-10 place-items-center rounded-sm bg-rose-500/20 text-rose-400 shrink-0">
                         <Video className="h-5 w-5" />
                       </span>
                       <div>
@@ -917,8 +901,8 @@ export default function CourseLandingPage() {
                     </div>
 
                     {/* Item 2 */}
-                    <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <span className="grid h-10 w-10 place-items-center rounded-xl bg-blue-500/20 text-blue-400 shrink-0">
+                    <div className="flex items-start gap-3.5 p-4 rounded-sm bg-slate-900/80 border border-slate-800">
+                      <span className="grid h-10 w-10 place-items-center rounded-sm bg-blue-500/20 text-blue-400 shrink-0">
                         <FileText className="h-5 w-5" />
                       </span>
                       <div>
@@ -932,8 +916,8 @@ export default function CourseLandingPage() {
                     </div>
 
                     {/* Item 3 */}
-                    <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <span className="grid h-10 w-10 place-items-center rounded-xl bg-purple-500/20 text-purple-400 shrink-0">
+                    <div className="flex items-start gap-3.5 p-4 rounded-sm bg-slate-900/80 border border-slate-800">
+                      <span className="grid h-10 w-10 place-items-center rounded-sm bg-purple-500/20 text-purple-400 shrink-0">
                         <CheckSquare className="h-5 w-5" />
                       </span>
                       <div>
@@ -947,8 +931,8 @@ export default function CourseLandingPage() {
                     </div>
 
                     {/* Item 4 */}
-                    <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <span className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-500/20 text-emerald-400 shrink-0">
+                    <div className="flex items-start gap-3.5 p-4 rounded-sm bg-slate-900/80 border border-slate-800">
+                      <span className="grid h-10 w-10 place-items-center rounded-sm bg-emerald-500/20 text-emerald-400 shrink-0">
                         <Sparkles className="h-5 w-5" />
                       </span>
                       <div>
@@ -969,7 +953,7 @@ export default function CourseLandingPage() {
                 <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
                   {isBn ? "কোর্সটি করে যা শিখবেন" : "What You Will Learn"}
                 </h3>
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs">
+                <div className="rounded-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {(outcomes.length > 0 ? outcomes : [
                       isBn ? "দৈনন্দিন জীবনের বিভিন্ন পরিস্থিতিতে ফ্লুয়েন্টলি কথা বলা" : "Speak fluently in everyday personal & professional situations",
@@ -995,7 +979,7 @@ export default function CourseLandingPage() {
                 <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
                   {isBn ? "কোর্স সম্পর্কে বিস্তারিত" : "Course Details"}
                 </h3>
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-5">
+                <div className="rounded-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-5">
                   <div>
                     <h4 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white mb-3">
                       {isBn ? `'${title}' কোর্সটি যাদের জন্য:` : `Who this course is designed for:`}
@@ -1039,7 +1023,7 @@ export default function CourseLandingPage() {
                   </span>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+                <div className="rounded-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
                   <Accordion type="single" collapsible defaultValue="module-0" className="divide-y divide-slate-100 dark:divide-slate-800">
                     {(data?.modules || []).map((mod, mIdx) => (
                       <AccordionItem key={mod.id} value={`module-${mIdx}`} className="border-b-0">
@@ -1180,10 +1164,22 @@ export default function CourseLandingPage() {
                       href="https://play.google.com"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-white transition-colors"
+                      className="inline-flex items-center gap-3 px-4 py-2.5 rounded-xl bg-black hover:bg-slate-900 border border-slate-700/80 shadow-md transition-all group cursor-pointer"
                     >
-                      <Smartphone className="h-4 w-4 text-emerald-400" />
-                      <span>{isBn ? "Google Play থেকে ডাউনলোড করুন" : "Download on Google Play"}</span>
+                      <svg className="h-7 w-7 shrink-0" viewBox="0 0 512 512" fill="none">
+                        <path d="M47.2 24.3C44.7 26.9 43.3 30.8 43.3 35.8V476.2C43.3 481.2 44.7 485.1 47.2 487.7L49.4 489.8L276.9 262.3V249.7L49.4 22.2L47.2 24.3Z" fill="#00D2FF"/>
+                        <path d="M352.5 337.9L276.9 262.3V249.7L352.5 174.1L354.3 175.1L444 226.1C469.6 240.6 469.6 264.4 444 278.9L354.3 329.9L352.5 337.9Z" fill="#FFC800"/>
+                        <path d="M354.3 329.9L276.9 256L47.2 485.7C55.6 494.6 69.5 495.7 85.1 486.9L354.3 329.9Z" fill="#FF3A44"/>
+                        <path d="M354.3 182.1L85.1 25.1C69.5 16.3 55.6 17.4 47.2 26.3L276.9 256L354.3 182.1Z" fill="#00E676"/>
+                      </svg>
+                      <div className="flex flex-col text-left">
+                        <span className="text-[9px] uppercase tracking-widest font-extrabold text-slate-300 leading-none">
+                          GET IT ON
+                        </span>
+                        <span className="text-sm sm:text-base font-black text-white tracking-tight leading-snug">
+                          Google Play
+                        </span>
+                      </div>
                     </a>
                   </div>
                 </div>
@@ -1191,8 +1187,8 @@ export default function CourseLandingPage() {
 
             </div>
 
-            {/* ═══ RIGHT COLUMN: 10MS FLOATING STICKY ENROLL CARD (lg:sticky lg:top-24) ═══ */}
-            <div className="hidden lg:block lg:w-[37%] xl:w-[380px] shrink-0 lg:-mt-36 xl:-mt-44 relative z-20 lg:sticky lg:top-24">
+            {/* ═══ RIGHT COLUMN DESKTOP STICKY ENROLL CARD ═══ */}
+            <div className="hidden lg:block lg:w-[37%] xl:w-[380px] shrink-0 sticky top-20 z-30 lg:-mt-[215px] xl:-mt-[225px]">
               <StickyEnrollCard
                 price={c.price || 0}
                 thumbnailUrl={c.thumbnail_url}
@@ -1247,13 +1243,21 @@ export default function CourseLandingPage() {
                 ✕
               </button>
             </div>
-            <div className="relative aspect-video w-full bg-black">
-              <iframe
-                src={`https://www.youtube.com/embed/${getYouTubeId(previewLesson.video_url || c.intro_video_url) || videoId}?autoplay=1&rel=0`}
-                title={previewLesson.title}
-                className="h-full w-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
+            <div className="relative aspect-video w-full bg-black [&_.plyr]:h-full [&_.plyr]:w-full [&_.plyr__video-embed]:h-full">
+              <Plyr
+                source={{
+                  type: "video",
+                  sources: [
+                    {
+                      src: getYouTubeId(previewLesson.video_url || c.intro_video_url) || videoId,
+                      provider: "youtube",
+                    },
+                  ],
+                }}
+                options={{
+                  autoplay: true,
+                  controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'fullscreen'],
+                }}
               />
             </div>
             {/* Quick-switch other free preview lessons */}

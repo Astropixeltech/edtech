@@ -54,6 +54,7 @@ function AppContent() {
           <Route path="/" element={<CoursesPage />} />
           <Route path="/courses" element={<AllCoursesCatalogPage />} />
           <Route path="/courses/all" element={<AllCoursesCatalogPage />} />
+          <Route path="/catalog" element={<AllCoursesCatalogPage />} />
           <Route path="/free-resources" element={<FreeResourcesPage />} />
           <Route path="/syllabus-calculator" element={<SyllabusCalculatorPage />} />
           <Route path="/eligibility-calculator" element={<EligibilityCalculatorPage />} />

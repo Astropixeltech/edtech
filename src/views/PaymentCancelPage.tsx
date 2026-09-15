@@ -12,7 +12,7 @@ const PaymentCancelPage = () => {
     if (courseId) {
       navigate(`/checkout/${courseId}`);
     } else {
-      navigate('/catalog');
+      navigate('/courses');
     }
   };
 
@@ -37,7 +37,7 @@ const PaymentCancelPage = () => {
               <RotateCcw className="w-4 h-4" />
               আবার চেষ্টা করুন
             </Button>
-            <Button onClick={() => navigate('/catalog')} variant="outline" className="gap-2">
+            <Button onClick={() => navigate('/courses')} variant="outline" className="gap-2">
               <ArrowLeft className="w-4 h-4" />
               সকল কোর্স
             </Button>

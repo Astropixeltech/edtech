@@ -42,11 +42,7 @@ const CoursesFooter = () => {
 
   return (
     <footer
-      className={`relative isolate overflow-hidden bg-[#0C2417] text-white pt-14 pb-8 container-fluid-2k ${
-        isHomepage
-          ? "rounded-t-[32px] sm:rounded-t-[48px] md:rounded-t-[56px] border-t border-emerald-800/40 shadow-[0_-8px_30px_rgba(0,0,0,0.12)]"
-          : ""
-      }`}
+      className="relative isolate overflow-hidden bg-[#0C2417] text-white pt-14 pb-8 container-fluid-2k border-t border-emerald-800/40"
     >
       {/* SVG Pattern Background */}
       <svg
@@ -83,12 +79,27 @@ const CoursesFooter = () => {
             </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <Link
-              to="/courses"
-              className="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm transition-colors shadow-sm"
+            <a
+              href="https://play.google.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-4 py-2.5 rounded-xl bg-black hover:bg-slate-900 border border-slate-700/80 shadow-md transition-all group cursor-pointer"
             >
-              {isBn ? "কোর্সগুলো এক্সপ্লোর করুন" : "Explore Courses"}
-            </Link>
+              <svg className="h-7 w-7 shrink-0" viewBox="0 0 512 512" fill="none">
+                <path d="M47.2 24.3C44.7 26.9 43.3 30.8 43.3 35.8V476.2C43.3 481.2 44.7 485.1 47.2 487.7L49.4 489.8L276.9 262.3V249.7L49.4 22.2L47.2 24.3Z" fill="#00D2FF"/>
+                <path d="M352.5 337.9L276.9 262.3V249.7L352.5 174.1L354.3 175.1L444 226.1C469.6 240.6 469.6 264.4 444 278.9L354.3 329.9L352.5 337.9Z" fill="#FFC800"/>
+                <path d="M354.3 329.9L276.9 256L47.2 485.7C55.6 494.6 69.5 495.7 85.1 486.9L354.3 329.9Z" fill="#FF3A44"/>
+                <path d="M354.3 182.1L85.1 25.1C69.5 16.3 55.6 17.4 47.2 26.3L276.9 256L354.3 182.1Z" fill="#00E676"/>
+              </svg>
+              <div className="flex flex-col text-left">
+                <span className="text-[9px] uppercase tracking-widest font-extrabold text-slate-300 leading-none">
+                  GET IT ON
+                </span>
+                <span className="text-sm sm:text-base font-black text-white tracking-tight leading-snug">
+                  Google Play
+                </span>
+              </div>
+            </a>
           </div>
         </div>
 

@@ -884,6 +884,52 @@ export const INITIAL_REAL_YOUTUBE_COURSES: CourseWithVideos[] = [
         updated_at: new Date().toISOString(),
       },
     ]
+  },
+  {
+    id: 'course-math-physics-olympiad',
+    title: 'জাতীয় বিজ্ঞান ও গণিত অলিম্পিয়াড স্পেশাল মাস্টারক্লাস (Olympiad Prep)',
+    title_en: 'National Math & Physics Olympiad Problem Solving Masterclass',
+    description: 'বাংলাদেশ গণিত অলিম্পিয়াড (BdMO), ফিজিক্স অলিম্পিয়াড (BdPhO) ও বায়োলজি অলিম্পিয়াড পরীক্ষার প্রবলেম সলভিং ট্রিকস, নম্বর তত্ত্ব ও বীজগণিত কমপ্লিট গাইডলাইন।',
+    description_en: 'Targeted Olympiad problem-solving training covering Number Theory, Combinatorics, Geometry, and Advanced Physics.',
+    category: 'Olympiad & Special',
+    thumbnail_url: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?q=80&w=1200&auto=format&fit=crop',
+    price: 1500,
+    is_published: true,
+    total_classes: '২০টি লেকচার',
+    duration: '১৫+ ঘন্টা',
+    learning_outcomes: [
+      'গণিত অলিম্পিয়াডের নম্বর তত্ত্ব, কম্বিনেটোরিক্স ও জ্যামিতিক প্রুফ',
+      'ফিজিক্স অলিম্পিয়াডের উচ্চতর মেকানিক্স ও থার্মোডাইনামিক্স সলভিং',
+      'বিগত ১০ বছরের জাতীয় ও আঞ্চলিক অলিম্পিয়াড প্রশ্ন সমাধান',
+      'আন্তর্জাতিক অলিম্পিয়াড (IMO/IPhO) প্রাক-প্রস্তুতি কৌশল'
+    ],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    trainer_name: 'Ahmad Abdullah (IMO Team Mentor)',
+    videos: [
+      {
+        id: 'vid-olym-1',
+        course_id: 'course-math-physics-olympiad',
+        title: 'লেকচার ১: নম্বর তত্ত্ব - মডিউলার এরিথমেটিক ও ফার্মার উপপাদ্য',
+        video_url: 'https://www.youtube.com/watch?v=qz0aGYrrlhU',
+        video_type: 'youtube',
+        duration_seconds: 2400,
+        order_index: 1,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: 'vid-olym-2',
+        course_id: 'course-math-physics-olympiad',
+        title: 'লেকচার ২: ফিজিক্স অলিম্পিয়াড - রোটেশনাল ডায়নামিক্স প্রবলেম',
+        video_url: 'https://www.youtube.com/watch?v=1Rs2ND1ryYc',
+        video_type: 'youtube',
+        duration_seconds: 2800,
+        order_index: 2,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    ]
   }
 ];
 
