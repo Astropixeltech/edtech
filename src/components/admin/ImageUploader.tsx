@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { CLOUDINARY_CLOUD_NAME } from '@/lib/env';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -53,7 +54,31 @@ export default function ImageUploader({
     setIsUploading(true);
 
     try {
-      // Generate unique filename
+      // Try Cloudinary direct CDN upload first
+      try {
+        const cloudForm = new FormData();
+        cloudForm.append('file', file);
+        cloudForm.append('upload_preset', 'edtech_preset');
+        cloudForm.append('folder', folder);
+
+        const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME || 'u1tmgtke'}/image/upload`, {
+          method: 'POST',
+          body: cloudForm,
+        });
+
+        if (cloudRes.ok) {
+          const cloudData = await cloudRes.json();
+          if (cloudData.secure_url) {
+            onChange(cloudData.secure_url);
+            toast.success('Image uploaded successfully');
+            return;
+          }
+        }
+      } catch (cErr) {
+        console.warn('Cloudinary upload fallback to storage:', cErr);
+      }
+
+      // Fallback: Generate unique filename and upload to Supabase Storage
       const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
       const timestamp = Date.now();
       const randomStr = Math.random().toString(36).substring(2, 8);
