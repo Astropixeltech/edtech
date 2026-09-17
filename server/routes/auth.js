@@ -1,113 +1,119 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { authenticateToken } from '../middleware/auth.js';
+import { db } from '../db/store.js';
+import { verifyToken, JWT_SECRET } from '../middleware/auth.js';
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'astropixel-secret-jwt-key-2026';
 
-// In-memory mock database store for users (can connect to Postgres pool)
-const users = [
-  {
-    id: 'admin-1',
-    email: 'admin@astropixel.tech',
-    passwordHash: bcrypt.hashSync('admin123', 10),
-    full_name: 'Super Admin',
-    role: 'admin',
-  },
-  {
-    id: 'student-1',
-    email: 'student@astropixel.tech',
-    passwordHash: bcrypt.hashSync('student123', 10),
-    full_name: 'Sofiullah Nabil',
-    role: 'student',
-  },
-];
-
-// POST /api/auth/login
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const user = users.find((u) => u.email.toLowerCase() === (email || '').toLowerCase());
-
-    if (!user || !bcrypt.compareSync(password, user.passwordHash)) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
-
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role, name: user.full_name },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    return res.json({
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        full_name: user.full_name,
-        role: user.role,
-      },
-    });
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
-  }
-});
-
-// POST /api/auth/register
+// Register new user
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, full_name, role = 'student' } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+    const { email, password, fullName, phoneNumber, role } = req.body;
+
+    if (!email || !password || !fullName) {
+      return res.status(400).json({ error: 'Email, password, and full name are required' });
     }
 
-    const existing = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+    const existing = db.getUserByEmail(email);
     if (existing) {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
+    const passwordHash = await bcrypt.hash(password, 10);
+    const assignedRole = role && ['admin', 'teacher', 'student'].includes(role) ? role : 'student';
+
     const newUser = {
-      id: `user-${Date.now()}`,
-      email,
-      passwordHash: bcrypt.hashSync(password, 10),
-      full_name: full_name || email.split('@')[0],
-      role,
+      id: `usr-${assignedRole}-${Date.now()}`,
+      email: email.toLowerCase().trim(),
+      passwordHash,
+      fullName: fullName.trim(),
+      role: assignedRole,
+      phoneNumber: phoneNumber || '',
+      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop',
+      bio: `${assignedRole} account registered on Astropixel Learn`,
+      createdAt: new Date().toISOString()
     };
 
-    users.push(newUser);
+    db.addUser(newUser);
 
     const token = jwt.sign(
-      { id: newUser.id, email: newUser.email, role: newUser.role, name: newUser.full_name },
+      { id: newUser.id, email: newUser.email, role: newUser.role },
       JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '30d' }
     );
 
-    return res.json({
-      token,
-      user: {
-        id: newUser.id,
-        email: newUser.email,
-        full_name: newUser.full_name,
-        role: newUser.role,
-      },
+    const { passwordHash: _, ...safeUser } = newUser;
+
+    res.status(201).json({
+      message: 'Registration successful',
+      user: safeUser,
+      token
     });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message || 'Server error during registration' });
   }
 });
 
-// GET /api/auth/me
-router.get('/me', authenticateToken, (req, res) => {
-  const user = users.find((u) => u.id === req.user.id);
-  if (!user) return res.status(404).json({ error: 'User not found' });
+// Login
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-  return res.json({
-    id: user.id,
-    email: user.email,
-    full_name: user.full_name,
-    role: user.role,
-  });
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    const user = db.getUserByEmail(email);
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    const validPass = await bcrypt.compare(password, user.passwordHash);
+    if (!validPass) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+
+    const { passwordHash: _, ...safeUser } = user;
+
+    res.json({
+      message: 'Login successful',
+      user: safeUser,
+      token
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error during login' });
+  }
+});
+
+// Get current user profile
+router.get('/me', verifyToken, (req, res) => {
+  const { passwordHash, ...safeUser } = req.user;
+  res.json({ user: safeUser });
+});
+
+// Update profile
+router.put('/profile', verifyToken, (req, res) => {
+  try {
+    const { fullName, phoneNumber, avatarUrl, bio } = req.body;
+    const updated = db.updateUser(req.user.id, {
+      ...(fullName && { fullName }),
+      ...(phoneNumber !== undefined && { phoneNumber }),
+      ...(avatarUrl !== undefined && { avatarUrl }),
+      ...(bio !== undefined && { bio })
+    });
+
+    const { passwordHash, ...safeUser } = updated;
+    res.json({ message: 'Profile updated successfully', user: safeUser });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
 });
 
 export default router;

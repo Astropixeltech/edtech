@@ -1,62 +1,88 @@
 import express from 'express';
+import { db } from '../db/store.js';
+import { verifyToken, requireTeacherOrAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-const mockCourses = [
-  {
-    id: "hsc-physics-complete",
-    title: "এইচএসসি পদার্থবিজ্ঞান ১ম ও ২য় পত্র কমপ্লিট একাডেমি (HSC Physics)",
-    slug: "hsc-physics-complete",
-    price: 1850,
-    regular_price: 2500,
-    description: "ভেক্টর, গতিবিদ্যা, নিউটনিয়ান বলবিদ্যা, কাজ-শক্তি-ক্ষমতা, স্থির তড়িৎ ও আধুনিক পদার্থবিজ্ঞানের প্রতিটি অধ্যায়ের বেসিক কনসেপ্ট, সিকিউ এবং বুয়েট-মেডিকেল প্রাক-প্রস্তুতি।",
-    thumbnail_url: "https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?q=80&w=1200&auto=format&fit=crop",
-    category: "hsc",
-    duration: "১০ ঘণ্টা",
-    total_classes: "৩৯টি",
-    lesson_count: 39,
-    status: "published",
-  },
-  {
-    id: "buet-engineering-admission",
-    title: "বুয়েট ও ইঞ্জিনিয়ারিং এডমিশন কমপ্লিট প্রস্তুতি কোর্স",
-    slug: "buet-engineering-admission",
-    price: 3200,
-    regular_price: 4500,
-    description: "বুয়েট, কুয়েট, রুয়েট ও চুয়েট ভর্তি পরীক্ষার জন্য পদার্থবিজ্ঞান, রসায়ন ও উচ্চতর গণিতের কনসেপ্ট ক্লিয়ারিং, অ্যাডভান্সড প্রবলেম সলভিং এবং প্রশ্নব্যাংক অ্যানালাইসিস।",
-    thumbnail_url: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?q=80&w=1200&auto=format&fit=crop",
-    category: "admission",
-    duration: "২৮ ঘণ্টা",
-    total_classes: "৪৮টি",
-    lesson_count: 48,
-    status: "published",
-  },
-];
-
-// GET /api/courses
+// Get all courses
 router.get('/', (req, res) => {
-  const { category, search } = req.query;
-  let results = [...mockCourses];
-
-  if (category && category !== 'all') {
-    results = results.filter((c) => c.category === category);
+  try {
+    const courses = db.getCourses();
+    res.json({ courses });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch courses' });
   }
-
-  if (search) {
-    const q = search.toLowerCase();
-    results = results.filter(
-      (c) => c.title.toLowerCase().includes(q) || c.description.toLowerCase().includes(q)
-    );
-  }
-
-  return res.json(results);
 });
 
-// GET /api/courses/:id
+// Get single course by ID
 router.get('/:id', (req, res) => {
-  const course = mockCourses.find((c) => c.id === req.params.id || c.slug === req.params.id);
-  if (!course) return res.status(404).json({ error: 'Course not found' });
-  return res.json(course);
+  try {
+    const course = db.getCourseById(req.params.id);
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+    res.json({ course });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch course details' });
+  }
+});
+
+// Create new course (Protected: Instructor / Admin)
+router.post('/', verifyToken, requireTeacherOrAdmin, (req, res) => {
+  try {
+    const { title, description, category, price, thumbnail_url, videos } = req.body;
+
+    if (!title) {
+      return res.status(400).json({ error: 'Course title is required' });
+    }
+
+    const newCourse = {
+      id: `course-${Date.now()}`,
+      title,
+      description: description || '',
+      category: category || 'General',
+      price: price ? Number(price) : 0,
+      thumbnail_url: thumbnail_url || 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?q=80&w=1200&auto=format&fit=crop',
+      is_published: true,
+      trainer_name: req.user.fullName || 'Astropixel Instructor',
+      videos: videos || [],
+    };
+
+    db.saveCourse(newCourse);
+    res.status(201).json({ message: 'Course created successfully', course: newCourse });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create course' });
+  }
+});
+
+// Update course (Protected: Instructor / Admin)
+router.put('/:id', verifyToken, requireTeacherOrAdmin, (req, res) => {
+  try {
+    const existing = db.getCourseById(req.params.id);
+    if (!existing) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    const updated = db.saveCourse({
+      ...existing,
+      ...req.body,
+      id: req.params.id
+    });
+
+    res.json({ message: 'Course updated successfully', course: updated });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update course' });
+  }
+});
+
+// Delete course (Protected: Instructor / Admin)
+router.delete('/:id', verifyToken, requireTeacherOrAdmin, (req, res) => {
+  try {
+    db.deleteCourse(req.params.id);
+    res.json({ message: 'Course deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete course' });
+  }
 });
 
 export default router;
