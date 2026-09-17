@@ -1164,7 +1164,7 @@ export default function CourseLandingPage() {
                       href="https://play.google.com"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-3 px-4 py-2.5 rounded-xl bg-black hover:bg-slate-900 border border-slate-700/80 shadow-md transition-all group cursor-pointer"
+                      className="inline-flex items-center gap-3 px-4 py-2.5 rounded-xl bg-[#061B11] hover:bg-[#0A291A] border border-emerald-500/30 hover:border-emerald-400/60 shadow-lg shadow-black/25 transition-all duration-200 group cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
                     >
                       <svg className="h-7 w-7 shrink-0" viewBox="0 0 512 512" fill="none">
                         <path d="M47.2 24.3C44.7 26.9 43.3 30.8 43.3 35.8V476.2C43.3 481.2 44.7 485.1 47.2 487.7L49.4 489.8L276.9 262.3V249.7L49.4 22.2L47.2 24.3Z" fill="#00D2FF"/>
@@ -1173,7 +1173,7 @@ export default function CourseLandingPage() {
                         <path d="M354.3 182.1L85.1 25.1C69.5 16.3 55.6 17.4 47.2 26.3L276.9 256L354.3 182.1Z" fill="#00E676"/>
                       </svg>
                       <div className="flex flex-col text-left">
-                        <span className="text-[9px] uppercase tracking-widest font-extrabold text-slate-300 leading-none">
+                        <span className="text-[9px] uppercase tracking-widest font-extrabold text-emerald-300/80 group-hover:text-emerald-200 transition-colors leading-none">
                           GET IT ON
                         </span>
                         <span className="text-sm sm:text-base font-black text-white tracking-tight leading-snug">

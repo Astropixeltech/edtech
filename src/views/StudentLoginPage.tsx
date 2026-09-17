@@ -33,7 +33,7 @@ export default function StudentLoginPage() {
   const [sendingOtp, setSendingOtp] = useState(false);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   
-  const { user, role, session, isLoading: authLoading, signIn, signUp, signInAsRole } = useAuth();
+  const { user, role, session, isLoading: authLoading, signIn, signUp, signInAsRole, signInWithGoogle } = useAuth();
   const { language, t } = useLanguage();
   const isBn = language === 'bn';
   const navigate = useNavigate();
@@ -217,17 +217,14 @@ export default function StudentLoginPage() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin,
-        },
-      });
+      const { error } = await signInWithGoogle();
       if (error) {
-        toast.error(error.message || 'Google লগইনে সমস্যা হয়েছে');
+        toast.error(error.message || (isBn ? 'Google লগইনে সমস্যা হয়েছে' : 'Google sign-in failed'));
+      } else {
+        toast.success(isBn ? 'Google দিয়ে সফলভাবে লগইন হয়েছে!' : 'Logged in with Google successfully!');
       }
     } catch (err: any) {
-      toast.error(err.message || 'Google লগইনে সমস্যা হয়েছে');
+      toast.error(err.message || (isBn ? 'Google লগইনে সমস্যা হয়েছে' : 'Google sign-in failed'));
     } finally {
       setIsLoading(false);
     }

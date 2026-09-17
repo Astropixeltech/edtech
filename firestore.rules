@@ -1,0 +1,141 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'helloastropixel@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Schema Validation Helpers
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.email is string && data.email.size() <= 150 &&
+             data.role in ['admin', 'teacher', 'student'] &&
+             (!('fullName' in data) || (data.fullName is string && data.fullName.size() <= 100)) &&
+             (!('phoneNumber' in data) || (data.phoneNumber is string && data.phoneNumber.size() <= 20)) &&
+             (!('avatarUrl' in data) || (data.avatarUrl is string && data.avatarUrl.size() <= 500));
+    }
+
+    function isValidCourse(data) {
+      return data.title is string && data.title.size() <= 200 &&
+             data.price is number && data.price >= 0 &&
+             data.isPublished is bool &&
+             (!('category' in data) || (data.category is string && data.category.size() <= 100)) &&
+             (!('trainerName' in data) || (data.trainerName is string && data.trainerName.size() <= 100));
+    }
+
+    function isValidEnrollment(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.courseId is string && data.courseId.size() <= 128 &&
+             data.status in ['active', 'completed', 'cancelled'];
+    }
+
+    function isValidEnrollmentRequest(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.courseId is string && data.courseId.size() <= 128 &&
+             data.studentEmail is string && data.studentEmail.size() <= 150 &&
+             data.status in ['pending', 'approved', 'rejected'];
+    }
+
+    function isValidNotice(data) {
+      return data.title is string && data.title.size() <= 200 &&
+             data.content is string && data.content.size() <= 4000 &&
+             data.authorId is string && data.authorId.size() <= 128;
+    }
+
+    // Collection match blocks
+
+    // User Profiles
+    match /profiles/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isValidId(userId) && isOwner(userId) && isValidUserProfile(incoming()) && (
+        incoming().role == 'student' || isAdmin()
+      );
+      allow update: if isValidId(userId) && (
+        (isOwner(userId) && isValidUserProfile(incoming()) && incoming().role == existing().role) ||
+        (isAdmin() && isValidUserProfile(incoming()))
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Admins registry
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if false; // Configured only by backend/console
+    }
+
+    // Courses
+    match /courses/{courseId} {
+      allow get, list: if true;
+      allow create: if isValidId(courseId) && isAdmin() && isValidCourse(incoming());
+      allow update: if isValidId(courseId) && isAdmin() && isValidCourse(incoming());
+      allow delete: if isValidId(courseId) && isAdmin();
+    }
+
+    // Student Enrollments
+    match /enrollments/{enrollmentId} {
+      allow get: if isValidId(enrollmentId) && isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isValidId(enrollmentId) && isSignedIn() && (
+        (incoming().userId == request.auth.uid && incoming().status == 'active') || isAdmin()
+      ) && isValidEnrollment(incoming());
+      allow update: if isValidId(enrollmentId) && isSignedIn() && (
+        (existing().userId == request.auth.uid && incoming().userId == existing().userId) || isAdmin()
+      ) && isValidEnrollment(incoming());
+      allow delete: if isValidId(enrollmentId) && isAdmin();
+    }
+
+    // Enrollment Requests
+    match /enrollment_requests/{requestId} {
+      allow get: if isValidId(requestId) && isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isValidId(requestId) && isSignedIn() && incoming().userId == request.auth.uid &&
+                    incoming().status == 'pending' && isValidEnrollmentRequest(incoming());
+      allow update: if isValidId(requestId) && isAdmin() && isValidEnrollmentRequest(incoming());
+      allow delete: if isValidId(requestId) && isAdmin();
+    }
+
+    // Notices
+    match /notices/{noticeId} {
+      allow get, list: if true;
+      allow create: if isValidId(noticeId) && isAdmin() && isValidNotice(incoming());
+      allow update: if isValidId(noticeId) && isAdmin() && isValidNotice(incoming());
+      allow delete: if isValidId(noticeId) && isAdmin();
+    }
+  }
+}
