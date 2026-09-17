@@ -479,20 +479,6 @@ export default function StudentLoginPage() {
                         {isBn ? 'গুগল দিয়ে প্রবেশ করুন' : 'Sign in with Google'}
                       </Button>
 
-                      {/* Quick Instant Entry for Student */}
-                      <div className="mt-3">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={handleQuickStudentLogin}
-                          disabled={isLoading}
-                          className="w-full h-9 rounded-lg text-xs font-semibold text-primary hover:bg-primary/10 flex items-center justify-center gap-1.5"
-                        >
-                          <Sparkles className="w-3.5 h-3.5" />
-                          <span>{isBn ? '⚡ ডিরেক্ট স্টুডেন্ট এক্সেস (1-Click)' : '⚡ Direct Student Access'}</span>
-                        </Button>
-                      </div>
-
                       {/* Domain Alert if unauthorized in Firebase */}
                       {domainAlert && (
                         <motion.div 

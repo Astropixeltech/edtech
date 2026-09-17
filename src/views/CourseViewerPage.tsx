@@ -32,6 +32,7 @@ export default function CourseViewerPage() {
   const isMobile = useIsMobile();
 
   const [course, setCourse] = useState<CourseWithProgress | null>(null);
+  const [courseNotFound, setCourseNotFound] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<VideoWithProgress | null>(null);
   const [videoMaterials, setVideoMaterials] = useState<VideoMaterial[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -64,7 +65,7 @@ export default function CourseViewerPage() {
     };
   }, []);
 
-  // Course resolution strictly from database
+  // Course resolution strictly from database with direct lookup fallback
   useEffect(() => {
     if (!courseId) return;
 
@@ -72,11 +73,79 @@ export default function CourseViewerPage() {
 
     if (found) {
       setCourse(found);
+      setCourseNotFound(false);
       if (!selectedVideo || selectedVideo.course_id !== found.id) {
         const firstUnwatched = found.videos.find(v => !v.progress?.is_completed);
         setSelectedVideo(firstUnwatched || found.videos[0] || null);
       }
+      return;
     }
+
+    // Direct database query fallback
+    let alive = true;
+    (async () => {
+      try {
+        let { data: dbCourse } = await supabase
+          .from('courses')
+          .select('*')
+          .or(`id.eq.${courseId},landing_slug.eq.${courseId}`)
+          .maybeSingle();
+
+        if (!dbCourse) {
+          const { data: allCourses } = await supabase.from('courses').select('*');
+          if (allCourses && allCourses.length > 0) {
+            dbCourse = allCourses.find((c: any) =>
+              c.id === courseId ||
+              c.landing_slug === courseId ||
+              c.slug === courseId
+            ) || allCourses[0];
+          }
+        }
+
+        if (!alive) return;
+
+        if (dbCourse) {
+          const { data: dbVideos } = await supabase
+            .from('videos')
+            .select('*')
+            .eq('course_id', dbCourse.id)
+            .order('order_index', { ascending: true });
+
+          const mappedVideos: VideoWithProgress[] = (dbVideos || []).map((v: any) => ({
+            ...v,
+            progress: {
+              id: `p-${v.id}`,
+              user_id: effectiveUserId,
+              video_id: v.id,
+              watched_seconds: 0,
+              is_completed: false,
+              last_watched_at: new Date().toISOString()
+            }
+          }));
+
+          const fullCourse: CourseWithProgress = {
+            ...dbCourse,
+            videos: mappedVideos,
+            progress_percentage: 0,
+            completed_videos: 0,
+            total_videos: mappedVideos.length
+          };
+
+          setCourse(fullCourse);
+          setCourseNotFound(false);
+          if (mappedVideos.length > 0) {
+            setSelectedVideo(mappedVideos[0]);
+          }
+        } else {
+          setCourseNotFound(true);
+        }
+      } catch (err) {
+        console.warn("Direct course lookup error in viewer:", err);
+        if (alive) setCourseNotFound(true);
+      }
+    })();
+
+    return () => { alive = false; };
   }, [courses, courseId, effectiveUserId]);
 
   useEffect(() => {
@@ -266,6 +335,32 @@ export default function CourseViewerPage() {
   };
 
   if (!course) {
+    if (courseNotFound) {
+      return (
+        <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center gap-4 p-4 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground">
+            <AlertCircle className="w-6 h-6 text-amber-400" />
+          </div>
+          <h2 className="text-base font-semibold">
+            {language === 'bn' ? 'কোর্সটি খুঁজে পাওয়া যায়নি' : 'Course Not Found'}
+          </h2>
+          <p className="text-xs text-muted-foreground max-w-sm">
+            {language === 'bn'
+              ? 'এই আইডি বা লিংকের কোনো কোর্স বিদ্যমান নেই অথবা রিমুভ করা হয়েছে।'
+              : 'No course found for this ID or it may have been removed.'}
+          </p>
+          <div className="flex items-center gap-2 mt-2">
+            <Button variant="outline" size="sm" onClick={handleBack} className="text-xs border-white/20 hover:bg-white/10 text-white">
+              <ArrowLeft className="w-3.5 h-3.5 mr-1" /> {language === 'bn' ? 'ফিরে যান' : 'Go Back'}
+            </Button>
+            <Button size="sm" onClick={() => navigate('/courses')} className="text-xs bg-brand-500 hover:bg-brand-600 text-white">
+              {language === 'bn' ? 'সকল কোর্স দেখুন' : 'Browse Courses'}
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
         <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />

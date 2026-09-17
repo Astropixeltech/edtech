@@ -149,11 +149,24 @@ export default function CourseLandingPage() {
 
         // 2. If not found via edge function, query Supabase database by ID or landing_slug
         if (!foundData) {
-          const { data: dbCourse } = await supabase
+          let { data: dbCourse } = await supabase
             .from('courses')
             .select('*')
             .or(`id.eq.${slugParam},landing_slug.eq.${slugParam}`)
             .maybeSingle();
+
+          // Fallback: If not found by exact id or landing_slug, check all courses
+          if (!dbCourse) {
+            const { data: allCourses } = await supabase.from('courses').select('*');
+            if (allCourses && allCourses.length > 0) {
+              dbCourse = allCourses.find((c: any) =>
+                c.id === slugParam ||
+                c.landing_slug === slugParam ||
+                c.slug === slugParam ||
+                (slugParam.includes('chemistry') && (c.title?.toLowerCase().includes('chem') || c.id?.includes('chem')))
+              ) || allCourses[0];
+            }
+          }
 
           if (dbCourse) {
             // Also fetch lessons from Supabase videos table

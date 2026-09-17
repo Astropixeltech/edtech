@@ -230,20 +230,6 @@ export default function TeacherLoginPage() {
               <span>{isBn ? 'Google দিয়ে শিক্ষক প্রবেশ' : 'Sign in with Google (Firebase)'}</span>
             </Button>
 
-            {/* Quick Instant Entry */}
-            <div className="mt-3">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={handleBypassLogin}
-                disabled={isLoading}
-                className="w-full h-9 rounded-lg text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 flex items-center justify-center gap-1.5"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-                <span>{isBn ? '⚡ ডিরেক্ট ইন্সট্রাক্টর এক্সেস (1-Click)' : '⚡ Direct Instructor Access'}</span>
-              </Button>
-            </div>
-
             {/* Domain Alert if unauthorized in Firebase */}
             {domainAlert && (
               <motion.div 

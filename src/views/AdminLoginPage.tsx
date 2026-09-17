@@ -226,20 +226,6 @@ export default function AdminLoginPage() {
               <span>{isBn ? 'Google দিয়ে অ্যাডমিন প্রবেশ' : 'Sign in with Google (Firebase)'}</span>
             </Button>
 
-            {/* Quick Instant Entry Option */}
-            <div className="mt-3">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={handleBypassLogin}
-                disabled={isLoading}
-                className="w-full h-9 rounded-lg text-xs font-semibold text-amber-700 hover:text-amber-800 hover:bg-amber-50 flex items-center justify-center gap-1.5"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span>{isBn ? '⚡ ডিরেক্ট মাস্টার অ্যাডমিন প্রবেশ (1-Click Access)' : '⚡ Direct Master Admin Access'}</span>
-              </Button>
-            </div>
-
             {/* Domain Alert if unauthorized in Firebase */}
             {domainAlert && (
               <motion.div 
