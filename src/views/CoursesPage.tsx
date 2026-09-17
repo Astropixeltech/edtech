@@ -453,31 +453,37 @@ export default function CoursesPage() {
           </div>
         </section>
 
-        {/* 2. STAT CARDS ROW (Floating Elevated Container with Backdrop Blur & Glassmorphism) */}
-        <section className="relative -mt-8 sm:-mt-12 z-20 px-4 sm:px-6 lg:px-8 pb-4">
-          <div className="max-w-6xl mx-auto rounded-3xl bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 p-3.5 sm:p-5 shadow-xl shadow-slate-200/50 dark:shadow-none">
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-              <StatCard
-                icon={Users}
-                value={isBn ? "১০,০০০+" : "10,000+"}
-                label={isBn ? "নিবন্ধিত শিক্ষার্থী" : "Active Students"}
-              />
-              <StatCard
-                icon={BookOpen}
-                value={isBn ? "২৫+" : "25+"}
-                label={isBn ? "প্র্যাক্টিক্যাল কোর্স" : "Online Courses"}
-              />
-              <StatCard
-                icon={GraduationCap}
-                value={isBn ? `${toBengaliDigits(teacherCount)}+` : `${teacherCount}+`}
-                label={isBn ? "অভিজ্ঞ প্রশিক্ষক" : "Expert Instructors"}
-              />
-              <StatCard
-                icon={Award}
-                value={isBn ? "৯৮%" : "98%"}
-                label={isBn ? "ক্যারিয়ার সাকসেস" : "Success Rate"}
-              />
-            </div>
+        {/* 2. STAT CARDS ROW (Balanced spacing under hero banner with subtle rounded top corners) */}
+        <section className="relative -mt-6 sm:-mt-8 z-10 rounded-t-3xl sm:rounded-t-[32px] bg-white dark:bg-background border-b border-gray-100 dark:border-border/40 py-8 sm:py-10">
+          <div className="max-w-6xl mx-auto grid grid-cols-2 gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8 lg:grid-cols-4">
+            <StatCard
+              icon={Users}
+              value={isBn ? "১০,০০০+" : "10,000+"}
+              label={isBn ? "নিবন্ধিত শিক্ষার্থী" : "Active Students"}
+              iconBgColor="bg-emerald-50 dark:bg-emerald-900/20"
+              iconColor="text-brand-600 dark:text-brand-400"
+            />
+            <StatCard
+              icon={BookOpen}
+              value={isBn ? "২৫+" : "25+"}
+              label={isBn ? "প্র্যাক্টিক্যাল কোর্স" : "Online Courses"}
+              iconBgColor="bg-blue-50 dark:bg-blue-900/20"
+              iconColor="text-blue-600 dark:text-blue-400"
+            />
+            <StatCard
+              icon={GraduationCap}
+              value={isBn ? `${toBengaliDigits(teacherCount)}+` : `${teacherCount}+`}
+              label={isBn ? "অভিজ্ঞ প্রশিক্ষক" : "Expert Instructors"}
+              iconBgColor="bg-amber-50 dark:bg-amber-900/20"
+              iconColor="text-amber-600 dark:text-amber-400"
+            />
+            <StatCard
+              icon={Award}
+              value={isBn ? "৯৮%" : "98%"}
+              label={isBn ? "ক্যারিয়ার সাকসেস" : "Success Rate"}
+              iconBgColor="bg-purple-50 dark:bg-purple-900/20"
+              iconColor="text-purple-600 dark:text-purple-400"
+            />
           </div>
         </section>
 
