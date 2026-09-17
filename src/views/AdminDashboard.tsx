@@ -528,10 +528,10 @@ function AdminDashboardInner() {
   // Show loading spinner while checking auth
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-4 border-[#6D28D9] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm font-semibold text-slate-300">Verifying Admin Access...</p>
+          <p className="text-sm font-semibold text-slate-700">Verifying Admin Access...</p>
         </div>
       </div>
     );
@@ -1039,22 +1039,22 @@ function AdminDashboardInner() {
   );
 
   return (
-    <div className={`min-h-screen bg-slate-50 dark:bg-slate-950 ${language === 'bn' ? 'font-bengali' : ''}`}>
+    <div className={`min-h-screen bg-slate-50 text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
       {/* Minimal Floating Sidebar */}
-      <aside className="fixed left-4 top-4 bottom-4 w-16 md:w-56 bg-white dark:bg-slate-900 rounded-2xl border border-border/50 shadow-xl shadow-black/5 z-50 flex flex-col overflow-hidden">
+      <aside className="fixed left-4 top-4 bottom-4 w-16 md:w-56 bg-white rounded-2xl border border-slate-200/80 shadow-xl shadow-slate-200/50 z-50 flex flex-col overflow-hidden">
         {/* Logo */}
-        <div className="p-3 md:p-4 border-b border-border/50">
+        <div className="p-3 md:p-4 border-b border-slate-100">
           <div className="flex flex-col items-center gap-2 md:items-start">
             <img
               src={scope === 'learn' ? learnLogo : astropixelLogoAsset.url}
               alt={scope === 'learn' ? 'Learn with Astropixel' : 'Astropixel Logo'}
-              className={`w-auto flex-shrink-0 ${scope === 'learn' ? 'h-9 brightness-0 dark:invert' : 'h-8 brightness-0 dark:invert'}`}
+              className={`w-auto flex-shrink-0 ${scope === 'learn' ? 'h-9' : 'h-8'}`}
             />
             <div className="hidden md:block">
               <h1 className={`font-bold text-sm bg-gradient-to-r from-primary to-cyan-600 bg-clip-text text-transparent ${language === 'bn' ? 'font-[SabinaShorolipi]' : ''}`}>
-                {language === 'bn' ? 'আলফা ড্যাশবোর্ড' : 'Alpha Dashboard'}
+                {language === 'bn' ? 'এডটেক ড্যাশবোর্ড' : 'EdTech Dashboard'}
               </h1>
-              <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+              <p className="text-[10px] text-slate-500 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                 Admin Panel
               </p>
@@ -1178,7 +1178,7 @@ function AdminDashboardInner() {
               ].map((stat, index) => (
                 <div 
                   key={index}
-                  className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-border/50 hover:border-border transition-colors group"
+                  className="bg-white rounded-2xl p-4 border border-slate-200/80 hover:border-slate-300 transition-colors group shadow-sm"
                 >
                   <div className="flex items-start justify-between">
                     <div>
@@ -1267,7 +1267,7 @@ function AdminDashboardInner() {
                     <button
                       key={card.id}
                       onClick={() => setActiveTab(card.id)}
-                      className="group text-left bg-white dark:bg-slate-900 rounded-2xl p-4 border border-border/50 hover:border-transparent hover:shadow-lg hover:shadow-black/5 transition-all duration-300 hover:-translate-y-0.5"
+                      className="group text-left bg-white rounded-2xl p-4 border border-slate-200/80 hover:border-transparent hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300 hover:-translate-y-0.5"
                     >
                       <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center mb-3 shadow-md group-hover:scale-110 transition-transform`}>
                         <card.icon className="w-5 h-5 text-white" />
@@ -1304,7 +1304,7 @@ function AdminDashboardInner() {
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-cyan-500 flex items-center justify-center">
                         <Sparkles className="w-4 h-4 text-white" />
                       </div>
-                      <span className="text-sm font-bold">Alpha AI</span>
+                      <span className="text-sm font-bold">Astropixel AI</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {language === 'bn' ? 'AI দিয়ে দ্রুত কন্টেন্ট তৈরি করুন।' : 'Generate content instantly with AI.'}
@@ -1328,7 +1328,7 @@ function AdminDashboardInner() {
                     <button
                       key={card.id}
                       onClick={() => setActiveTab(card.id)}
-                      className="group text-left bg-white dark:bg-slate-900 rounded-2xl p-4 border border-border/50 hover:border-transparent hover:shadow-lg hover:shadow-black/5 transition-all duration-300 hover:-translate-y-0.5"
+                      className="group text-left bg-white rounded-2xl p-4 border border-slate-200/80 hover:border-transparent hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300 hover:-translate-y-0.5"
                     >
                       <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center mb-3 shadow-md group-hover:scale-110 transition-transform`}>
                         <card.icon className="w-5 h-5 text-white" />
@@ -2003,7 +2003,7 @@ function AdminDashboardInner() {
                   {courseEnrollmentStats.slice(0, 10).map((course) => (
                     <div 
                       key={course.id} 
-                      className="bg-white dark:bg-slate-800 rounded-xl p-3 border border-border hover:border-primary/50 transition-colors"
+                      className="bg-white rounded-xl p-3 border border-slate-200 hover:border-primary/50 transition-colors shadow-sm"
                     >
                       <div className="flex items-center justify-between mb-1">
                         <p className="text-2xl font-bold text-primary">{course.enrollmentCount}</p>
@@ -2255,7 +2255,7 @@ function AdminDashboardInner() {
                 <button
                   key={card.id}
                   onClick={() => setActiveTab(card.id)}
-                  className="group text-left bg-white dark:bg-slate-900 rounded-2xl p-4 border border-border/50 hover:border-transparent hover:shadow-lg hover:shadow-black/5 transition-all duration-300 hover:-translate-y-0.5"
+                  className="group text-left bg-white rounded-2xl p-4 border border-slate-200/80 hover:border-transparent hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300 hover:-translate-y-0.5"
                 >
                   <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center mb-3 shadow-md group-hover:scale-110 transition-transform`}>
                     <card.icon className="w-5 h-5 text-white" />
