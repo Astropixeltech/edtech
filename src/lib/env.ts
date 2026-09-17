@@ -29,3 +29,15 @@ export const SUPABASE_PROJECT_ID =
   getEnvVar("NEXT_PUBLIC_SUPABASE_PROJECT_ID") ||
   "ayqbpqgahtycrncbknvj";
 
+export const CLOUDINARY_CLOUD_NAME =
+  getEnvVar("VITE_CLOUDINARY_CLOUD_NAME") ||
+  getEnvVar("NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME") ||
+  getEnvVar("CLOUDINARY_CLOUD_NAME") ||
+  "u1tmgtke";
+
+export const CLOUDINARY_API_KEY =
+  getEnvVar("VITE_CLOUDINARY_API_KEY") ||
+  getEnvVar("NEXT_PUBLIC_CLOUDINARY_API_KEY") ||
+  getEnvVar("CLOUDINARY_API_KEY") ||
+  "794196418432486";
+
