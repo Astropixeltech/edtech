@@ -21,7 +21,6 @@ import { CourseStickyBar } from '@/components/course/CourseStickyBar';
 import { Plyr } from 'plyr-react';
 import 'plyr-react/plyr.css';
 import { supabase } from '@/integrations/supabase/client';
-import { INITIAL_REAL_YOUTUBE_COURSES } from '@/lib/seedCourses';
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY as SUPABASE_ANON } from '@/lib/env';
 import { getLocalEnrolledCourses } from '@/lib/localStorageData';
 
@@ -164,45 +163,8 @@ export default function CourseLandingPage() {
               .eq('course_id', dbCourse.id)
               .order('order_index', { ascending: true });
 
-            // Find matching seed course for rich default metadata/videos if needed
-            const matchingSeed = INITIAL_REAL_YOUTUBE_COURSES.find(
-              (c) => c.id === dbCourse.id ||
-                     (c as any).landing_slug === dbCourse.landing_slug ||
-                     c.category === (dbCourse as any).category ||
-                     c.title.toLowerCase().includes(dbCourse.title.toLowerCase())
-            ) || INITIAL_REAL_YOUTUBE_COURSES[0];
-
-            // Resolve lesson videos: dbVideos or matchingSeed videos or educational fallback
-            const resolvedVideos = (dbVideos && dbVideos.length > 0)
-              ? dbVideos
-              : (matchingSeed?.videos && matchingSeed.videos.length > 0)
-                ? matchingSeed.videos
-                : [
-                    {
-                      id: "vid-fallback-1",
-                      title: "লেকচার ১: কোর্স ওভারভিউ ও ফাউন্ডেশন পরিচিতি",
-                      duration_seconds: 1420,
-                      video_url: "https://www.youtube.com/watch?v=qz0aGYrrlhU",
-                    },
-                    {
-                      id: "vid-fallback-2",
-                      title: "লেকচার ২: এসেনশিয়াল সফটওয়্যার ও প্র্যাক্টিক্যাল সেটআপ",
-                      duration_seconds: 1750,
-                      video_url: "https://www.youtube.com/watch?v=1Rs2ND1ryYc",
-                    },
-                    {
-                      id: "vid-fallback-3",
-                      title: "লেকচার ৩: বেসিক টু অ্যাডভান্সড মেথডলজি ও প্রজেক্ট শুরু",
-                      duration_seconds: 2100,
-                      video_url: "https://www.youtube.com/watch?v=W6NZfCO5SIk",
-                    },
-                    {
-                      id: "vid-fallback-4",
-                      title: "লেকচার ৪: ইন্ডাস্ট্রি স্ট্যান্ডার্ড প্র্যাকটিস ও পোর্টফোলিও",
-                      duration_seconds: 1980,
-                      video_url: "https://www.youtube.com/watch?v=bMknfKXIFA8",
-                    }
-                  ];
+            // Resolve lesson videos: dbVideos or empty array
+            const resolvedVideos = (dbVideos && dbVideos.length > 0) ? dbVideos : [];
 
             const chunkSize = Math.max(1, Math.ceil(resolvedVideos.length / 4));
 
@@ -276,12 +238,12 @@ export default function CourseLandingPage() {
                 thumbnail_url: dbCourse.thumbnail_url || undefined,
                 banner_url: (dbCourse as any).banner_url || (dbCourse as any).hero_banner_url || undefined,
                 price: dbCourse.price || 0,
-                category: (dbCourse as any).category || matchingSeed?.category || "Professional Development",
-                trainer_name: dbCourse.trainer_name || matchingSeed?.trainer_name || "Astropixel Expert Mentors",
-                trainer_designation: dbCourse.trainer_designation || (matchingSeed as any)?.trainer_designation || "Lead Instructor",
+                category: (dbCourse as any).category || "Professional Development",
+                trainer_name: dbCourse.trainer_name || "Astropixel Expert Mentors",
+                trainer_designation: dbCourse.trainer_designation || "Lead Instructor",
                 trainer_image: dbCourse.trainer_image || undefined,
                 trainer_bio: "অভিজ্ঞ ইন্ডাস্ট্রি প্রফেশনাল ও প্রশিক্ষক। বাস্তব কাজের প্রজেক্টভিত্তিক নির্দেশনায় শিক্ষার্থীদের দক্ষ করে তোলার দীর্ঘ অভিজ্ঞতা।",
-                learning_outcomes: (dbCourse as any).learning_outcomes || matchingSeed?.learning_outcomes || [
+                learning_outcomes: (dbCourse as any).learning_outcomes || [
                   "বাস্তব প্রজেক্ট তৈরির মাধ্যমে প্রতিটি ধারণার হাতে-কলমে প্রয়োগ",
                   "ইন্ডাস্ট্রি-স্ট্যান্ডার্ড কাজের নিয়মাবলী ও কোডিং/ডিজাইন বেস্ট প্র্যাকটিস",
                   "ক্যারিয়ার ও ফ্রিল্যান্সিংয়ে দ্রুত এগিয়ে যাওয়ার প্রয়োজনীয় দিকনির্দেশনা",
@@ -326,141 +288,6 @@ export default function CourseLandingPage() {
               },
               modules: resolvedModules,
               lesson_count: resolvedVideos.length,
-            };
-          }
-        }
-
-        // 3. Fallback to INITIAL_REAL_YOUTUBE_COURSES
-        if (!foundData) {
-          const seeded = INITIAL_REAL_YOUTUBE_COURSES.find(
-            (c) => c.id === slugParam || 
-                   (c as any).landing_slug === slugParam ||
-                   c.title.toLowerCase().includes(slugParam.toLowerCase())
-          );
-          if (seeded) {
-            const seededVideos = seeded.videos || [];
-            const moduleCount = 4;
-            const chunkSize = Math.max(1, Math.ceil(seededVideos.length / moduleCount));
-
-            const seedModules: Module[] = [
-              {
-                id: "sm1",
-                title: "মডিউল ০১: প্রাথমিক পরিচিতি ও ফান্ডামেন্টাল কনসেপ্ট",
-                description: "কোর্সের ভূমিকা, প্রয়োজনীয় টুলস সেটআপ ও মৌলিক ধারণাসমূহ।",
-                order_index: 1,
-                duration: "২ ঘন্টা ৩০ মিনিট",
-                lessons: seededVideos.slice(0, chunkSize).map((v, i) => ({
-                  id: v.id,
-                  title: v.title,
-                  duration: `${Math.round((v.duration_seconds || 600) / 60)} মিনিট`,
-                  is_free_preview: i === 0,
-                  video_url: v.video_url,
-                }))
-              },
-              {
-                id: "sm2",
-                title: "মডিউল ০২: মূল টেকনিক ও প্র্যাক্টিক্যাল প্রজেক্ট ডেভেলপমেন্ট",
-                description: "হাতে-কলমে প্র্যাক্টিক্যাল প্রজেক্ট তৈরি ও সমস্যার বাস্তব সমাধান।",
-                order_index: 2,
-                duration: "৩ ঘন্টা ১৫ মিনিট",
-                lessons: seededVideos.slice(chunkSize, chunkSize * 2).map((v) => ({
-                  id: v.id,
-                  title: v.title,
-                  duration: `${Math.round((v.duration_seconds || 720) / 60)} মিনিট`,
-                  is_free_preview: false,
-                  video_url: v.video_url,
-                }))
-              },
-              {
-                id: "sm3",
-                title: "মডিউল ০৩: অ্যাডভান্সড মেথডোলজি ও ইন্ডাস্ট্রি ওয়ার্কফ্লো",
-                description: "প্রোডাকশন-গ্রেড টেকনিক, অপটিমাইজেশন ও প্রো লেভেল টিপস।",
-                order_index: 3,
-                duration: "২ ঘন্টা ৪৫ মিনিট",
-                lessons: seededVideos.slice(chunkSize * 2, chunkSize * 3).map((v) => ({
-                  id: v.id,
-                  title: v.title,
-                  duration: `${Math.round((v.duration_seconds || 800) / 60)} মিনিট`,
-                  is_free_preview: false,
-                  video_url: v.video_url,
-                }))
-              },
-              {
-                id: "sm4",
-                title: "মডিউল ০৪: ফাইনাল প্রজেক্ট, পোর্টফোলিও ও ক্যারিয়ার গাইডলাইন",
-                description: "সম্পূর্ণ প্রজেক্ট রিভিশন, পোর্টফোলিও রিভিউ ও সার্টিফিকেট অর্জন।",
-                order_index: 4,
-                duration: "২ ঘন্টা",
-                lessons: seededVideos.slice(chunkSize * 3).map((v) => ({
-                  id: v.id,
-                  title: v.title,
-                  duration: `${Math.round((v.duration_seconds || 650) / 60)} মিনিট`,
-                  is_free_preview: false,
-                  video_url: v.video_url,
-                }))
-              }
-            ];
-
-            foundData = {
-              course: {
-                id: seeded.id,
-                title: seeded.title,
-                title_en: seeded.title_en || undefined,
-                description: seeded.description || undefined,
-                description_en: seeded.description_en || undefined,
-                short_description: seeded.description?.slice(0, 140) + "...",
-                thumbnail_url: seeded.thumbnail_url || undefined,
-                banner_url: (seeded as any).banner_url || (seeded as any).hero_banner_url || undefined,
-                price: seeded.price || 0,
-                category: (seeded as any).category || "Digital Skills & Programming",
-                trainer_name: seeded.trainer_name || "Astropixel Lead Mentor",
-                trainer_designation: (seeded as any).trainer_designation || "Senior Industry Mentor & Educator",
-                trainer_bio: (seeded as any).trainer_bio || "অভিজ্ঞ ইন্ডাস্ট্রি প্রফেশনাল ও প্রশিক্ষক। বাস্তব কাজের প্রজেক্টভিত্তিক নির্দেশনায় শিক্ষার্থীদের দক্ষ করে তোলার দীর্ঘ অভিজ্ঞতা।",
-                total_classes: (seeded as any).total_classes || `${seeded.videos?.length || 24}+ ক্লাস`,
-                duration: (seeded as any).duration || "১২+ ঘন্টা",
-                intro_video_url: seeded.videos?.[0]?.video_url || null,
-                learning_outcomes: (seeded as any).learning_outcomes || [
-                  "সম্পূর্ণ হাতে-কলমে প্র্যাক্টিক্যাল প্রজেক্ট ভিত্তিক শিক্ষা",
-                  "ইন্ডাস্ট্রি-স্ট্যান্ডার্ড কাজের নিয়মাবলী ও কোডিং/ডিজাইন বেস্ট প্র্যাকটিস",
-                  "পোর্টফোলিও তৈরি এবং ক্লায়েন্ট ওয়ার্কফ্লো সম্পর্কে পরিপূর্ণ ধারণা",
-                  "মার্কেটপ্লেস ও ক্যারিয়ার তৈরির নিশ্চিত গাইডলাইন",
-                ],
-                why_learn: [
-                  "বর্তমান বাজারে সবচেয়ে ইন-ডিমান্ড ও লাভজনক ডিজিটাল স্কিল",
-                  "হাতে-কলমে কাজ শিখে সরাসরি আর্নিং বা জবে প্রবেশের সুযোগ",
-                  "লাইফটাইম রিসোর্স অ্যাক্সেস ও ডেডিকেটেড সাপোর্ট কমিউনিটি",
-                ],
-                requirements: [
-                  "কম্পিউটার বা স্মার্টফোন",
-                  "ইন্টারনেট সংযোগ",
-                  "নতুন কিছু শেখার আগ্রহ ও নিয়মিত প্র্যাকটিস",
-                ],
-                who_for: [
-                  "শিক্ষার্থী ও নতুন স্কিল শিখতে আগ্রহীরা",
-                  "যাঁরা ফ্রিল্যান্সিং করতে চান",
-                  "জব সিকার ও প্রফেশনালরা",
-                ],
-                faqs: [
-                  {
-                    question: "কোর্সটি কিনলে কতদিন দেখতে পারব?",
-                    answer: "এই কোর্সে লাইফটাইম অ্যাক্সেস পাবেন। যেকোনো সময় যেকোনো ডিভাইস থেকে নিজের সুবিধামতো ক্লাস দেখতে পারবেন।"
-                  },
-                  {
-                    question: "কোর্স চলাকালীন কোনো সমস্যা হলে সাহায্য কোথায় পাব?",
-                    answer: "আমাদের ডেডিকেটেড সাপোর্ট কমিউনিটি এবং ইন্সট্রাক্টর প্যানেলে সরাসরি প্রশ্ন করে যেকোনো ডাউট সমাধান করে নিতে পারবেন।"
-                  },
-                  {
-                    question: "কোর্স শেষ করার পর সার্টিফিকেট কীভাবে পাব?",
-                    answer: "সকল ভিডিও লেকচার ও এক্সাম সম্পন্ন করার পর অটোমেটিক আপনার প্রোফাইলে ভেরিফাইড সার্টিফিকেট জেনারেট হবে।"
-                  },
-                  {
-                    question: "মোবাইল দিয়ে কি সম্পূর্ণ কোর্সটি করা যাবে?",
-                    answer: "হ্যাঁ, সম্পূর্ণ প্ল্যাটফর্ম মোবাইল ফ্রেন্ডলি। আপনি যেকোনো স্মার্টফোন থেকে ক্লাস ও এক্সাম দিতে পারবেন।"
-                  }
-                ]
-              },
-              modules: seedModules,
-              lesson_count: seeded.videos?.length || 24,
             };
           }
         }

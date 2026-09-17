@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 import { CourseWithProgress, VideoWithProgress, VideoMaterial } from '@/types/lms';
 import { useStudentCourses, useVideoProgress } from '@/hooks/useCourses';
-import { INITIAL_REAL_YOUTUBE_COURSES } from '@/lib/seedCourses';
 import { getAllLocalProgressForUser, saveLocalCourseCompletion } from '@/lib/localStorageData';
 
 export default function CourseViewerPage() {
@@ -65,47 +64,11 @@ export default function CourseViewerPage() {
     };
   }, []);
 
-  // Course resolution with immediate fallback to INITIAL_REAL_YOUTUBE_COURSES
+  // Course resolution strictly from database
   useEffect(() => {
     if (!courseId) return;
 
-    let found = courses.find(c => c.id === courseId || (c as any).landing_slug === courseId);
-    if (!found) {
-      const fallback = INITIAL_REAL_YOUTUBE_COURSES.find(
-        c => c.id === courseId || c.title.toLowerCase().includes(courseId.toLowerCase())
-      );
-      if (fallback) {
-        const localProgress = getAllLocalProgressForUser(effectiveUserId);
-        const videosWithProg: VideoWithProgress[] = fallback.videos.map((v, i) => {
-          const lp = localProgress[v.id];
-          return {
-            ...v,
-            progress: lp ? {
-              id: `local-${v.id}`,
-              user_id: effectiveUserId,
-              video_id: v.id,
-              watched_seconds: lp.watched_seconds,
-              last_position: lp.last_position,
-              progress_percent: lp.progress_percent,
-              is_completed: lp.is_completed,
-              created_at: lp.last_watched_at,
-              last_watched_at: lp.last_watched_at,
-            } : undefined,
-            is_locked: false,
-          };
-        });
-
-        const completedCount = videosWithProg.filter(v => v.progress?.is_completed).length;
-        found = {
-          ...fallback,
-          videos: videosWithProg,
-          total_videos: videosWithProg.length,
-          completed_videos: completedCount,
-          progress_percent: Math.round((completedCount / (videosWithProg.length || 1)) * 100),
-          is_completed: completedCount === videosWithProg.length,
-        };
-      }
-    }
+    const found = courses.find(c => c.id === courseId || (c as any).landing_slug === courseId);
 
     if (found) {
       setCourse(found);

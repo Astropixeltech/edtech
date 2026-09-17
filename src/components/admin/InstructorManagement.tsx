@@ -26,52 +26,11 @@ export interface InstructorItem {
   rating?: number;
 }
 
-const DEFAULT_INSTRUCTORS: InstructorItem[] = [
-  {
-    id: "sofiullah",
-    name: "Sofiullah Ahammad",
-    qualificationEn: "Graphics Designer & Media Mentor",
-    qualificationBn: "গ্রাফিক্স ডিজাইনার ও মিডিয়া মেন্টর",
-    image: instructorAtik.url,
-    roleTag: "Lead Instructor"
-  },
-  {
-    id: "adib",
-    name: "Adib Sarkar",
-    qualificationEn: "Lead Designer, Entrepreneur",
-    qualificationBn: "লিড ডিজাইনার, উদ্যোক্তা",
-    image: instructorHH.url,
-    roleTag: "Master Mentor"
-  },
-  {
-    id: "nayeem",
-    name: "Md Nayeem Ahmed",
-    qualificationEn: "Digital Marketer",
-    qualificationBn: "ডিজিটাল মার্কেটার",
-    image: instructorNayeem.url,
-    roleTag: "Marketing Expert"
-  },
-  {
-    id: "shafiul",
-    name: "Md. Shafiul Haque",
-    qualificationEn: "Video Editor, Cinematographer",
-    qualificationBn: "ভিডিও এডিটর, সিনেমাটোগ্রাফার",
-    image: instructorShafiul.url,
-    roleTag: "Media Trainer"
-  },
-  {
-    id: "papiya",
-    name: "Papia Rahman",
-    qualificationEn: "Graphic Designer",
-    qualificationBn: "গ্রাফিক ডিজাইনার",
-    image: instructorPapiya.url,
-    roleTag: "Design Mentor"
-  }
-];
+const DEFAULT_INSTRUCTORS: InstructorItem[] = [];
 
 export default function InstructorManagement() {
   const queryClient = useQueryClient();
-  const [instructors, setInstructors] = useState<InstructorItem[]>(DEFAULT_INSTRUCTORS);
+  const [instructors, setInstructors] = useState<InstructorItem[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingInstructor, setEditingInstructor] = useState<InstructorItem | null>(null);
 
@@ -105,12 +64,12 @@ export default function InstructorManagement() {
       if (local) {
         try { return JSON.parse(local) as InstructorItem[]; } catch {}
       }
-      return DEFAULT_INSTRUCTORS;
+      return [];
     }
   });
 
   useEffect(() => {
-    if (dbContent && dbContent.length > 0) {
+    if (dbContent) {
       setInstructors(dbContent);
     }
   }, [dbContent]);
@@ -220,8 +179,19 @@ export default function InstructorManagement() {
       </div>
 
       {/* Instructors Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-        {instructors.map((inst) => (
+      {instructors.length === 0 ? (
+        <div className="p-10 text-center border-2 border-dashed border-border/70 rounded-2xl bg-muted/20 space-y-3">
+          <GraduationCap className="w-12 h-12 mx-auto text-muted-foreground/40" />
+          <div>
+            <h3 className="font-semibold text-foreground text-base">কোনো ইনস্ট্রাক্টর যুক্ত করা হয়নি</h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+              হোম পেজে প্রদর্শনের জন্য উপরের "নতুন ইনস্ট্রাক্টর যোগ করুন" বোতামে ক্লিক করে শিক্ষক যোগ করুন। অ্যাডমিন প্যানেল থেকে যা যোগ করবেন শুধুমাত্র সেটাই হোমপেজে দেখাবে।
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          {instructors.map((inst) => (
           <Card key={inst.id} className="overflow-hidden border border-border/50 hover:border-primary/40 transition-all duration-300 shadow-sm text-center">
             <CardContent className="p-5 flex flex-col items-center gap-3">
               <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-primary/20 bg-muted shadow-md">
@@ -248,6 +218,7 @@ export default function InstructorManagement() {
           </Card>
         ))}
       </div>
+      )}
 
       {/* Edit / Add Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

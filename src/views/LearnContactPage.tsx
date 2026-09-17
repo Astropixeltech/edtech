@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Mail, Phone, MessageCircle, Send, MapPin, Clock, Sparkles, CheckCircle2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Mail, Phone, MessageCircle, Send, MapPin, Clock, Sparkles, CheckCircle2, Building2 } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Helmet } from "react-helmet-async";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -8,14 +8,84 @@ import { usePageContent } from "@/hooks/usePageContent";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
+interface CustomContactItem {
+  id: string;
+  type: 'phone' | 'email' | 'address' | 'whatsapp' | 'social' | 'branch';
+  titleBn: string;
+  titleEn: string;
+  valueBn: string;
+  valueEn: string;
+}
+
+interface ContactPageData {
+  heroTitleBn: string;
+  heroTitleEn: string;
+  heroSubtitleBn: string;
+  heroSubtitleEn: string;
+  mainAddressBn: string;
+  mainAddressEn: string;
+  mainPhoneBn: string;
+  mainPhoneEn: string;
+  mainEmailBn: string;
+  mainEmailEn: string;
+  whatsappBn: string;
+  whatsappEn: string;
+  businessHoursBn: string;
+  businessHoursEn: string;
+  customContacts: CustomContactItem[];
+}
+
 const LearnContactPage = () => {
   const { language } = useLanguage();
   const { data: footerContents } = useFooterContent();
   const { getContent: getPageContent } = usePageContent("learn-contact", "learn");
   const [formData, setFormData] = useState({ name: "", email: "", topic: "general", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [contactData, setContactData] = useState<ContactPageData | null>(null);
   const isBn = language === "bn";
   const t = (bn: string, en: string) => (isBn ? bn : en);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('page_content')
+          .select('content_en')
+          .eq('page_name', 'contact')
+          .eq('content_key', 'contact_page_full_json')
+          .maybeSingle();
+
+        if (data?.content_en) {
+          const parsed = JSON.parse(data.content_en);
+          if (alive && parsed) {
+            setContactData(parsed);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Error reading contact page content:', e);
+      }
+
+      if (typeof window !== 'undefined') {
+        const local = localStorage.getItem('contact_page_full_json');
+        if (local) {
+          try {
+            const parsed = JSON.parse(local);
+            if (alive && parsed) setContactData(parsed);
+          } catch {}
+        }
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  const phone = (isBn ? contactData?.mainPhoneBn : contactData?.mainPhoneEn) || contactData?.mainPhoneBn || contactData?.mainPhoneEn || "";
+  const email = (isBn ? contactData?.mainEmailBn : contactData?.mainEmailEn) || contactData?.mainEmailBn || contactData?.mainEmailEn || "";
+  const whatsapp = (isBn ? contactData?.whatsappBn : contactData?.whatsappEn) || contactData?.whatsappBn || contactData?.whatsappEn || "";
+  const address = (isBn ? contactData?.mainAddressBn : contactData?.mainAddressEn) || contactData?.mainAddressBn || contactData?.mainAddressEn || "";
+  const businessHours = (isBn ? contactData?.businessHoursBn : contactData?.businessHoursEn) || contactData?.businessHoursBn || contactData?.businessHoursEn || "";
+  const cleanWhatsapp = whatsapp.replace(/\D/g, "");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +108,7 @@ const LearnContactPage = () => {
         // Fallback: try sending via edge function
         const { data: fnData, error: fnError } = await supabase.functions.invoke("send-custom-email", {
           body: {
-            to: "hello@astropixel.tech",
+            to: email || "hello@astropixel.tech",
             subject: `[Contact Form] ${formData.topic} — ${formData.name}`,
             body: `Name: ${formData.name}\nEmail: ${formData.email}\nTopic: ${formData.topic}\n\nMessage:\n${formData.message}`,
           },
@@ -59,8 +129,11 @@ const LearnContactPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const phone = "+880 1776-965533";
-  const email = "hello@astropixel.tech";
+  const heroTitle = (isBn ? contactData?.heroTitleBn : contactData?.heroTitleEn) || t("আমরা আপনাকে সাহায্য করতে প্রস্তুত", "Get in Touch with Our Team");
+  const heroSubtitle = (isBn ? contactData?.heroSubtitleBn : contactData?.heroSubtitleEn) || t(
+    "কোর্স, এনরোলমেন্ট বা যেকোনো পরামর্শে আমাদের সাপোর্ট টিমের সাথে সরাসরি যোগাযোগ করুন।",
+    "Have questions about courses, admissions, or payments? We respond promptly."
+  );
 
   return (
     <Layout>
@@ -77,13 +150,10 @@ const LearnContactPage = () => {
               <span>{t("২৪/৭ সার্বক্ষণিক সহায়তা", "Always Here to Help")}</span>
             </span>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-foreground leading-tight">
-              {t("আমরা আপনাকে সাহায্য করতে প্রস্তুত", "Get in Touch with Our Team")}
+              {heroTitle}
             </h1>
             <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-3 max-w-xl mx-auto">
-              {t(
-                "কোর্স, এনরোলমেন্ট বা যেকোনো পরামর্শে আমাদের সাপোর্ট টিমের সাথে সরাসরি যোগাযোগ করুন।",
-                "Have questions about courses, admissions, or payments? We respond promptly."
-              )}
+              {heroSubtitle}
             </p>
           </div>
         </section>
@@ -98,10 +168,14 @@ const LearnContactPage = () => {
                 <Phone className="h-5 w-5" />
               </div>
               <h3 className="text-sm font-bold text-foreground">{t("হটলাইন নম্বর", "Call Helpline")}</h3>
-              <p className="text-xs text-gray-500">{t("সকাল ৯টা থেকে রাত ১০টা", "9:00 AM - 10:00 PM")}</p>
-              <a href={`tel:${phone}`} className="inline-block text-sm font-bold text-brand-600 hover:underline">
-                {phone}
-              </a>
+              <p className="text-xs text-gray-500">{businessHours || t("সকাল ৯টা থেকে রাত ১০টা", "9:00 AM - 10:00 PM")}</p>
+              {phone ? (
+                <a href={`tel:${phone}`} className="inline-block text-sm font-bold text-brand-600 hover:underline">
+                  {phone}
+                </a>
+              ) : (
+                <span className="text-xs text-muted-foreground">{t("শীঘ্রই আপডেট হবে", "To be updated")}</span>
+              )}
             </div>
 
             {/* WhatsApp */}
@@ -111,14 +185,18 @@ const LearnContactPage = () => {
               </div>
               <h3 className="text-sm font-bold text-foreground">{t("সরাসরি WhatsApp", "Live WhatsApp")}</h3>
               <p className="text-xs text-gray-500">{t("ইনস্ট্যান্ট চ্যাট সাপোর্ট", "Instant live chat support")}</p>
-              <a
-                href="https://wa.me/8801776965533"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block text-sm font-bold text-emerald-600 hover:underline"
-              >
-                +880 1776-965533
-              </a>
+              {whatsapp ? (
+                <a
+                  href={`https://wa.me/${cleanWhatsapp}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block text-sm font-bold text-emerald-600 hover:underline"
+                >
+                  {whatsapp}
+                </a>
+              ) : (
+                <span className="text-xs text-muted-foreground">{t("শীঘ্রই আপডেট হবে", "To be updated")}</span>
+              )}
             </div>
 
             {/* Email */}
@@ -128,9 +206,13 @@ const LearnContactPage = () => {
               </div>
               <h3 className="text-sm font-bold text-foreground">{t("অফিসিয়াল ইমেইল", "Official Email")}</h3>
               <p className="text-xs text-gray-500">{t("২৪ ঘন্টার মধ্যে রিপ্লাই", "Response within 24h")}</p>
-              <a href={`mailto:${email}`} className="inline-block text-sm font-bold text-blue-600 hover:underline">
-                {email}
-              </a>
+              {email ? (
+                <a href={`mailto:${email}`} className="inline-block text-sm font-bold text-blue-600 hover:underline break-all">
+                  {email}
+                </a>
+              ) : (
+                <span className="text-xs text-muted-foreground">{t("শীঘ্রই আপডেট হবে", "To be updated")}</span>
+              )}
             </div>
 
             {/* Location */}
@@ -139,13 +221,30 @@ const LearnContactPage = () => {
                 <MapPin className="h-5 w-5" />
               </div>
               <h3 className="text-sm font-bold text-foreground">{t("প্রধান কার্যালয়", "Head Office")}</h3>
-              <p className="text-xs text-gray-500">{t("ঢাকা, বাংলাদেশ", "Dhaka, Bangladesh")}</p>
+              <p className="text-xs text-gray-500">{address || t("ঢাকা, বাংলাদেশ", "Dhaka, Bangladesh")}</p>
               <span className="inline-block text-xs font-semibold text-foreground">
                 Astropixel Academy
               </span>
             </div>
 
           </div>
+
+          {/* Custom branches / contacts if configured in Admin */}
+          {contactData?.customContacts && contactData.customContacts.length > 0 && (
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {contactData.customContacts.map((c) => (
+                <div key={c.id} className="rounded-2xl border border-gray-100 dark:border-border/50 bg-white dark:bg-card p-5 shadow-xs flex items-start gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center text-primary shrink-0">
+                    <Building2 className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-foreground">{isBn ? c.titleBn : c.titleEn}</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">{isBn ? c.valueBn : c.valueEn}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* 3. MESSAGE FORM & FAQ SECTION */}
@@ -239,26 +338,28 @@ const LearnContactPage = () => {
 
             {/* Quick Assistance Card */}
             <div className="lg:col-span-5 space-y-6">
-              <div className="rounded-2xl border border-gray-100 dark:border-border/50 bg-white dark:bg-card p-6 shadow-sm space-y-4">
-                <h4 className="text-base font-bold text-foreground">
-                  {t("দ্রুত সহায়তা প্রয়োজন?", "Need Quick Assistance?")}
-                </h4>
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  {t(
-                    "আপনি যদি কোনো কোর্সে দ্রুত ভর্তি হতে চান বা পেমেন্টে সাহায্য প্রয়োজন হয়, সরাসরি আমাদের অফিশিয়াল হোয়াটসঅ্যাপে টেক্সট দিন।",
-                    "For instant enrollment and payment confirmation support, reach out to our official WhatsApp channel."
-                  )}
-                </p>
-                <a
-                  href="https://wa.me/8801776965533"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex w-full items-center justify-center gap-2 h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-colors"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  <span>{t("WhatsApp-এ কথা বলুন", "Chat on WhatsApp")}</span>
-                </a>
-              </div>
+              {whatsapp && (
+                <div className="rounded-2xl border border-gray-100 dark:border-border/50 bg-white dark:bg-card p-6 shadow-sm space-y-4">
+                  <h4 className="text-base font-bold text-foreground">
+                    {t("দ্রুত সহায়তা প্রয়োজন?", "Need Quick Assistance?")}
+                  </h4>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    {t(
+                      "আপনি যদি কোনো কোর্সে দ্রুত ভর্তি হতে চান বা পেমেন্টে সাহায্য প্রয়োজন হয়, সরাসরি আমাদের অফিশিয়াল হোয়াটসঅ্যাপে টেক্সট দিন।",
+                      "For instant enrollment and payment confirmation support, reach out to our official WhatsApp channel."
+                    )}
+                  </p>
+                  <a
+                    href={`https://wa.me/${cleanWhatsapp}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex w-full items-center justify-center gap-2 h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-colors"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    <span>{t("WhatsApp-এ কথা বলুন", "Chat on WhatsApp")}</span>
+                  </a>
+                </div>
+              )}
 
               <div className="rounded-2xl border border-gray-100 dark:border-border/50 bg-white dark:bg-card p-6 shadow-sm space-y-3">
                 <h4 className="text-sm font-bold text-foreground">
@@ -290,3 +391,4 @@ const LearnContactPage = () => {
 };
 
 export default LearnContactPage;
+

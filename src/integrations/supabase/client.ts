@@ -1,7 +1,7 @@
 // 100% Local Autonomous Database & Auth Client for Astropixel Learn EdTech Platform
 // Completely independent of external Supabase servers.
 import type { Database } from './types';
-import { INITIAL_REAL_YOUTUBE_COURSES } from '@/lib/seedCourses';
+import { DEMO_COURSE_IDS } from '@/lib/seedCourses';
 
 function safeGetStorage<T>(key: string, defaultVal: T): T {
   if (typeof window === 'undefined') return defaultVal;
@@ -22,43 +22,57 @@ function safeSetStorage<T>(key: string, val: T): void {
 
 const authListeners = new Set<(event: string, session: any) => void>();
 
+// Clean up any historical demo courses from localStorage on module load
+if (typeof window !== 'undefined') {
+  try {
+    sessionStorage.removeItem('ap_courses_seeded');
+    localStorage.removeItem('ap_courses_seeded');
+    const coursesRaw = localStorage.getItem('ap_table_courses');
+    if (coursesRaw) {
+      const courses = JSON.parse(coursesRaw);
+      if (Array.isArray(courses)) {
+        const clean = courses.filter((c: any) => !DEMO_COURSE_IDS.includes(c.id));
+        if (clean.length !== courses.length) {
+          localStorage.setItem('ap_table_courses', JSON.stringify(clean));
+        }
+      }
+    }
+    const videosRaw = localStorage.getItem('ap_table_videos');
+    if (videosRaw) {
+      const videos = JSON.parse(videosRaw);
+      if (Array.isArray(videos)) {
+        const clean = videos.filter((v: any) => !DEMO_COURSE_IDS.includes(v.course_id));
+        if (clean.length !== videos.length) {
+          localStorage.setItem('ap_table_videos', JSON.stringify(clean));
+        }
+      }
+    }
+  } catch {}
+}
+
 // Local Database tables in LocalStorage
 const getTableData = (tableName: string): any[] => {
   const customKey = `ap_table_${tableName}`;
   const existing = safeGetStorage<any[]>(customKey, []);
-  if (existing.length > 0) return existing;
 
-  // Seed default tables
-  if (tableName === 'courses') {
-    return INITIAL_REAL_YOUTUBE_COURSES.map(c => ({
-      id: c.id,
-      title: c.title,
-      title_en: c.title_en,
-      description: c.description,
-      description_en: c.description_en,
-      category: c.category,
-      thumbnail_url: c.thumbnail_url,
-      price: c.price,
-      is_published: true,
-      total_classes: c.total_classes,
-      duration: c.duration,
-      trainer_name: c.trainer_name,
-      created_at: c.created_at,
-      updated_at: c.updated_at
-    }));
+  // Filter out any leftover demo items
+  if (tableName === 'courses' && existing.length > 0) {
+    const cleaned = existing.filter((c: any) => !DEMO_COURSE_IDS.includes(c.id));
+    if (cleaned.length !== existing.length) {
+      safeSetStorage(customKey, cleaned);
+    }
+    return cleaned;
   }
 
-  if (tableName === 'videos') {
-    const allVideos: any[] = [];
-    INITIAL_REAL_YOUTUBE_COURSES.forEach(c => {
-      if (c.videos) {
-        c.videos.forEach(v => allVideos.push({ ...v }));
-      }
-    });
-    return allVideos;
+  if (tableName === 'videos' && existing.length > 0) {
+    const cleaned = existing.filter((v: any) => !DEMO_COURSE_IDS.includes(v.course_id));
+    if (cleaned.length !== existing.length) {
+      safeSetStorage(customKey, cleaned);
+    }
+    return cleaned;
   }
 
-  return [];
+  return existing;
 };
 
 const setTableData = (tableName: string, data: any[]) => {
