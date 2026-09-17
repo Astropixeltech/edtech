@@ -297,4 +297,22 @@ export const supabase: any = {
   async rpc() {
     return { data: null, error: null };
   },
+
+  channel(name: string) {
+    const mockChannel = {
+      on: (event: string, opts: any, callback: any) => mockChannel,
+      subscribe: (callback?: any) => {
+        if (typeof callback === 'function') callback('SUBSCRIBED');
+        return mockChannel;
+      },
+      unsubscribe: () => {},
+    };
+    return mockChannel;
+  },
+
+  removeChannel(ch: any) {
+    if (ch && typeof ch.unsubscribe === 'function') {
+      ch.unsubscribe();
+    }
+  },
 };
