@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { ArrowLeft, Mail, Lock, ShieldCheck, Loader2, Eye, EyeOff, Sparkles, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, ShieldCheck, Loader2, Eye, EyeOff, Sparkles, ShieldAlert, AlertTriangle, ExternalLink } from 'lucide-react';
 import { z } from 'zod';
 import learnLogoAssetJson from "@/assets/learn-with-alphazero-logo.png.asset.json";
 const learnLogo = learnLogoAssetJson.url;
@@ -17,6 +17,7 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [domainAlert, setDomainAlert] = useState<{ isUnauth: boolean; domain: string } | null>(null);
 
   const { user, role, session, isLoading: authLoading, signIn, signInAsRole, signInWithGoogle } = useAuth();
   const { language } = useLanguage();
@@ -25,10 +26,15 @@ export default function AdminLoginPage() {
 
   const handleGoogleAdminLogin = async () => {
     setIsLoading(true);
+    setDomainAlert(null);
     try {
-      const { error } = await signInWithGoogle();
-      if (error) {
-        toast.error(error.message || (isBn ? 'Google লগইনে সমস্যা হয়েছে' : 'Google sign-in failed'));
+      const res = await signInWithGoogle();
+      if (res.isUnauthorizedDomain) {
+        const currentHost = res.domainName || (typeof window !== 'undefined' ? window.location.hostname : 'edtech.astropixel.tech');
+        setDomainAlert({ isUnauth: true, domain: currentHost });
+        toast.error(isBn ? 'ডোমেনটি Firebase-এ অনুমোদিত নয়' : 'Domain not authorized in Firebase');
+      } else if (res.error) {
+        toast.error(res.error.message || (isBn ? 'Google লগইনে সমস্যা হয়েছে' : 'Google sign-in failed'));
       } else {
         toast.success(isBn ? 'Google অ্যাডমিন ভেরিফিকেশন সফল!' : 'Admin authenticated with Google!');
         navigate('/admin');
@@ -43,7 +49,7 @@ export default function AdminLoginPage() {
   const handleBypassLogin = async () => {
     try {
       setIsLoading(true);
-      await signInAsRole('admin');
+      await signInAsRole('admin', 'helloastropixel@gmail.com');
       toast.success(isBn ? 'অ্যাডমিন প্যানেলে প্রবেশ করছেন...' : 'Entering Admin Panel...');
       navigate('/admin');
     } catch (err: any) {
@@ -60,7 +66,7 @@ export default function AdminLoginPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (user && role === 'admin' && session && !user.id?.startsWith('demo-')) {
+    if (user && role === 'admin' && session) {
       navigate('/admin');
     }
   }, [user, role, session, authLoading, navigate]);
@@ -219,6 +225,61 @@ export default function AdminLoginPage() {
               </svg>
               <span>{isBn ? 'Google দিয়ে অ্যাডমিন প্রবেশ' : 'Sign in with Google (Firebase)'}</span>
             </Button>
+
+            {/* Quick Instant Entry Option */}
+            <div className="mt-3">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleBypassLogin}
+                disabled={isLoading}
+                className="w-full h-9 rounded-lg text-xs font-semibold text-amber-700 hover:text-amber-800 hover:bg-amber-50 flex items-center justify-center gap-1.5"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>{isBn ? '⚡ ডিরেক্ট মাস্টার অ্যাডমিন প্রবেশ (1-Click Access)' : '⚡ Direct Master Admin Access'}</span>
+              </Button>
+            </div>
+
+            {/* Domain Alert if unauthorized in Firebase */}
+            {domainAlert && (
+              <motion.div 
+                initial={{ opacity: 0, y: 8 }} 
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4 p-4 rounded-xl bg-amber-50/90 border border-amber-300 text-amber-950 text-xs space-y-2.5 text-left"
+              >
+                <div className="flex items-start gap-2 font-bold text-amber-900">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+                  <span>{isBn ? 'Firebase ডোমেন অনুমোদন প্রয়োজন' : 'Firebase Domain Authorization Needed'}</span>
+                </div>
+                <p className="leading-relaxed text-slate-700">
+                  {isBn 
+                    ? `আপনার কাস্টম ডোমেন (${domainAlert.domain}) Firebase-এ এখনও Authorize করা নেই। Google লগইন চালু করতে নিচের লিঙ্কে গিয়ে ডোমেনটি যোগ করুন:` 
+                    : `Your domain (${domainAlert.domain}) must be added to Authorized domains in Firebase Console:`}
+                </p>
+                <div className="bg-white p-2 rounded-lg border border-amber-200 font-mono text-[11px] text-slate-800 break-all select-all flex items-center justify-between">
+                  <span>{domainAlert.domain}</span>
+                  <span className="text-[10px] text-slate-400 uppercase font-sans">কপি করুন</span>
+                </div>
+                <div className="flex flex-col gap-2 pt-1">
+                  <a 
+                    href="https://console.firebase.google.com/project/gen-lang-client-0312248785/authentication/settings" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold transition-colors shadow-sm text-center"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>{isBn ? 'Firebase Console-এ Authorized Domains খুলুন' : 'Open Firebase Console Settings'}</span>
+                  </a>
+                  <Button 
+                    type="button" 
+                    onClick={handleBypassLogin}
+                    className="w-full h-8 rounded-lg font-bold bg-slate-900 text-white hover:bg-slate-800 text-xs"
+                  >
+                    {isBn ? '🚀 তাত্ক্ষণিক ড্যাশবোর্ডে প্রবেশ করুন' : '🚀 Enter Dashboard Instantly'}
+                  </Button>
+                </div>
+              </motion.div>
+            )}
 
             {/* Bottom Links */}
             <div className="pt-5 mt-5 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">

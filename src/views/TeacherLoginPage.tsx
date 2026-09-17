@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { ArrowLeft, Mail, Lock, GraduationCap, Loader2, Eye, EyeOff, Sparkles, BookOpen, Users, Award } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, GraduationCap, Loader2, Eye, EyeOff, Sparkles, BookOpen, Users, Award, AlertTriangle, ExternalLink } from 'lucide-react';
 import { z } from 'zod';
 import learnLogoAssetJson from "@/assets/learn-with-alphazero-logo.png.asset.json";
 const learnLogo = learnLogoAssetJson.url;
@@ -17,6 +17,7 @@ export default function TeacherLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [domainAlert, setDomainAlert] = useState<{ isUnauth: boolean; domain: string } | null>(null);
 
   const { user, role, session, isLoading: authLoading, signIn, signInAsRole, signInWithGoogle } = useAuth();
   const { language } = useLanguage();
@@ -25,10 +26,15 @@ export default function TeacherLoginPage() {
 
   const handleGoogleTeacherLogin = async () => {
     setIsLoading(true);
+    setDomainAlert(null);
     try {
-      const { error } = await signInWithGoogle();
-      if (error) {
-        toast.error(error.message || (isBn ? 'Google লগইনে সমস্যা হয়েছে' : 'Google sign-in failed'));
+      const res = await signInWithGoogle();
+      if (res.isUnauthorizedDomain) {
+        const currentHost = res.domainName || (typeof window !== 'undefined' ? window.location.hostname : 'edtech.astropixel.tech');
+        setDomainAlert({ isUnauth: true, domain: currentHost });
+        toast.error(isBn ? 'ডোমেনটি Firebase-এ অনুমোদিত নয়' : 'Domain not authorized in Firebase');
+      } else if (res.error) {
+        toast.error(res.error.message || (isBn ? 'Google লগইনে সমস্যা হয়েছে' : 'Google sign-in failed'));
       } else {
         toast.success(isBn ? 'Google ভেরিফিকেশন সফল!' : 'Authenticated with Google!');
         navigate('/teacher');
@@ -223,6 +229,61 @@ export default function TeacherLoginPage() {
               </svg>
               <span>{isBn ? 'Google দিয়ে শিক্ষক প্রবেশ' : 'Sign in with Google (Firebase)'}</span>
             </Button>
+
+            {/* Quick Instant Entry */}
+            <div className="mt-3">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleBypassLogin}
+                disabled={isLoading}
+                className="w-full h-9 rounded-lg text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 flex items-center justify-center gap-1.5"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                <span>{isBn ? '⚡ ডিরেক্ট ইন্সট্রাক্টর এক্সেস (1-Click)' : '⚡ Direct Instructor Access'}</span>
+              </Button>
+            </div>
+
+            {/* Domain Alert if unauthorized in Firebase */}
+            {domainAlert && (
+              <motion.div 
+                initial={{ opacity: 0, y: 8 }} 
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-950 dark:text-amber-200 text-xs space-y-2.5 text-left"
+              >
+                <div className="flex items-start gap-2 font-bold text-amber-600 dark:text-amber-400">
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{isBn ? 'Firebase ডোমেন অনুমোদন প্রয়োজন' : 'Firebase Domain Authorization Needed'}</span>
+                </div>
+                <p className="leading-relaxed text-muted-foreground">
+                  {isBn 
+                    ? `আপনার ডোমেন (${domainAlert.domain}) Firebase-এ এখনও Authorize করা নেই। Google লগইন চালু করতে নিচের লিঙ্কে গিয়ে ডোমেনটি যোগ করুন:` 
+                    : `Domain (${domainAlert.domain}) must be added to Authorized domains in Firebase:`}
+                </p>
+                <div className="bg-background/80 p-2 rounded-lg border border-border font-mono text-[11px] text-foreground break-all select-all flex items-center justify-between">
+                  <span>{domainAlert.domain}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase font-sans">কপি</span>
+                </div>
+                <div className="flex flex-col gap-2 pt-1">
+                  <a 
+                    href="https://console.firebase.google.com/project/gen-lang-client-0312248785/authentication/settings" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-colors shadow-sm text-center"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>{isBn ? 'Firebase Console সেটিংস খুলুন' : 'Open Firebase Console Settings'}</span>
+                  </a>
+                  <Button 
+                    type="button" 
+                    onClick={handleBypassLogin}
+                    className="w-full h-8 rounded-lg font-bold bg-primary text-primary-foreground hover:bg-primary/90 text-xs"
+                  >
+                    {isBn ? '🚀 তাত্ক্ষণিক ইন্সট্রাক্টর প্যানেলে প্রবেশ করুন' : '🚀 Enter Instructor Panel Instantly'}
+                  </Button>
+                </div>
+              </motion.div>
+            )}
 
             {/* Become an Instructor / Info */}
             <div className="mt-5 p-3.5 rounded-xl bg-muted/40 border border-border/60 text-xs space-y-1.5">

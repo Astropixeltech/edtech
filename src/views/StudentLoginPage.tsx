@@ -9,13 +9,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { ArrowLeft, Mail, Lock, User, ShieldCheck, Loader2, RefreshCw, Phone, Eye, EyeOff, Sparkles, GraduationCap, Shield } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, User, ShieldCheck, Loader2, RefreshCw, Phone, Eye, EyeOff, Sparkles, GraduationCap, Shield, AlertTriangle, ExternalLink } from 'lucide-react';
 import { z } from 'zod';
 import learnLogoAssetJson from "@/assets/learn-with-alphazero-logo.png.asset.json";
 const learnLogo = learnLogoAssetJson.url;
 
 export default function StudentLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [domainAlert, setDomainAlert] = useState<{ isUnauth: boolean; domain: string } | null>(null);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [showLoginPassword, setShowLoginPassword] = useState(false);
@@ -216,15 +217,33 @@ export default function StudentLoginPage() {
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
+    setDomainAlert(null);
     try {
-      const { error } = await signInWithGoogle();
-      if (error) {
-        toast.error(error.message || (isBn ? 'Google লগইনে সমস্যা হয়েছে' : 'Google sign-in failed'));
+      const res = await signInWithGoogle();
+      if (res.isUnauthorizedDomain) {
+        const currentHost = res.domainName || (typeof window !== 'undefined' ? window.location.hostname : 'edtech.astropixel.tech');
+        setDomainAlert({ isUnauth: true, domain: currentHost });
+        toast.error(isBn ? 'ডোমেনটি Firebase-এ অনুমোদিত নয়' : 'Domain not authorized in Firebase');
+      } else if (res.error) {
+        toast.error(res.error.message || (isBn ? 'Google লগইনে সমস্যা হয়েছে' : 'Google sign-in failed'));
       } else {
         toast.success(isBn ? 'Google দিয়ে সফলভাবে লগইন হয়েছে!' : 'Logged in with Google successfully!');
       }
     } catch (err: any) {
       toast.error(err.message || (isBn ? 'Google লগইনে সমস্যা হয়েছে' : 'Google sign-in failed'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleQuickStudentLogin = async () => {
+    try {
+      setIsLoading(true);
+      await signInAsRole('student');
+      toast.success(isBn ? 'শিক্ষার্থী ড্যাশবোর্ডে প্রবেশ করছেন...' : 'Entering Student Dashboard...');
+      navigate('/student');
+    } catch (err: any) {
+      toast.error(err.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -459,6 +478,60 @@ export default function StudentLoginPage() {
                         </svg>
                         {isBn ? 'গুগল দিয়ে প্রবেশ করুন' : 'Sign in with Google'}
                       </Button>
+
+                      {/* Quick Instant Entry for Student */}
+                      <div className="mt-3">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={handleQuickStudentLogin}
+                          disabled={isLoading}
+                          className="w-full h-9 rounded-lg text-xs font-semibold text-primary hover:bg-primary/10 flex items-center justify-center gap-1.5"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>{isBn ? '⚡ ডিরেক্ট স্টুডেন্ট এক্সেস (1-Click)' : '⚡ Direct Student Access'}</span>
+                        </Button>
+                      </div>
+
+                      {/* Domain Alert if unauthorized in Firebase */}
+                      {domainAlert && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 8 }} 
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mt-3 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-950 dark:text-amber-200 text-xs space-y-2 text-left"
+                        >
+                          <div className="flex items-start gap-2 font-bold text-amber-600 dark:text-amber-400">
+                            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                            <span>{isBn ? 'Firebase ডোমেন অনুমোদন প্রয়োজন' : 'Domain Authorization Needed'}</span>
+                          </div>
+                          <p className="text-muted-foreground text-[11px] leading-relaxed">
+                            {isBn 
+                              ? `ডোমেনটি (${domainAlert.domain}) Firebase-এ Authorize করতে হবে:` 
+                              : `Domain (${domainAlert.domain}) must be authorized in Firebase Console:`}
+                          </p>
+                          <div className="bg-background/80 p-2 rounded border border-border font-mono text-[11px] text-foreground break-all select-all flex items-center justify-between">
+                            <span>{domainAlert.domain}</span>
+                          </div>
+                          <div className="flex flex-col gap-1.5 pt-1">
+                            <a 
+                              href="https://console.firebase.google.com/project/gen-lang-client-0312248785/authentication/settings" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold transition-colors shadow-sm text-center text-xs"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              <span>{isBn ? 'Firebase Console সেটিংস' : 'Firebase Console Settings'}</span>
+                            </a>
+                            <Button 
+                              type="button" 
+                              onClick={handleQuickStudentLogin}
+                              className="w-full h-8 rounded-lg font-bold bg-primary text-primary-foreground hover:bg-primary/90 text-xs"
+                            >
+                              {isBn ? '🚀 তাত্ক্ষণিক প্রবেশ করুন' : '🚀 Instant Student Enter'}
+                            </Button>
+                          </div>
+                        </motion.div>
+                      )}
                     </form>
                   </TabsContent>
 

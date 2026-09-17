@@ -28,7 +28,12 @@ import {
 import firebaseConfig from '../../firebase-applet-config.json';
 
 // Initialize Firebase App
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const effectiveFirebaseConfig = {
+  ...firebaseConfig,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || firebaseConfig.authDomain,
+};
+
+const app = !getApps().length ? initializeApp(effectiveFirebaseConfig) : getApp();
 
 // Initialize Firestore with specific database ID (CRITICAL)
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
