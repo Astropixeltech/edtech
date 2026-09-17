@@ -5,6 +5,7 @@ interface StatCardProps {
   icon: LucideIcon;
   value: string;
   label: string;
+  variant?: "default" | "dark" | "glass";
   iconBgColor?: string;
   iconColor?: string;
 }
@@ -45,8 +46,7 @@ export const StatCard = ({
   icon: Icon,
   value,
   label,
-  iconBgColor = "bg-emerald-50 dark:bg-emerald-900/20",
-  iconColor = "text-emerald-600 dark:text-emerald-400",
+  variant = "dark",
 }: StatCardProps) => {
   const [displayCount, setDisplayCount] = useState<number>(0);
   const [hasAnimated, setHasAnimated] = useState(false);
@@ -103,22 +103,42 @@ export const StatCard = ({
     return `${numString}${suffix}`;
   }, [displayCount, hasAnimated, isBengali, suffix]);
 
+  if (variant === "dark") {
+    return (
+      <div
+        ref={cardRef}
+        className="group relative flex items-center gap-3.5 sm:gap-4.5 rounded-2xl border border-slate-800/80 bg-[#0d1c2e]/90 hover:bg-[#11243b] p-4 sm:p-5 shadow-lg hover:shadow-emerald-950/30 hover:-translate-y-1 hover:border-emerald-500/40 transition-all duration-300 cursor-default overflow-hidden"
+      >
+        {/* Glow accent highlight on hover */}
+        <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/25 transition-all duration-500 pointer-events-none" />
+
+        {/* Neon Emerald Icon Container */}
+        <div className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30 shrink-0 group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-slate-950 transition-all duration-300 shadow-md">
+          <Icon className="h-6 w-6 md:h-7 md:w-7 transition-transform duration-300 group-hover:rotate-6" />
+        </div>
+
+        {/* Counter & Description */}
+        <div className="flex flex-col gap-0.5 min-w-0 z-10">
+          <span className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight tabular-nums group-hover:text-emerald-400 transition-colors">
+            {formattedCount}
+          </span>
+          <span className="text-xs sm:text-sm text-slate-300 font-semibold truncate">
+            {label}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={cardRef}
       className="group relative flex items-center gap-3.5 sm:gap-4.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900/90 p-4 sm:p-5 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-emerald-500/40 dark:hover:border-emerald-500/50 transition-all duration-300 backdrop-blur-sm overflow-hidden cursor-default"
     >
-      {/* Top Gradient Accent Line on Hover */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-      {/* Glowing Icon Badge Container */}
-      <div
-        className={`flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20 shrink-0 group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300 shadow-sm`}
-      >
+      <div className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20 shrink-0 group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300 shadow-sm">
         <Icon className="h-6 w-6 md:h-7 md:w-7 transition-transform duration-300 group-hover:rotate-6" />
       </div>
-
-      {/* Stats Counter & Label */}
       <div className="flex flex-col gap-0.5 min-w-0">
         <span className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight tabular-nums group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
           {formattedCount}
