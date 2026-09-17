@@ -527,22 +527,6 @@ function AdminDashboardInner() {
     }
   }, [user, isAdmin, authLoading, navigate]);
 
-  // Show loading spinner while checking auth
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-[#6D28D9] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm font-semibold text-slate-700">Verifying Admin Access...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user || !isAdmin) {
-    return null;
-  }
-
   const handleLogout = async () => {
     await signOut();
     navigate('/');
@@ -1039,6 +1023,22 @@ function AdminDashboardInner() {
       )}
     </button>
   );
+
+  // Show loading spinner while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-[#6D28D9] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm font-semibold text-slate-700">Verifying Admin Access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || !isAdmin) {
+    return null;
+  }
 
   return (
     <div className={`min-h-screen bg-slate-50 text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>

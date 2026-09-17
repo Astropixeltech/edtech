@@ -20,19 +20,17 @@ export const ExamModal: React.FC<ExamModalProps> = ({
   exam,
   onComplete,
 }) => {
-  if (!exam) return null;
-
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<number, number>>({});
   const [flaggedQuestions, setFlaggedQuestions] = useState<Record<number, boolean>>({});
-  const [timeLeft, setTimeLeft] = useState<number>(exam.durationMinutes * 60);
+  const [timeLeft, setTimeLeft] = useState<number>((exam?.durationMinutes || 0) * 60);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize exam state
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && exam) {
       setCurrentIndex(0);
       setUserAnswers({});
       setFlaggedQuestions({});
@@ -87,6 +85,7 @@ export const ExamModal: React.FC<ExamModalProps> = ({
 
   // Calculate and submit results
   const handleSubmitExam = () => {
+    if (!exam) return;
     let score = 0;
     let correctCount = 0;
     let wrongCount = 0;
@@ -157,6 +156,8 @@ export const ExamModal: React.FC<ExamModalProps> = ({
     const secs = seconds % 60;
     return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
+
+  if (!exam) return null;
 
   const currentQ: Question = exam.questions[currentIndex];
   const isLastQuestion = currentIndex === exam.questions.length - 1;

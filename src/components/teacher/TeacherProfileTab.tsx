@@ -338,27 +338,23 @@ export default function TeacherProfileTab({ language }: TeacherProfileTabProps) 
               {formData.skills.map((skill) => (
                 <Badge key={skill} variant="secondary" className="gap-1">
                   {skill}
-                  {true && (
-                    <button onClick={() => removeSkill(skill)} className="ml-1 hover:text-destructive">
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
+                  <button onClick={() => removeSkill(skill)} className="ml-1 hover:text-destructive">
+                    <X className="w-3 h-3" />
+                  </button>
                 </Badge>
               ))}
             </div>
-            {true && (
-              <div className="flex gap-2">
-                <Input
-                  value={newSkill}
-                  onChange={(e) => setNewSkill(e.target.value)}
-                  placeholder={t.addSkill}
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                />
-                <Button type="button" onClick={addSkill} size="icon" variant="outline">
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-            )}
+            <div className="flex gap-2">
+              <Input
+                value={newSkill}
+                onChange={(e) => setNewSkill(e.target.value)}
+                placeholder={t.addSkill}
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+              />
+              <Button type="button" onClick={addSkill} size="icon" variant="outline">
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

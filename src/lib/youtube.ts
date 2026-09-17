@@ -16,7 +16,7 @@ export function extractYouTubeVideoId(input: string): string {
   }
 
   // Matches watch?v=, youtu.be/, or /embed/
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = trimmed.match(regExp);
 
   if (match && match[2].length === 11) {
