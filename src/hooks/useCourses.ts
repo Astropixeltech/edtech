@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Course, Video, CourseWithVideos, CourseWithProgress, VideoWithProgress, VideoProgress } from '@/types/lms';
 import { useAuth } from '@/contexts/AuthContext';
+import { INITIAL_REAL_YOUTUBE_COURSES, seedRealCoursesToDatabase } from '@/lib/seedCourses';
 import {
   getLocalVideoProgress,
   getAllLocalProgressForUser,
