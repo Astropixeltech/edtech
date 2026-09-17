@@ -453,54 +453,29 @@ export default function CoursesPage() {
           </div>
         </section>
 
-        {/* 2. STAT CARDS ROW (Dark Luxury Metallic Bar with Glowing Emerald Accent) */}
-        <section className="relative -mt-10 sm:-mt-14 z-20 px-4 sm:px-6 lg:px-8 pb-6">
-          <div className="max-w-6xl mx-auto rounded-[28px] sm:rounded-[36px] bg-[#07111e] border border-emerald-500/25 p-4 sm:p-6 shadow-2xl shadow-emerald-950/40 relative overflow-hidden">
-            
-            {/* Ambient Background Glow Effects */}
-            <div className="absolute -top-16 -left-16 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-16 -right-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-
-            {/* Top Live Metrics Header Pill */}
-            <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-slate-800/80">
-              <div className="flex items-center gap-2">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                </span>
-                <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-widest text-emerald-400">
-                  {isBn ? "লাইভ প্ল্যাটফর্ম পরিসংখ্যান" : "Real-Time Platform Stats"}
-                </span>
-              </div>
-              <span className="text-[10px] sm:text-xs text-slate-400 font-semibold hidden sm:inline-block">
-                {isBn ? "১০,০০০+ শিক্ষার্থীর আস্থা" : "Trusted by 10,000+ Learners"}
-              </span>
-            </div>
-
+        {/* 2. STAT CARDS ROW (Floating Elevated Container with Backdrop Blur & Glassmorphism) */}
+        <section className="relative -mt-8 sm:-mt-12 z-20 px-4 sm:px-6 lg:px-8 pb-4">
+          <div className="max-w-6xl mx-auto rounded-3xl bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 p-3.5 sm:p-5 shadow-xl shadow-slate-200/50 dark:shadow-none">
             <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
               <StatCard
                 icon={Users}
                 value={isBn ? "১০,০০০+" : "10,000+"}
                 label={isBn ? "নিবন্ধিত শিক্ষার্থী" : "Active Students"}
-                variant="dark"
               />
               <StatCard
                 icon={BookOpen}
                 value={isBn ? "২৫+" : "25+"}
                 label={isBn ? "প্র্যাক্টিক্যাল কোর্স" : "Online Courses"}
-                variant="dark"
               />
               <StatCard
                 icon={GraduationCap}
                 value={isBn ? `${toBengaliDigits(teacherCount)}+` : `${teacherCount}+`}
                 label={isBn ? "অভিজ্ঞ প্রশিক্ষক" : "Expert Instructors"}
-                variant="dark"
               />
               <StatCard
                 icon={Award}
                 value={isBn ? "৯৮%" : "98%"}
                 label={isBn ? "ক্যারিয়ার সাকসেস" : "Success Rate"}
-                variant="dark"
               />
             </div>
           </div>
