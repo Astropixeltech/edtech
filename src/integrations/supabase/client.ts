@@ -1,5 +1,5 @@
 // 100% Local Autonomous Database & Auth Client for Astropixel Learn EdTech Platform
-// Completely independent of external Supabase servers.
+// Completely independent of external Supabase servers with Proxy-based QueryBuilder.
 import type { Database } from './types';
 import { INITIAL_REAL_YOUTUBE_COURSES } from '@/lib/seedCourses';
 
@@ -65,106 +65,134 @@ const setTableData = (tableName: string, data: any[]) => {
   safeSetStorage(`ap_table_${tableName}`, data);
 };
 
-class MockQueryBuilder implements PromiseLike<{ data: any; error: any }> {
-  private tableName: string;
-  private filters: Array<{ col: string; op: string; val: any }> = [];
-  private isSingle = false;
-  private isMaybeSingle = false;
-  private limitCount?: number;
+function createMockQueryBuilder(tableName: string) {
+  const filters: Array<{ col: string; op: string; val: any }> = [];
+  let isSingle = false;
+  let isMaybeSingle = false;
+  let limitCount: number | undefined = undefined;
 
-  constructor(tableName: string) {
-    this.tableName = tableName;
-  }
+  const builder: any = {
+    tableName,
+    filters,
+    select(fields?: string) { return proxy; },
+    eq(col: string, val: any) { filters.push({ col, op: 'eq', val }); return proxy; },
+    neq(col: string, val: any) { filters.push({ col, op: 'neq', val }); return proxy; },
+    gt(col: string, val: any) { filters.push({ col, op: 'gt', val }); return proxy; },
+    gte(col: string, val: any) { filters.push({ col, op: 'gte', val }); return proxy; },
+    lt(col: string, val: any) { filters.push({ col, op: 'lt', val }); return proxy; },
+    lte(col: string, val: any) { filters.push({ col, op: 'lte', val }); return proxy; },
+    like(col: string, val: any) { filters.push({ col, op: 'like', val }); return proxy; },
+    ilike(col: string, val: any) { filters.push({ col, op: 'ilike', val }); return proxy; },
+    is(col: string, val: any) { filters.push({ col, op: 'is', val }); return proxy; },
+    in(col: string, vals: any[]) { filters.push({ col, op: 'in', val: vals }); return proxy; },
+    or(clause: string) { return proxy; },
+    order(col: string, opts?: any) { return proxy; },
+    limit(n: number) { limitCount = n; return proxy; },
+    range(from: number, to: number) { return proxy; },
+    single() { isSingle = true; return proxy; },
+    maybeSingle() { isMaybeSingle = true; return proxy; },
 
-  select(fields?: string) { return this; }
-  eq(col: string, val: any) { this.filters.push({ col, op: 'eq', val }); return this; }
-  neq(col: string, val: any) { this.filters.push({ col, op: 'neq', val }); return this; }
-  in(col: string, vals: any[]) { this.filters.push({ col, op: 'in', val: vals }); return this; }
-  order(col: string, opts?: any) { return this; }
-  limit(n: number) { this.limitCount = n; return this; }
-  range(from: number, to: number) { return this; }
-  single() { this.isSingle = true; return this; }
-  maybeSingle() { this.isMaybeSingle = true; return this; }
+    async insert(values: any) {
+      const list = getTableData(tableName);
+      const newItems = Array.isArray(values) ? values : [values];
+      const prepared = newItems.map(item => ({
+        id: item.id || `loc-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        created_at: new Date().toISOString(),
+        ...item
+      }));
+      const updated = [...prepared, ...list];
+      setTableData(tableName, updated);
+      return { data: Array.isArray(values) ? prepared : prepared[0], error: null };
+    },
 
-  async insert(values: any) {
-    const list = getTableData(this.tableName);
-    const newItems = Array.isArray(values) ? values : [values];
-    const prepared = newItems.map(item => ({
-      id: item.id || `loc-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      created_at: new Date().toISOString(),
-      ...item
-    }));
-    const updated = [...prepared, ...list];
-    setTableData(this.tableName, updated);
-    return { data: Array.isArray(values) ? prepared : prepared[0], error: null };
-  }
+    async update(values: any) {
+      let list = getTableData(tableName);
+      list = list.map(item => {
+        let matches = true;
+        for (const f of filters) {
+          if (f.op === 'eq' && String(item[f.col]).replace(/_/g, '-') !== String(f.val).replace(/_/g, '-')) matches = false;
+        }
+        return matches ? { ...item, ...values } : item;
+      });
+      setTableData(tableName, list);
+      return { data: values, error: null };
+    },
 
-  async update(values: any) {
-    let list = getTableData(this.tableName);
-    list = list.map(item => {
-      let matches = true;
-      for (const f of this.filters) {
-        if (f.op === 'eq' && item[f.col] !== f.val) matches = false;
+    async upsert(values: any, options?: any) {
+      return builder.insert(values);
+    },
+
+    async delete() {
+      let list = getTableData(tableName);
+      list = list.filter(item => {
+        let matches = true;
+        for (const f of filters) {
+          if (f.op === 'eq' && String(item[f.col]).replace(/_/g, '-') === String(f.val).replace(/_/g, '-')) matches = false;
+        }
+        return matches;
+      });
+      setTableData(tableName, list);
+      return { data: true, error: null };
+    },
+
+    execute() {
+      let list = getTableData(tableName);
+
+      for (const f of filters) {
+        if (f.op === 'eq') {
+          const targetStr = String(f.val).toLowerCase().trim();
+          const targetNorm = targetStr.replace(/_/g, '-');
+          list = list.filter(item => {
+            const itemStr = String(item[f.col] || '').toLowerCase().trim();
+            const itemNorm = itemStr.replace(/_/g, '-');
+            return itemStr === targetStr || itemNorm === targetNorm;
+          });
+        } else if (f.op === 'neq') {
+          list = list.filter(item => item[f.col] !== f.val);
+        } else if (f.op === 'in') {
+          const setVals = new Set(Array.isArray(f.val) ? f.val.map(v => String(v).replace(/_/g, '-')) : [String(f.val).replace(/_/g, '-')]);
+          list = list.filter(item => setVals.has(String(item[f.col] || '').replace(/_/g, '-')));
+        }
       }
-      return matches ? { ...item, ...values } : item;
-    });
-    setTableData(this.tableName, list);
-    return { data: values, error: null };
-  }
 
-  async upsert(values: any, options?: any) {
-    return this.insert(values);
-  }
-
-  async delete() {
-    let list = getTableData(this.tableName);
-    list = list.filter(item => {
-      let matches = true;
-      for (const f of this.filters) {
-        if (f.op === 'eq' && item[f.col] === f.val) matches = false;
+      if (limitCount !== undefined) {
+        list = list.slice(0, limitCount);
       }
-      return matches;
-    });
-    setTableData(this.tableName, list);
-    return { data: true, error: null };
-  }
 
-  private execute() {
-    let list = getTableData(this.tableName);
-
-    for (const f of this.filters) {
-      if (f.op === 'eq') {
-        list = list.filter(item => item[f.col] === f.val);
-      } else if (f.op === 'neq') {
-        list = list.filter(item => item[f.col] !== f.val);
-      } else if (f.op === 'in') {
-        const setVals = new Set(Array.isArray(f.val) ? f.val : [f.val]);
-        list = list.filter(item => setVals.has(item[f.col]));
+      if (isSingle || isMaybeSingle) {
+        return { data: list[0] || null, error: null };
       }
+
+      return { data: list, error: null };
+    },
+
+    then(onfulfilled?: any, onrejected?: any) {
+      return Promise.resolve(builder.execute()).then(onfulfilled, onrejected);
+    },
+
+    catch(onrejected?: any) {
+      return Promise.resolve(builder.execute()).catch(onrejected);
     }
+  };
 
-    if (this.limitCount !== undefined) {
-      list = list.slice(0, this.limitCount);
+  const proxy: any = new Proxy(builder, {
+    get(target, prop, receiver) {
+      if (prop in target) {
+        return Reflect.get(target, prop, receiver);
+      }
+      if (typeof prop === 'string' && prop !== 'then' && prop !== 'catch') {
+        return (...args: any[]) => proxy;
+      }
+      return Reflect.get(target, prop, receiver);
     }
+  });
 
-    if (this.isSingle || this.isMaybeSingle) {
-      return { data: list[0] || null, error: null };
-    }
-
-    return { data: list, error: null };
-  }
-
-  then<TResult1 = { data: any; error: any }, TResult2 = never>(
-    onfulfilled?: ((value: { data: any; error: any }) => TResult1 | PromiseLike<TResult1>) | null,
-    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null
-  ): Promise<TResult1 | TResult2> {
-    return Promise.resolve(this.execute()).then(onfulfilled as any, onrejected);
-  }
+  return proxy;
 }
 
 export const supabase: any = {
   from(tableName: string) {
-    return new MockQueryBuilder(tableName);
+    return createMockQueryBuilder(tableName);
   },
 
   auth: {

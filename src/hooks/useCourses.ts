@@ -81,8 +81,9 @@ export function useCourseWithVideos(courseId: string) {
           videos: (videosData || []) as Video[],
         });
       } else {
-        // Fallback to INITIAL_REAL_YOUTUBE_COURSES
-        const found = INITIAL_REAL_YOUTUBE_COURSES.find(c => c.id === courseId);
+        // Fallback to INITIAL_REAL_YOUTUBE_COURSES with normalized ID matching
+        const normId = (courseId || '').replace(/_/g, '-');
+        const found = INITIAL_REAL_YOUTUBE_COURSES.find(c => c.id === courseId || c.id.replace(/_/g, '-') === normId);
         if (found) {
           setCourse(found);
         } else {
@@ -90,7 +91,8 @@ export function useCourseWithVideos(courseId: string) {
         }
       }
     } catch (err: unknown) {
-      const found = INITIAL_REAL_YOUTUBE_COURSES.find(c => c.id === courseId);
+      const normId = (courseId || '').replace(/_/g, '-');
+      const found = INITIAL_REAL_YOUTUBE_COURSES.find(c => c.id === courseId || c.id.replace(/_/g, '-') === normId);
       if (found) {
         setCourse(found);
       } else {
