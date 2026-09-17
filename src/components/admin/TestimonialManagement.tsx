@@ -28,41 +28,7 @@ interface ReviewItem {
   isVerified: boolean;
 }
 
-const DEFAULT_REVIEWS: ReviewItem[] = [
-  {
-    id: "1",
-    nameBn: "তানভীর আহমেদ",
-    nameEn: "Tanvir Ahmed",
-    roleBn: "বুয়েট সিএসই (র‍্যাংক ১৫)",
-    roleEn: "BUET CSE (Rank 15)",
-    quoteBn: "Astropixel-এর ফিজিক্স আর হায়ার ম্যাথ ক্লাসগুলো কনসেপ্ট ক্লিয়ারিংয়ে সবচেয়ে বেশি সাহায্য করেছে। প্রবলেম সলভিং অ্যাপ্রোচ অতুলনীয়।",
-    quoteEn: "Astropixel's Physics & Higher Math classes gave me unmatched concept clarity and speed for BUET admission.",
-    rating: 5,
-    isVerified: true,
-  },
-  {
-    id: "2",
-    nameBn: "ফারিয়া মেহজাবিন",
-    nameEn: "Faria Mehzabin",
-    roleBn: "ডিএমসি (মেডিকেল মেরিট ২২)",
-    roleEn: "DMC (Medical Merit 22)",
-    quoteBn: "বায়োলজি আর কেমিস্ট্রির প্রতিটি খুঁটিনাটি লাইন দাগিয়ে পড়ানোর পদ্ধতি মেডিকেল পরীক্ষায় হুবহু কমন পেতে সাহায্য করেছে।",
-    quoteEn: "Every high-yield line in Biology and Chemistry was thoroughly explained, making medical prep effortless.",
-    rating: 5,
-    isVerified: true,
-  },
-  {
-    id: "3",
-    nameBn: "রাকিবুল হাসান",
-    nameEn: "Rakibul Hasan",
-    roleBn: "ঢাবি 'ক' ইউনিট (র‍্যাংক ৮)",
-    roleEn: "DU 'A' Unit (Rank 8)",
-    quoteBn: "মডেল টেস্টগুলোর স্ট্যান্ডার্ড প্রশ্ন এবং তাৎক্ষণিক সমাধান আমাকে ভর্তি পরীক্ষার ভয় কাটিয়ে আত্মবিশ্বাস এনে দিয়েছিল।",
-    quoteEn: "High-standard model tests and step-by-step solutions gave me complete confidence to top the DU admission.",
-    rating: 5,
-    isVerified: true,
-  }
-];
+const DEFAULT_REVIEWS: ReviewItem[] = [];
 
 export default function TestimonialManagement({ language = 'bn' }: { language?: string }) {
   const isBn = language === 'bn';
@@ -73,7 +39,7 @@ export default function TestimonialManagement({ language = 'bn' }: { language?: 
         return JSON.parse(saved);
       } catch (e) {}
     }
-    return DEFAULT_REVIEWS;
+    return [];
   });
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -209,8 +175,19 @@ export default function TestimonialManagement({ language = 'bn' }: { language?: 
       </div>
 
       {/* Review Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map((rev) => (
+      {filtered.length === 0 ? (
+        <div className="p-10 text-center border-2 border-dashed border-border/70 rounded-2xl bg-muted/20 space-y-3">
+          <MessageSquareQuote className="w-12 h-12 mx-auto text-muted-foreground/40" />
+          <div>
+            <h3 className="font-semibold text-foreground text-base">{isBn ? 'কোনো রিভিউ পাওয়া যায়নি' : 'No testimonials found'}</h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+              {isBn ? 'নতুন রিভিউ যুক্ত করতে উপরের "নতুন রিভিউ যুক্ত করুন" বোতামে ক্লিক করুন।' : 'Click the button above to add a student testimonial.'}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((rev) => (
           <div key={rev.id} className="bg-card border border-border/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-4 hover:border-primary/40 transition-colors">
             <div className="space-y-3">
               <div className="flex items-start justify-between gap-2">
@@ -253,6 +230,7 @@ export default function TestimonialManagement({ language = 'bn' }: { language?: 
           </div>
         ))}
       </div>
+      )}
 
       {/* Add / Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

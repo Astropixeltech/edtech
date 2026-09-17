@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { SUPABASE_URL } from '@/lib/env';
+import { SUPABASE_URL, CLOUDINARY_CLOUD_NAME } from '@/lib/env';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -325,25 +325,49 @@ export default function CourseManagement({ courses, coursesLoading, refetchCours
       try {
         const { data: { session } } = await supabase.auth.getSession();
 
-        // Step 1: Get signed credentials
-        const signRes = await fetch(`${SUPABASE_URL}/functions/v1/sign-upload`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session?.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ folder: `courses/${selectedCourse.id}` }),
-        });
-        if (!signRes.ok) throw new Error('Error signing');
-        const { cloudName, apiKey, timestamp, signature, folder } = await signRes.json();
+        // Step 1: Get credentials or fallback to preset
+        let cloudName = CLOUDINARY_CLOUD_NAME || 'u1tmgtke';
+        let apiKey = '';
+        let timestamp = '';
+        let signature = '';
+        let folder = `courses/${selectedCourse.id}`;
+        let usePreset = false;
+
+        try {
+          const signRes = await fetch(`${SUPABASE_URL}/functions/v1/sign-upload`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${session?.access_token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ folder: `courses/${selectedCourse.id}` }),
+          });
+          if (signRes.ok) {
+            const signData = await signRes.json();
+            cloudName = signData.cloudName || cloudName;
+            apiKey = signData.apiKey;
+            timestamp = String(signData.timestamp);
+            signature = signData.signature;
+            folder = signData.folder || folder;
+          } else {
+            usePreset = true;
+          }
+        } catch {
+          usePreset = true;
+        }
 
         // Step 2: Upload directly to Cloudinary
         const cloudForm = new FormData();
         cloudForm.append('file', file);
-        cloudForm.append('api_key', apiKey);
-        cloudForm.append('timestamp', String(timestamp));
-        cloudForm.append('signature', signature);
-        cloudForm.append('folder', folder);
+        if (usePreset) {
+          cloudForm.append('upload_preset', 'edtech_preset');
+          cloudForm.append('folder', folder);
+        } else {
+          cloudForm.append('api_key', apiKey);
+          cloudForm.append('timestamp', timestamp);
+          cloudForm.append('signature', signature);
+          cloudForm.append('folder', folder);
+        }
         cloudForm.append('resource_type', 'video');
 
         const xhr = new XMLHttpRequest();

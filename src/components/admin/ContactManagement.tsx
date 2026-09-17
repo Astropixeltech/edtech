@@ -44,34 +44,17 @@ const DEFAULT_CONTACT_DATA: ContactPageData = {
   heroTitleEn: "Get in Touch with Us",
   heroSubtitleBn: "যেকোনো সাহায্য, প্রশ্ন বা মতামত জানাতে সরাসরি যোগাযোগ করুন।",
   heroSubtitleEn: "Have any questions or need assistance? We are here to help.",
-  mainAddressBn: "মিরপুর, ঢাকা - ১২১৬, বাংলাদেশ",
-  mainAddressEn: "Mirpur, Dhaka - 1216, Bangladesh",
-  mainPhoneBn: "+880 1700-000000",
-  mainPhoneEn: "+880 1700-000000",
-  mainEmailBn: "support@astropixel.online",
-  mainEmailEn: "support@astropixel.online",
-  whatsappBn: "+880 1700-000000",
-  whatsappEn: "+880 1700-000000",
-  businessHoursBn: "শনিবার - বৃহস্পতিবার: সকাল ১০:০০ - রাত ৮:০০",
-  businessHoursEn: "Saturday - Thursday: 10:00 AM - 8:00 PM",
-  customContacts: [
-    {
-      id: "branch-1",
-      type: "branch",
-      titleBn: "চট্টগ্রাম শাখা অফিস",
-      titleEn: "Chittagong Branch Office",
-      valueBn: "জিইসি মোড়, চট্টগ্রাম",
-      valueEn: "GEC Circle, Chittagong"
-    },
-    {
-      id: "sales-phone",
-      type: "phone",
-      titleBn: "এডমিশন ও হেল্পলাইন",
-      titleEn: "Admission Helpline",
-      valueBn: "+880 1800-112233",
-      valueEn: "+880 1800-112233"
-    }
-  ]
+  mainAddressBn: "",
+  mainAddressEn: "",
+  mainPhoneBn: "",
+  mainPhoneEn: "",
+  mainEmailBn: "",
+  mainEmailEn: "",
+  whatsappBn: "",
+  whatsappEn: "",
+  businessHoursBn: "",
+  businessHoursEn: "",
+  customContacts: []
 };
 
 export default function ContactManagement() {

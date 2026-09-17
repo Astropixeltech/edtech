@@ -27,6 +27,23 @@ export default class ErrorBoundary extends Component<Props, State> {
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught runtime error caught by ErrorBoundary:", error, errorInfo);
     this.setState({ error, errorInfo });
+
+    // Auto-recover from CSS preload failures or stale chunk mismatches
+    const msg = (error?.message || "").toLowerCase();
+    if (
+      msg.includes("unable to preload css") ||
+      msg.includes("failed to fetch dynamically imported module") ||
+      msg.includes("dynamically imported module") ||
+      msg.includes("loading chunk")
+    ) {
+      const key = "eb_preload_retry_ts";
+      const last = sessionStorage.getItem(key);
+      const now = Date.now();
+      if (!last || now - parseInt(last, 10) > 8000) {
+        sessionStorage.setItem(key, now.toString());
+        window.location.reload();
+      }
+    }
   }
 
   private handleReset = () => {

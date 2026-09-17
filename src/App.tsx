@@ -19,26 +19,54 @@ import LearnContactPage from "./views/LearnContactPage";
 import StudentLoginPage from "./views/StudentLoginPage";
 import NotFound from "./views/NotFound";
 
-// Lazy-loaded LMS Dashboards & Features
-const AdminDashboard = lazy(() => import("./views/AdminDashboard"));
-const StudentDashboard = lazy(() => import("./views/StudentDashboard"));
-const TeacherDashboard = lazy(() => import("./views/TeacherDashboard"));
-const MyCertificatesPage = lazy(() => import("./views/MyCertificatesPage"));
-const CourseViewerPage = lazy(() => import("./views/CourseViewerPage"));
-const CertificatePage = lazy(() => import("./views/CertificatePage"));
-const VerifyCertificatePage = lazy(() => import("./views/VerifyCertificatePage"));
-const ForgotPasswordPage = lazy(() => import("./views/ForgotPasswordPage"));
-const ResetPasswordPage = lazy(() => import("./views/ResetPasswordPage"));
-const PaymentCallbackPage = lazy(() => import("./views/PaymentCallbackPage"));
-const PaymentCancelPage = lazy(() => import("./views/PaymentCancelPage"));
-const CustomCheckoutPage = lazy(() => import("./views/CustomCheckoutPage"));
-const CourseLandingPage = lazy(() => import("./views/CourseLandingPage"));
-const FreeResourcesPage = lazy(() => import("./views/FreeResourcesPage"));
-const SyllabusCalculatorPage = lazy(() => import("./views/SyllabusCalculatorPage"));
-const EligibilityCalculatorPage = lazy(() => import("./views/EligibilityCalculatorPage"));
+// Helper for robust chunk loading and graceful auto-recovery
+function lazyWithRetry<T extends React.ComponentType<any>>(
+  factory: () => Promise<{ default: T }>
+) {
+  return lazy(async () => {
+    try {
+      return await factory();
+    } catch (err: any) {
+      console.warn("Chunk load error in lazy route, attempting recovery:", err);
+      const isPreloadErr =
+        err?.message?.includes("preload") ||
+        err?.message?.includes("Failed to fetch dynamically imported module") ||
+        err?.message?.includes("dynamically imported module") ||
+        err?.message?.includes("loading chunk");
 
-const TeacherLoginPage = lazy(() => import("./views/TeacherLoginPage"));
-const AdminLoginPage = lazy(() => import("./views/AdminLoginPage"));
+      if (isPreloadErr) {
+        const key = `lazy_retry_${window.location.pathname}`;
+        const hasRetried = sessionStorage.getItem(key);
+        if (!hasRetried) {
+          sessionStorage.setItem(key, "true");
+          window.location.reload();
+        }
+      }
+      throw err;
+    }
+  });
+}
+
+// Lazy-loaded LMS Dashboards & Features with self-healing retries
+const AdminDashboard = lazyWithRetry(() => import("./views/AdminDashboard"));
+const StudentDashboard = lazyWithRetry(() => import("./views/StudentDashboard"));
+const TeacherDashboard = lazyWithRetry(() => import("./views/TeacherDashboard"));
+const MyCertificatesPage = lazyWithRetry(() => import("./views/MyCertificatesPage"));
+const CourseViewerPage = lazyWithRetry(() => import("./views/CourseViewerPage"));
+const CertificatePage = lazyWithRetry(() => import("./views/CertificatePage"));
+const VerifyCertificatePage = lazyWithRetry(() => import("./views/VerifyCertificatePage"));
+const ForgotPasswordPage = lazyWithRetry(() => import("./views/ForgotPasswordPage"));
+const ResetPasswordPage = lazyWithRetry(() => import("./views/ResetPasswordPage"));
+const PaymentCallbackPage = lazyWithRetry(() => import("./views/PaymentCallbackPage"));
+const PaymentCancelPage = lazyWithRetry(() => import("./views/PaymentCancelPage"));
+const CustomCheckoutPage = lazyWithRetry(() => import("./views/CustomCheckoutPage"));
+const CourseLandingPage = lazyWithRetry(() => import("./views/CourseLandingPage"));
+const FreeResourcesPage = lazyWithRetry(() => import("./views/FreeResourcesPage"));
+const SyllabusCalculatorPage = lazyWithRetry(() => import("./views/SyllabusCalculatorPage"));
+const EligibilityCalculatorPage = lazyWithRetry(() => import("./views/EligibilityCalculatorPage"));
+
+const TeacherLoginPage = lazyWithRetry(() => import("./views/TeacherLoginPage"));
+const AdminLoginPage = lazyWithRetry(() => import("./views/AdminLoginPage"));
 
 const queryClient = new QueryClient();
 

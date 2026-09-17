@@ -30,193 +30,7 @@ import HorizontalScroller from "@/components/ui/HorizontalScroller";
 import HomePageSkeleton from "@/components/skeletons/HomePageSkeleton";
 import { TestimonialCard } from "@/components/ui/testimonial-card";
 import { TeamSection } from "@/components/ui/team";
-
-import instructorHH from "@/assets/instructors/hh.png.asset.json";
-import instructorNayeem from "@/assets/instructors/nayeem.png.asset.json";
-import instructorAtik from "@/assets/instructors/Atik.png.asset.json";
-import instructorShafiul from "@/assets/instructors/shafiul.png.asset.json";
-import instructorPapiya from "@/assets/instructors/papiya.png.asset.json";
-import instructorPrantik from "@/assets/instructors/prantik.png.asset.json";
-
-// Academic Mentors & Instructors mapping
-const trainers = {
-  tanvir: {
-    name: "Engr. Tanvir Ahmed",
-    qualificationEn: "BUET (EEE), Senior Physics & Math Mentor",
-    qualificationBn: "বুয়েট (ইইই), সিনিয়র পদার্থ ও গণিত প্রশিক্ষক",
-    image: instructorAtik.url,
-  },
-  sajid: {
-    name: "Dr. Sajid Hasan",
-    qualificationEn: "Dhaka Medical College (DMC), Biology Lead",
-    qualificationBn: "ঢাকা মেডিকেল কলেজ (DMC), জীববিজ্ঞান প্রধান",
-    image: instructorHH.url,
-  },
-  fahim: {
-    name: "Fahim Shahriar",
-    qualificationEn: "DU (Physics), Higher Math Specialist",
-    qualificationBn: "ঢাবি (পদার্থবিজ্ঞান), উচ্চতর গণিত বিশেষজ্ঞ",
-    image: instructorNayeem.url,
-  },
-  tahmid: {
-    name: "Tahmid Chowdhury",
-    qualificationEn: "BUET (CSE), ICT & Olympiad Lead",
-    qualificationBn: "বুয়েট (সিএসই), আইসিটি ও অলিম্পিয়াড প্রধান",
-    image: instructorShafiul.url,
-  },
-  papiya: {
-    name: "Dr. Sumaiya Farhana",
-    qualificationEn: "SSMC, Chemistry & Zoology Faculty",
-    qualificationBn: "সলিমুল্লাহ মেডিকেল কলেজ, রসায়ন ও প্রাণিবিজ্ঞান ফ্যাকাল্টি",
-    image: instructorPapiya.url,
-  },
-  prantik: {
-    name: "Prantik Saha",
-    qualificationEn: "RUET, Engineering Mechanics & Science Mentor",
-    qualificationBn: "রুয়েট, ইঞ্জিনিয়ারিং মেকানিক্স ও বিজ্ঞান মেন্টর",
-    image: instructorPrantik.url,
-  },
-};
-
-const DEFAULT_BANNER_SLIDES = [
-  {
-    id: "1",
-    image: "https://nid.edu.bd/wp-content/uploads/2024/05/BBA-web-slider-01-01-01-scaled-e1753431207269.jpg",
-    eyebrowBn: "এইচএসসি ও বিশ্ববিদ্যালয় ভর্তি একাডেমি",
-    eyebrowEn: "HSC & University Admission Academy",
-    title1Bn: "স্বপ্ন যেখানে",
-    title1En: "Where dreams",
-    title2Bn: "বুয়েট, মেডিকেল ও ঢাবিতে।",
-    title2En: "meet university excellence.",
-    title3Bn: "শীর্ষ শিক্ষকদের সাথে প্রস্তুতি।",
-    title3En: "Learn with top rankers.",
-    subtitleBn: "পদার্থবিজ্ঞান, রসায়ন, উচ্চতর গণিত ও জীববিজ্ঞানের গভীর কনসেপ্ট ক্লিয়ারিং এবং বোর্ড ও এডমিশনের পূর্ণাঙ্গ প্রস্তুতি।",
-    subtitleEn: "From HSC Science to Engineering, Medical, and Varsity admission programs — achieve peak academic mastery.",
-    ctaBn: "একাডেমিক কোর্স দেখুন",
-    ctaEn: "Explore Academic Courses",
-    ctaHref: "#courses",
-  },
-  {
-    id: "2",
-    image: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?q=80&w=1200&auto=format&fit=crop",
-    eyebrowBn: "বুয়েট ও ইঞ্জিনিয়ারিং এডমিশন স্পেশাল",
-    eyebrowEn: "BUET & Engineering Admission",
-    title1Bn: "কনসেপ্ট ক্লিয়ার",
-    title1En: "Concept First",
-    title2Bn: "উচ্চতর সমস্যা সমাধান।",
-    title2En: "Advanced Problem Solving.",
-    title3Bn: "টপ র‍্যাঙ্কারদের মেন্টরশিপ।",
-    title3En: "Mentored by BUETians.",
-    subtitleBn: "পদার্থবিজ্ঞান ও উচ্চতর গণিতের জটিল গাণিতিক সমস্যা সমাধান এবং বুয়েট বিগত ১০ বছরের প্রশ্নব্যাংক অ্যানালাইসিস।",
-    subtitleEn: "Master complex physics and higher mathematics with deep conceptual clarity, question bank analysis, and structured mock tests.",
-    ctaBn: "ইঞ্জিনিয়ারিং কোর্স",
-    ctaEn: "Engineering Courses",
-    ctaHref: "/courses?category=admission",
-  },
-  {
-    id: "3",
-    image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=1200&auto=format&fit=crop",
-    eyebrowBn: "মেডিকেল ও ডেন্টাল এডমিশন স্পেশাল",
-    eyebrowEn: "Medical & Dental Admission Special",
-    title1Bn: "লক্ষ্য যখন",
-    title1En: "Target",
-    title2Bn: "সাদা অ্যাপ্রোন ও স্টেথোস্কোপ।",
-    title2En: "White Apron & Stethoscope.",
-    title3Bn: "ডিএমসি মেন্টরদের গাইডলাইন।",
-    title3En: "DMC Mentors Guidance.",
-    subtitleBn: "উদ্ভিদবিজ্ঞান, প্রাণিবিজ্ঞান, রসায়ন ও সাধারণ জ্ঞানের ১০০% নির্ভুল বোর্ড বই লাইন-বাই-লাইন বিশ্লেষণ ও ডেইলি এক্সাম।",
-    subtitleEn: "High-yield medical biology and chemistry line-by-line revision with daily topic-wise mock tests.",
-    ctaBn: "মেডিকেল কোর্স",
-    ctaEn: "Medical Courses",
-    ctaHref: "/courses?category=admission",
-  },
-  {
-    id: "4",
-    image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200&auto=format&fit=crop",
-    eyebrowBn: "ঢাকা বিশ্ববিদ্যালয় 'ক' ইউনিট ও বিজ্ঞান প্রস্তুতি",
-    eyebrowEn: "DU 'A' Unit Prep",
-    title1Bn: "ঢাবি 'ক' ইউনিট",
-    title1En: "DU 'A' Unit",
-    title2Bn: "বিজ্ঞান অনুষদের শীর্ষ প্রস্তুতি।",
-    title2En: "Science Faculty Preparation.",
-    title3Bn: "এমসিকিউ ও রিটেন সমন্বিত।",
-    title3En: "Integrated MCQ & Written.",
-    subtitleBn: "ঢাবি ক ইউনিট সহ সকল সাধারণ ও বিজ্ঞান বিশ্ববিদ্যালয়ের জন্য পদার্থ, রসায়ন, গণিত ও জীববিজ্ঞানের রিটেন স্পেশাল ট্রিকস।",
-    subtitleEn: "Comprehensive written and MCQ techniques for DU A-Unit and leading science university admissions.",
-    ctaBn: "ভার্সিটি কোর্স",
-    ctaEn: "Varsity Courses",
-    ctaHref: "/courses?category=admission",
-  },
-];
-
-const studentReviews = [
-  {
-    nameBn: "আসিফ ইকবাল",
-    nameEn: "Asif Iqbal",
-    handleBn: "@asif_buet23",
-    handleEn: "@asif_buet23",
-    roleBn: "বুয়েট '২৩ ব্যাচ (সিভিল)",
-    roleEn: "BUET '23 (Civil)",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80",
-    quoteBn: "অ্যাস্ট্রোপিক্সেলের ইঞ্জিনিয়ারিং ফিজিক্স ও হায়ার ম্যাথ ক্লাসগুলো আমার বুয়েট ভর্তির স্বপ্ন পূরণ করেছে। কনসেপ্টগুলো এতো সহজে বোঝানো হয়!",
-    quoteEn: "The engineering physics and higher math masterclasses made all the difference in my BUET admission success.",
-  },
-  {
-    nameBn: "তানভীর হাসান",
-    nameEn: "Tanvir Hasan",
-    handleBn: "@tanvir_hsc",
-    handleEn: "@tanvir_hsc",
-    roleBn: "এইচএসসি বিজ্ঞান (GPA-5.00)",
-    roleEn: "HSC Science (GPA 5.00)",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80",
-    quoteBn: "পদার্থবিজ্ঞান ও উচ্চতর গণিতে আমার আগে অনেক ভীতি ছিল। এখানকার ক্লাস ও নোটস দেখে টেস্ট ও বোর্ডে সর্বোচ্চ নম্বর পেয়েছি।",
-    quoteEn: "I used to struggle with Physics and Higher Math. The structured lessons and chapter notes completely changed my confidence.",
-  },
-  {
-    nameBn: "মেহজাবিন চৌধুরী",
-    nameEn: "Mehjabin Chowdhury",
-    handleBn: "@mehjabin_du",
-    handleEn: "@mehjabin_du",
-    roleBn: "ঢাকা বিশ্ববিদ্যালয় 'ক' ইউনিট",
-    roleEn: "Dhaka University 'A' Unit",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80",
-    quoteBn: "ঢাবি ক ইউনিটের প্রশ্নব্যাংক সলভিং আর ম্যাথ শর্ট ট্রিকসের ক্লাসগুলো ছিল এক কথায় অনবদ্য। প্রতিটি কনসেপ্ট পানির মতো পরিষ্কার!",
-    quoteEn: "The DU A-Unit question bank solving sessions were masterclasses in speed and conceptual depth.",
-  },
-  {
-    nameBn: "রাকিবুল ইসলাম",
-    nameEn: "Rakibul Islam",
-    handleBn: "@rakib_cse",
-    handleEn: "@rakib_cse",
-    roleBn: "বুয়েট '২৩ ব্যাচ (সিএসই)",
-    roleEn: "BUET '23 (CSE)",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80",
-    quoteBn: "ম্যাথ ও ফিজিক্সের অ্যানালাইসিস ক্লাসগুলো আমার ক্যালকুলেশন স্পিড দ্বিগুণ করে দিয়েছিল। বুয়েট ভর্তি পরীক্ষায় এটাই পার্থক্য গড়ে দিয়েছে।",
-    quoteEn: "The analytical problem solving sessions doubled my calculation speed and confidence for the engineering admission test.",
-  },
-  {
-    nameBn: "সামিয়া আক্তার",
-    nameEn: "Samia Akter",
-    handleBn: "@samia_ssc",
-    handleEn: "@samia_ssc",
-    roleBn: "এসএসসি বিজ্ঞান (গোল্ডেন GPA-5)",
-    roleEn: "SSC Science (Golden GPA 5)",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=256&q=80",
-    quoteBn: "ক্লাস ৯-১০ এর বিজ্ঞান ও গণিত ক্লাসগুলো এতটাই গোছানো যে বোর্ড পরীক্ষার আগে কোনো বাড়তি কোচিং এর প্রয়োজনই হয়নি।",
-    quoteEn: "The SSC foundational classes were so well organized that I never needed any outside coaching to score Golden GPA 5.",
-  },
-  {
-    nameBn: "রেজাউল করিম",
-    nameEn: "Rezaul Karim",
-    handleBn: "@reza_dmc",
-    handleEn: "@reza_dmc",
-    roleBn: "ঢাকা মেডিকেল কলেজ (DMC)",
-    roleEn: "Dhaka Medical College (DMC)",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=256&q=80",
-    quoteBn: "মেডিকেল বায়োলজি ও বায়ো-কেমিস্ট্রি সেশনগুলোর জন্য স্পেশাল থ্যাংকস। এক্সাম হলের প্রেসার হ্যান্ডেল করার গাইডলাইনগুলো দারুণ সাহায্য করেছে।",
-    quoteEn: "Special thanks for the medical biology sessions. The exam strategies helped me manage high pressure situations flawlessly.",
-  }
-];
+import { DEFAULT_HERO_SLIDES, HeroSlide } from "@/types/banners";
 
 export default function CoursesPage() {
   const { language } = useLanguage();
@@ -233,20 +47,12 @@ export default function CoursesPage() {
   const [currentSlide, setCurrentSlide] = useState<number>(0);
 
   // Dynamic instructors and teacher count synchronization with Admin Panel
-  const defaultTrainersList = useMemo(() => Object.entries(trainers).map(([id, t]) => ({
-    id,
-    name: t.name,
-    qualificationEn: t.qualificationEn,
-    qualificationBn: t.qualificationBn,
-    image: t.image,
-  })), []);
-
-  const [instructorsList, setInstructorsList] = useState<any[]>(defaultTrainersList);
-  const [teacherCount, setTeacherCount] = useState<number>(defaultTrainersList.length);
+  const [instructorsList, setInstructorsList] = useState<any[]>([]);
+  const [teacherCount, setTeacherCount] = useState<number>(0);
 
   const instructorTeamMembers = useMemo(() => {
     return instructorsList.map((t) => ({
-      image: t.image || t.avatar_url || instructorAtik.url,
+      image: t.image || t.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300",
       name: t.name,
       role: isBn ? (t.qualificationBn || t.roleTag || t.role) : (t.qualificationEn || t.roleTag || t.role),
     }));
@@ -292,49 +98,135 @@ export default function CoursesPage() {
 
         if (customInstructors && customInstructors.length > 0) {
           setInstructorsList(customInstructors);
+        } else {
+          setInstructorsList([]);
         }
 
         // Synchronize count: matching the teachers registered/approved in Admin Panel or configured list
-        const total = Math.max(dbTeacherCount || 0, customInstructors?.length || defaultTrainersList.length);
-        setTeacherCount(total > 0 ? total : defaultTrainersList.length);
+        const total = Math.max(dbTeacherCount || 0, customInstructors?.length || 0);
+        setTeacherCount(total);
       } catch (e) {
         console.warn('Teacher sync info:', e);
       }
     })();
     return () => { alive = false; };
-  }, [defaultTrainersList]);
+  }, []);
 
-  // Dynamic banner slides
-  const bannerSlides = useMemo(() => {
-    const cmsBanners = getContent("hero_banners_json");
-    if (cmsBanners) {
+  // Dynamic banner slides loaded from Admin Panel / CMS / LocalStorage with full real-time control
+  const [bannerSlides, setBannerSlides] = useState<HeroSlide[]>(() => {
+    if (typeof window !== "undefined") {
+      const local = localStorage.getItem("hero_banners_json");
+      if (local) {
+        try {
+          const parsed = JSON.parse(local);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch {}
+      }
+    }
+    return DEFAULT_HERO_SLIDES;
+  });
+
+  useEffect(() => {
+    let alive = true;
+    const fetchBanners = async () => {
       try {
-        const parsed = JSON.parse(cmsBanners);
+        // 1. Check Supabase page_content
+        const { data } = await supabase
+          .from('page_content')
+          .select('content_en')
+          .eq('content_key', 'hero_banners_json')
+          .maybeSingle();
+
+        if (data?.content_en && alive) {
+          const parsed = JSON.parse(data.content_en);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setBannerSlides(parsed);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Error fetching hero banners from DB:', e);
+      }
+
+      // 2. Check localStorage
+      if (typeof window !== 'undefined') {
+        const local = localStorage.getItem('hero_banners_json');
+        if (local && alive) {
+          try {
+            const parsed = JSON.parse(local);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setBannerSlides(parsed);
+              return;
+            }
+          } catch {}
+        }
+      }
+
+      // 3. Default to initial admin slides
+      if (alive) {
+        setBannerSlides(DEFAULT_HERO_SLIDES);
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('hero_banners_json', JSON.stringify(DEFAULT_HERO_SLIDES));
+          } catch {}
+        }
+      }
+    };
+
+    fetchBanners();
+
+    // Listen for real-time changes from Admin Panel
+    const handleBannerUpdate = (e: any) => {
+      if (e?.detail && Array.isArray(e.detail) && e.detail.length > 0) {
+        setBannerSlides(e.detail);
+      } else {
+        fetchBanners();
+      }
+    };
+
+    window.addEventListener('hero-banners-updated', handleBannerUpdate);
+    window.addEventListener('storage', fetchBanners);
+
+    return () => {
+      alive = false;
+      window.removeEventListener('hero-banners-updated', handleBannerUpdate);
+      window.removeEventListener('storage', fetchBanners);
+    };
+  }, []);
+
+  const [isSliderPaused, setIsSliderPaused] = useState(false);
+
+  // Dynamic reviews loaded from database / CMS
+  const studentReviews = useMemo(() => {
+    const cmsReviews = getContent("student_reviews_json");
+    if (cmsReviews) {
+      try {
+        const parsed = JSON.parse(cmsReviews);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch (e) {}
     }
-    const local = typeof window !== "undefined" ? localStorage.getItem("hero_banners_json") : null;
+    const local = typeof window !== "undefined" ? localStorage.getItem("ap_homepage_testimonials") : null;
     if (local) {
       try {
         const parsed = JSON.parse(local);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch (e) {}
     }
-    return DEFAULT_BANNER_SLIDES;
+    return [];
   }, [getContent]);
 
-  const [isSliderPaused, setIsSliderPaused] = useState(false);
-
-  // Auto-rotate hero banner slider every 8 seconds, pausing on hover
+  // Auto-rotate hero banner slider every 7 seconds, pausing on hover
   useEffect(() => {
     if (!bannerSlides || bannerSlides.length <= 1 || isSliderPaused) return;
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % bannerSlides.length);
-    }, 8000);
+    }, 7000);
     return () => clearInterval(interval);
-  }, [bannerSlides.length, isSliderPaused]);
+  }, [bannerSlides, isSliderPaused]);
 
-  const currentHero = bannerSlides[currentSlide] || DEFAULT_BANNER_SLIDES[0];
+  const currentHero = bannerSlides && bannerSlides.length > 0 
+    ? (bannerSlides[currentSlide % bannerSlides.length] || bannerSlides[0]) 
+    : null;
 
   const categories = useMemo(() => [
     { id: "all", label: isBn ? "সব কোর্স" : "All Courses", match: null },
@@ -388,70 +280,134 @@ export default function CoursesPage() {
 
       <div className="container-fluid-2k bg-white dark:bg-background overflow-hidden">
         
-        {/* 1. HERO BANNER SECTION (Sharp 4 corners design) */}
-        <section 
-          onMouseEnter={() => setIsSliderPaused(true)}
-          onMouseLeave={() => setIsSliderPaused(false)}
-          className="relative w-full h-[250px] sm:h-[400px] md:h-[550px] 4xl:h-[700px] overflow-hidden bg-black group rounded-none shadow-sm"
-        >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentHero.id || currentSlide}
-              initial={{ opacity: 0, scale: 1.02 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.99 }}
-              transition={{ duration: 1.2, ease: "easeInOut" }}
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-              style={{ backgroundImage: `url(${currentHero.image})` }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent flex items-end">
-                <div className="max-w-6xl mx-auto w-full pb-10 sm:pb-14 px-4 sm:px-6 lg:px-8 text-white">
-                  <span className="inline-block px-3 py-1 rounded-sm bg-brand-500 text-white text-xs font-bold mb-2 shadow-sm">
-                    {isBn ? currentHero.eyebrowBn : currentHero.eyebrowEn}
-                  </span>
-                  <h1 className="text-xl sm:text-3xl md:text-5xl font-extrabold max-w-2xl leading-tight">
-                    {isBn ? `${currentHero.title1Bn} ${currentHero.title2Bn}` : `${currentHero.title1En} ${currentHero.title2En}`}
-                  </h1>
-                  <p className="text-xs sm:text-sm md:text-base text-gray-200 mt-2 max-w-xl line-clamp-2">
-                    {isBn ? currentHero.subtitleBn : currentHero.subtitleEn}
-                  </p>
-                </div>
+        {/* 1. HERO BANNER SECTION (Full Dynamic CMS / Admin Control) */}
+        {bannerSlides && bannerSlides.length > 0 && currentHero ? (
+          <section 
+            onMouseEnter={() => setIsSliderPaused(true)}
+            onMouseLeave={() => setIsSliderPaused(false)}
+            className="relative w-full h-[240px] sm:h-[380px] md:h-[480px] lg:h-[540px] xl:h-[580px] overflow-hidden bg-slate-950 group rounded-none shadow-xs select-none"
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentHero.id || currentSlide}
+                initial={{ opacity: 0, scale: 1.01 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.99 }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+                className="absolute inset-0 w-full h-full"
+              >
+                {/* Clean Image Rendering with fallback */}
+                <img
+                  src={currentHero.image}
+                  alt={isBn ? (currentHero.title1Bn || "হিরো ব্যানার") : (currentHero.title1En || "Hero Banner")}
+                  className="w-full h-full object-cover object-center pointer-events-none"
+                  loading="eager"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://res.cloudinary.com/de348sqlb/image/upload/v1784725007/alphazero-assets/courses-hero-bg.png";
+                  }}
+                />
+
+                {/* Text and Button Overlay: Rendered only if any promotional text exists */}
+                {(currentHero.title1Bn || currentHero.title1En || currentHero.subtitleBn || currentHero.subtitleEn || currentHero.ctaBn || currentHero.ctaEn) && (
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent flex items-end">
+                    <div className="max-w-6xl mx-auto w-full pb-8 sm:pb-14 px-4 sm:px-6 lg:px-8 text-white">
+                      {(currentHero.eyebrowBn || currentHero.eyebrowEn) && (
+                        <span className="inline-block px-3 py-1 rounded-sm bg-emerald-600 text-white text-[11px] sm:text-xs font-bold mb-2 shadow-xs">
+                          {isBn ? (currentHero.eyebrowBn || currentHero.eyebrowEn) : (currentHero.eyebrowEn || currentHero.eyebrowBn)}
+                        </span>
+                      )}
+                      {(currentHero.title1Bn || currentHero.title1En || currentHero.title2Bn || currentHero.title2En) && (
+                        <h1 className="text-xl sm:text-3xl md:text-5xl font-extrabold max-w-2xl leading-tight drop-shadow-md">
+                          {isBn 
+                            ? `${currentHero.title1Bn || ""} ${currentHero.title2Bn || ""}`.trim()
+                            : `${currentHero.title1En || ""} ${currentHero.title2En || ""}`.trim()}
+                        </h1>
+                      )}
+                      {(currentHero.subtitleBn || currentHero.subtitleEn) && (
+                        <p className="text-xs sm:text-sm md:text-base text-gray-200 mt-2 max-w-xl line-clamp-2 drop-shadow-xs">
+                          {isBn ? (currentHero.subtitleBn || currentHero.subtitleEn) : (currentHero.subtitleEn || currentHero.subtitleBn)}
+                        </p>
+                      )}
+                      {(currentHero.ctaBn || currentHero.ctaEn) && (
+                        <div className="mt-4">
+                          <a
+                            href={currentHero.ctaHref || "#courses"}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold transition-all shadow-md active:scale-95"
+                          >
+                            <span>{isBn ? (currentHero.ctaBn || currentHero.ctaEn) : (currentHero.ctaEn || currentHero.ctaBn)}</span>
+                            <ArrowRight className="w-4 h-4" />
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Slide Counter Badge */}
+            {bannerSlides.length > 1 && (
+              <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-medium border border-white/20">
+                {(currentSlide % bannerSlides.length) + 1} / {bannerSlides.length}
               </div>
-            </motion.div>
-          </AnimatePresence>
+            )}
 
-          {/* Slider Prev / Next Buttons */}
-          <button
-            onClick={() => setCurrentSlide((prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length)}
-            aria-label="Previous slide"
-            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/40 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => setCurrentSlide((prev) => (prev + 1) % bannerSlides.length)}
-            aria-label="Next slide"
-            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/40 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
+            {/* Slider Prev / Next Buttons */}
+            {bannerSlides.length > 1 && (
+              <>
+                <button
+                  onClick={() => setCurrentSlide((prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length)}
+                  aria-label="Previous slide"
+                  className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-sm opacity-75 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 shadow-md"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setCurrentSlide((prev) => (prev + 1) % bannerSlides.length)}
+                  aria-label="Next slide"
+                  className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-sm opacity-75 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 shadow-md"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </>
+            )}
 
-          {/* Slider Indicators */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
-            {bannerSlides.map((slide: any, idx: number) => (
-              <button
-                key={slide.id || idx}
-                onClick={() => setCurrentSlide(idx)}
-                aria-label={`Slide ${idx + 1}`}
-                className={`transition-all duration-300 rounded-full ${
-                  currentSlide === idx
-                    ? "w-8 h-2 bg-brand-500 shadow-sm"
-                    : "w-2 h-2 bg-white/50 hover:bg-white/90"
-                }`}
-              />
-            ))}
-          </div>
-        </section>
+            {/* Slider Indicators */}
+            {bannerSlides.length > 1 && (
+              <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+                {bannerSlides.map((slide: any, idx: number) => (
+                  <button
+                    key={slide.id || idx}
+                    onClick={() => setCurrentSlide(idx)}
+                    aria-label={`Slide ${idx + 1}`}
+                    className={`transition-all duration-300 rounded-full ${
+                      (currentSlide % bannerSlides.length) === idx
+                        ? "w-8 h-2 bg-emerald-500 shadow-sm"
+                        : "w-2 h-2 bg-white/60 hover:bg-white"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        ) : (
+          <section className="relative w-full py-16 sm:py-24 bg-gradient-to-b from-slate-900 via-slate-950 to-background text-white px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto text-center space-y-4">
+              <span className="inline-block px-3 py-1 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30 text-xs font-bold shadow-xs">
+                {isBn ? "স্মার্ট অনলাইন লার্নিং প্ল্যাটফর্ম" : "Smart Online Learning Platform"}
+              </span>
+              <h1 className="text-3xl sm:text-5xl font-black tracking-tight">
+                {isBn ? "আপনার সাফল্যের নতুন যাত্রা শুরু হোক এখান থেকেই" : "Empower Your Learning Journey"}
+              </h1>
+              <p className="text-sm sm:text-base text-gray-300 max-w-2xl mx-auto leading-relaxed">
+                {isBn 
+                  ? "স্কুল, কলেজ, বিশ্ববিদ্যালয় ভর্তি ও প্রফেশনাল স্কিল ডেভেলপমেন্টের জন্য মানসম্মত অনলাইন কোর্স।"
+                  : "Comprehensive courses designed for school, college, university admission prep, and industry skills."
+                }
+              </p>
+            </div>
+          </section>
+        )}
 
         {/* 2. STAT CARDS ROW (Balanced spacing under hero banner with subtle rounded top corners) */}
         <section className="relative -mt-6 sm:-mt-8 z-10 rounded-t-3xl sm:rounded-t-[32px] bg-white dark:bg-background border-b border-gray-100 dark:border-border/40 py-8 sm:py-10">
@@ -465,14 +421,14 @@ export default function CoursesPage() {
             />
             <StatCard
               icon={BookOpen}
-              value={isBn ? "২৫+" : "25+"}
+              value={courses.length > 0 ? (isBn ? `${toBengaliDigits(courses.length)}+` : `${courses.length}+`) : (isBn ? "০" : "0")}
               label={isBn ? "প্র্যাক্টিক্যাল কোর্স" : "Online Courses"}
               iconBgColor="bg-blue-50 dark:bg-blue-900/20"
               iconColor="text-blue-600 dark:text-blue-400"
             />
             <StatCard
               icon={GraduationCap}
-              value={isBn ? `${toBengaliDigits(teacherCount)}+` : `${teacherCount}+`}
+              value={teacherCount > 0 ? (isBn ? `${toBengaliDigits(teacherCount)}+` : `${teacherCount}+`) : (isBn ? "০" : "0")}
               label={isBn ? "অভিজ্ঞ প্রশিক্ষক" : "Expert Instructors"}
               iconBgColor="bg-amber-50 dark:bg-amber-900/20"
               iconColor="text-amber-600 dark:text-amber-400"
@@ -684,39 +640,43 @@ export default function CoursesPage() {
         </section>
 
         {/* 6. EXPERT INSTRUCTORS (TeamSection Marquee Layout with Full Color Images) */}
-        <TeamSection members={instructorTeamMembers} isBn={isBn} />
+        {instructorTeamMembers && instructorTeamMembers.length > 0 && (
+          <TeamSection members={instructorTeamMembers} isBn={isBn} />
+        )}
 
         {/* 7. STUDENT TESTIMONIALS (Curated Institutional Hall of Fame Grid) */}
-        <section className="bg-background py-12 md:py-14 px-4 sm:px-6 lg:px-8 border-t border-border/60">
-          <div className="max-w-6xl mx-auto space-y-8">
-            <div className="flex flex-col items-center gap-2 text-center max-w-xl mx-auto">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-primary">
-                {isBn ? "সফলতার গল্প" : "Success Stories"}
-              </span>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
-                {isBn ? "শিক্ষার্থীদের সাফল্যের অভিজ্ঞতা" : "What Our Rankers Say"}
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 font-semibold">
-                {isBn ? "বুয়েট, মেডিকেল ও ঢাবিতে চান্সপ্রাপ্ত শিক্ষার্থীদের বাস্তব প্রতিক্রিয়া" : "Verified testimonials from students admitted into premier universities"}
-              </p>
-            </div>
+        {studentReviews && studentReviews.length > 0 && (
+          <section className="bg-background py-12 md:py-14 px-4 sm:px-6 lg:px-8 border-t border-border/60">
+            <div className="max-w-6xl mx-auto space-y-8">
+              <div className="flex flex-col items-center gap-2 text-center max-w-xl mx-auto">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-primary">
+                  {isBn ? "সফলতার গল্প" : "Success Stories"}
+                </span>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
+                  {isBn ? "শিক্ষার্থীদের সাফল্যের অভিজ্ঞতা" : "What Our Rankers Say"}
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 font-semibold">
+                  {isBn ? "বুয়েট, মেডিকেল ও ঢাবিতে চান্সপ্রাপ্ত শিক্ষার্থীদের বাস্তব প্রতিক্রিয়া" : "Verified testimonials from students admitted into premier universities"}
+                </p>
+              </div>
 
-            {/* Curated Grid of Verified Reviews using TestimonialCard */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 justify-items-center">
-              {studentReviews.map((rev, idx) => (
-                <TestimonialCard
-                  key={idx}
-                  author={{
-                    name: isBn ? rev.nameBn : rev.nameEn,
-                    handle: isBn ? `${rev.roleBn} (${rev.handleBn})` : `${rev.roleEn} (${rev.handleEn})`,
-                    avatar: rev.avatar,
-                  }}
-                  text={isBn ? rev.quoteBn : rev.quoteEn}
-                />
-              ))}
+              {/* Curated Grid of Verified Reviews using TestimonialCard */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 justify-items-center">
+                {studentReviews.map((rev: any, idx: number) => (
+                  <TestimonialCard
+                    key={rev.id || idx}
+                    author={{
+                      name: isBn ? (rev.nameBn || rev.name) : (rev.nameEn || rev.name),
+                      handle: isBn ? `${rev.roleBn || rev.role} (${rev.handleBn || rev.handle || ''})` : `${rev.roleEn || rev.role} (${rev.handleEn || rev.handle || ''})`,
+                      avatar: rev.avatar || rev.image,
+                    }}
+                    text={isBn ? (rev.quoteBn || rev.quote) : (rev.quoteEn || rev.quote)}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
       </div>
 
