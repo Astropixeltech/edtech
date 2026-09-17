@@ -1,4 +1,4 @@
-# Product Requirements Document — AlphaZero BD
+# Product Requirements Document — Astropixel Learn EdTech
 
 ## 1. Vision
 Build Bangladesh's most trusted bilingual creative-agency + learning platform where local students, entrepreneurs and businesses can hire the agency **and** learn its craft — all under one brand.

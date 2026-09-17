@@ -1,6 +1,6 @@
 # Architecture Audit & Resolution Report
 
-**Project:** AstroPixel Learn (AlphaZero Education)  
+**Project:** AstroPixel Learn EdTech Platform  
 **Date:** September 4, 2026  
 **Status:** Resolved & Verified (`tsc && vite build` passing)
 

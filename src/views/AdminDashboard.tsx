@@ -75,10 +75,8 @@ import SiteSettingsManagement from '@/components/admin/SiteSettingsManagement';
 import PageContentManagement from '@/components/admin/PageContentManagement';
 import LearnPagesEditor from '@/components/admin/LearnPagesEditor';
 import AdminSiteScopeSwitcher from '@/components/admin/AdminSiteScopeSwitcher';
-import learnLogoAssetJson from '@/assets/learn-with-alphazero-logo.png.asset.json';
-import astropixelLogoAssetJson from '@/assets/astropixel-logo.png.asset.json';
 const learnLogo = learnLogoAssetJson.url;
-const alphazeroLogoAsset = astropixelLogoAssetJson;
+const astropixelLogoAsset = astropixelLogoAssetJson;
 import TeacherManagement from '@/components/admin/TeacherManagement';
 import TeacherChatTab from '@/components/teacher/TeacherChatTab';
 import EmailManagement from '@/components/admin/EmailManagement';
@@ -1048,7 +1046,7 @@ function AdminDashboardInner() {
         <div className="p-3 md:p-4 border-b border-border/50">
           <div className="flex flex-col items-center gap-2 md:items-start">
             <img
-              src={scope === 'learn' ? learnLogo : alphazeroLogoAsset.url}
+              src={scope === 'learn' ? learnLogo : astropixelLogoAsset.url}
               alt={scope === 'learn' ? 'Learn with Astropixel' : 'Astropixel Logo'}
               className={`w-auto flex-shrink-0 ${scope === 'learn' ? 'h-9 brightness-0 dark:invert' : 'h-8 brightness-0 dark:invert'}`}
             />

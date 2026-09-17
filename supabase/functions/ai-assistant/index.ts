@@ -107,32 +107,32 @@ ${socialLinks}
 `;
 }
 
-// Static context that rarely changes
+// Static knowledge for Astropixel Learn EdTech Platform
 const staticKnowledge = `
-# AlphaZero Agency সম্পর্কে
+# Astropixel Learn EdTech সম্পর্কে
 
-AlphaZero একটি ক্রিয়েটিভ ডিজাইন ও আইটি এজেন্সি, রাজশাহী, বাংলাদেশে অবস্থিত।
-স্লোগান: "শূন্য থেকে প্রভাব" (From Zero to Impact)
+Astropixel Learn একটি সর্বাধুনিক একাডেমি ও বিশ্ববিদ্যালয় ভর্তি প্রস্তুতিমূলক EdTech প্ল্যাটফর্ম।
 
-## আমাদের অর্জন
-- 50+ প্রজেক্ট সম্পন্ন
-- 30+ সন্তুষ্ট ক্লায়েন্ট
-- 3+ বছরের অভিজ্ঞতা
+## আমাদের কোর্সসমূহ
+- এইচএসসি বিজ্ঞান (পদার্থবিজ্ঞান, রসায়ন, উচ্চতর গণিত, জীববিজ্ঞান ও আইসিটি)
+- বুয়েট ও ইঞ্জিনিয়ারিং এডমিশন কমপ্লিট প্রস্তুতি
+- মেডিকেল ও ডেন্টাল এডমিশন স্পেশাল ব্যাচ
+- ঢাবি 'ক' ইউনিট (Varsity A-Unit) রিটেন ও এমসিকিউ প্রস্তুতি
+- এসএসসি বিজ্ঞান ৯ম-১০ম এবং আইসিটি ও অলিম্পিয়াড মাস্টারক্লাস
 
 ## যোগাযোগ
-- ইমেইল: agency.alphazero@gmail.com
+- ইমেইল: support@astropixel.tech
 - WhatsApp: +880 1846 484200
-- ঠিকানা: বর্ণালী, রাজশাহী-6000
-- কাজের সময়: শনি-বৃহস্পতি, সকাল ১০টা - রাত ৮টা
+- ওয়েবসাইট: https://astropixel.tech
 
-## সোশ্যাল মিডিয়া
-- Facebook: facebook.com/share/1Zm7yMhPtk
-- Instagram: instagram.com/alphazero.online
-- Twitter/X: x.com/AgencyAlphazero
-- Discord: discord.gg/uerwPXFf5
-
-## ওয়েবসাইটের পেজ
-- হোম: /
+## ওয়েবসাইটের পেজসমূহ
+- কোর্স ক্যাটালগ: /courses
+- ফ্রি রিসোর্স ও নোটস: /free-resources
+- সিলেবাস ট্র্যাকটর: /syllabus-calculator
+- এলিজিবিলিটি ক্যালকুলেটর: /eligibility-calculator
+- স্টুডেন্ট পোর্টাল: /student/login
+- যোগাযোগ: /contact
+`;
 - আমাদের সম্পর্কে: /about
 - সেবাসমূহ: /services
 - আমাদের কাজ: /work
@@ -212,7 +212,7 @@ ${liveKnowledge}
 
 # তোমার পরিচয়
 
-তুমি "Alpha One" - AlphaZero-এর বন্ধুত্বপূর্ণ AI সহকারী।
+তুমি "Astro AI" - Astropixel Learn EdTech প্ল্যাটফর্মের বন্ধুত্বপূর্ণ স্মার্ট সহকারী।
 
 # উত্তর দেওয়ার স্টাইল
 
@@ -231,7 +231,7 @@ ${liveKnowledge}
 
 4. যোগাযোগ দিলে:
    📱 WhatsApp: +880 1846 484200
-   📧 Email: agency.alphazero@gmail.com
+   📧 Email: support@astropixel.tech
 
 5. পেজ লিংক দিলে: 
    🔗 পেজের নাম: /path

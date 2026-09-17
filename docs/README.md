@@ -1,15 +1,14 @@
-# AlphaZero BD
+# Astropixel Learn EdTech Platform
 
-A bilingual (Bangla / English) creative agency **and** learning-management platform built for **AlphaZero BD** (Rajshahi, Bangladesh). The public site markets the agency's services and portfolio; the `learn.*` sub-brand and `/student`, `/teacher`, `/admin` panels power a full LMS with paid enrollment, live and recorded classes, certificates, and revenue splits.
+A bilingual (Bangla / English) academic & admission preparation learning-management platform built for **Astropixel Learn** (Bangladesh). The platform powers a full EdTech LMS with paid enrollment, live and recorded classes, certificates, and teacher management.
 
 ---
 
 ## Overview
 
-AlphaZero is a two-in-one platform:
+Astropixel Learn is a dedicated EdTech platform:
 
-1. **Creative agency site** – logo, branding, UI/UX, web & social-media design services, team, works, contact.
-2. **Learning platform (AlphaZero Learn)** – course catalog, checkout via UddoktaPay/bKash/Nagad, secured YouTube-based video player, live YouTube classes, comments/Q&A, feedback, certificates, teacher earnings, admin CMS.
+- **Learning platform (Astropixel Learn)** – course catalog, checkout via UddoktaPay/bKash/Nagad, secured YouTube-based video player, live YouTube classes, comments/Q&A, feedback, certificates, teacher earnings, admin CMS.
 
 Both experiences share one React SPA, one Supabase backend, and a language toggle that swaps every string, image, and route hero.
 

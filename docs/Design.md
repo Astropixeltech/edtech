@@ -1,4 +1,4 @@
-# Design System — AlphaZero BD
+# Design System — Astropixel Learn EdTech
 
 Aesthetic direction: **Premium Editorial Glassmorphism** — dark-first, high-contrast, magazine-style typography, translucent glass cards over a subtle mesh background. Never generic (no purple/indigo gradients, no default Inter).
 

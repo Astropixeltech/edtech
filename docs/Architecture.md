@@ -1,4 +1,4 @@
-# Architecture — AlphaZero BD
+# Architecture — Astropixel Learn EdTech
 
 ## Overall
 Decoupled SPA + BaaS.
