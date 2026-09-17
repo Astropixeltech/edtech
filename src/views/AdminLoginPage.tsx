@@ -110,24 +110,7 @@ export default function AdminLoginPage() {
               </p>
             </div>
 
-            {/* Admin Testing Mode Bypass */}
-            <div className="mb-5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-                <span className="text-xs font-semibold text-slate-200">
-                  {isBn ? 'অ্যাডমিন প্রিভিউ (লগইন ছাড়াই)' : 'Admin Preview'}
-                </span>
-              </div>
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleBypassLogin}
-                disabled={isLoading}
-                className="h-7 px-3 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 font-mono rounded-lg shrink-0 shadow-xs"
-              >
-                ⚡ {isBn ? 'অ্যাডমিন প্রবেশ' : 'Admin Demo'}
-              </Button>
-            </div>
+
 
             {/* Login Form */}
             <form onSubmit={handleLogin} className="space-y-4">

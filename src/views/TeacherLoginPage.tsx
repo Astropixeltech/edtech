@@ -108,24 +108,7 @@ export default function TeacherLoginPage() {
               </p>
             </div>
 
-            {/* Teacher Testing Mode Bypass */}
-            <div className="mb-5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <span className="text-xs font-semibold text-foreground">
-                  {isBn ? 'টিচার প্রিভিউ (লগইন ছাড়াই দেখুন)' : 'Teacher Demo Preview'}
-                </span>
-              </div>
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleBypassLogin}
-                disabled={isLoading}
-                className="h-7 px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shrink-0 shadow-xs"
-              >
-                👨‍🏫 {isBn ? 'টিচার প্রবেশ' : 'Teacher Demo'}
-              </Button>
-            </div>
+
 
             {/* Login Form */}
             <form onSubmit={handleLogin} className="space-y-4">

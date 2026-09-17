@@ -355,25 +355,6 @@ export default function StudentLoginPage() {
               </div>
             ) : (
               <div className="space-y-5">
-                
-                {/* Clean Testing Mode Shortcut */}
-                <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-primary shrink-0" />
-                    <span className="text-xs font-semibold text-foreground">
-                      {isBn ? 'টেস্টিং প্রিভিউ (লগইন ছাড়াই দেখুন)' : 'Testing Preview'}
-                    </span>
-                  </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={handleBypassLogin}
-                    disabled={isLoading}
-                    className="h-7 px-3 text-xs font-bold bg-primary hover:bg-primary/90 text-white rounded-lg shrink-0"
-                  >
-                    🎓 {isBn ? 'স্টুডেন্ট প্রবেশ' : 'Student Demo'}
-                  </Button>
-                </div>
 
                 {/* Tabs for Login & Sign Up */}
                 <Tabs defaultValue="login" className="w-full">
