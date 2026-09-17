@@ -75,6 +75,8 @@ import SiteSettingsManagement from '@/components/admin/SiteSettingsManagement';
 import PageContentManagement from '@/components/admin/PageContentManagement';
 import LearnPagesEditor from '@/components/admin/LearnPagesEditor';
 import AdminSiteScopeSwitcher from '@/components/admin/AdminSiteScopeSwitcher';
+import learnLogoAssetJson from '@/assets/learn-with-alphazero-logo.png.asset.json';
+import astropixelLogoAssetJson from '@/assets/astropixel-logo.png.asset.json';
 const learnLogo = learnLogoAssetJson.url;
 const astropixelLogoAsset = astropixelLogoAssetJson;
 import TeacherManagement from '@/components/admin/TeacherManagement';
